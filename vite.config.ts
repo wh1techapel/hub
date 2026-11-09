@@ -21,5 +21,8 @@ export default defineConfig({
     setupFiles: ["./src/test/setup.ts"],
     include: ["src/**/*.test.{ts,tsx}"],
     css: { modules: { classNameStrategy: "non-scoped" } },
+    // The UI shows local time, and the tests expect WIB (the owner's zone). Pinning it makes them
+    // read the same on every machine, CI's UTC runner included.
+    env: { TZ: "Asia/Jakarta" },
   },
 });
