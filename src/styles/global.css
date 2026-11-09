@@ -1,0 +1,323 @@
+/* Base styles. Every colour, size, and timing comes from design/tokens.css. */
+
+@import "../../design/tokens.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-ui);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.02em;
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono);
+}
+
+::selection {
+  background: var(--accent-soft);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Quiet scrollbars that follow the light. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--hairline-strong) transparent;
+}
+
+/* The light is cross-fading on the root: element colour transitions would restart every frame
+   (docs/design.md, "Light"). */
+[data-shifting] body * {
+  transition-property: transform, opacity, clip-path, stroke-dashoffset !important;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Fraunces, set soft and large for the moments that matter. */
+.display {
+  font-family: var(--font-display);
+  font-variation-settings: var(--display-axes), "opsz" 144;
+  font-weight: 380;
+  letter-spacing: -0.025em;
+}
+
+.section-label {
+  margin: 0;
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: 20px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-xs);
+  font-size: var(--text-caption);
+  font-weight: 550;
+  color: var(--pig-text);
+  background: var(--pig-fill);
+  white-space: nowrap;
+}
+
+.ultron-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-caption);
+  font-weight: 600;
+  color: var(--ultron);
+}
+
+.ultron-mark::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  background: var(--ultron);
+  transform: rotate(45deg);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--hit-min);
+  padding: 0 var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-weight: 550;
+  white-space: nowrap;
+  /* A link set as a button (Studio's "Buka Pengaturan") reads as one: no underline, no link blue. */
+  color: inherit;
+  text-decoration: none;
+  transition:
+    background-color var(--dur-quick) var(--ease-standard),
+    border-color var(--dur-quick) var(--ease-standard),
+    transform var(--dur-instant) var(--ease-standard);
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-secondary {
+  background: var(--surface);
+  border-color: var(--hairline-strong);
+}
+
+.btn-secondary:hover {
+  border-color: var(--accent-line);
+}
+
+.btn-quiet {
+  background: transparent;
+  color: var(--ink-2);
+  padding: 0 var(--space-3);
+}
+
+.btn-quiet:hover {
+  background: var(--hairline);
+  color: var(--ink);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-name: fade-in !important;
+  }
+}
+
+.btn-primary {
+  min-height: var(--hit-primary);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.btn-primary:hover {
+  background: oklch(from var(--accent) calc(l - 0.04) c h);
+}
+
+.btn-danger {
+  background: transparent;
+  color: var(--danger);
+  padding: 0 var(--space-3);
+}
+
+.btn-danger:hover {
+  background: var(--danger-soft);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Text inputs, selects, and text areas share one quiet look. */
+.input {
+  width: 100%;
+  min-height: var(--hit-primary);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+textarea.input {
+  min-height: 88px;
+  resize: vertical;
+  line-height: var(--leading-read);
+}
+
+.input::placeholder {
+  color: var(--ink-3);
+}
+
+.input[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+  border-color: transparent;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.row > * {
+  flex: 1 1 140px;
+}
+
+.icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: var(--hit-min);
+  height: var(--hit-min);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-2);
+}
+
+.icon-btn:hover {
+  background: var(--hairline);
+  color: var(--ink);
+}
+
+.page-title {
+  margin: var(--space-10) 0 var(--space-6);
+  font-size: var(--text-display-l);
+  line-height: var(--leading-display-l);
+}
+
+/* P2b: a selection that glides. The group draws a pill (or, with data-glide-line, an underline)
+   behind its chosen item, clipped to it; a new choice moves the clip, never a width
+   (src/motion/motion.ts, useGlide). */
+[data-glide] {
+  position: relative;
+  isolation: isolate;
+}
+
+[data-glide]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--glide-fill, var(--surface));
+  clip-path: inset(var(--glide-t, 0) var(--glide-r, 100%) var(--glide-b, 0) var(--glide-l, 0) round var(--glide-round, var(--radius-full)));
+}
+
+[data-glide-line]::before {
+  --glide-fill: var(--accent);
+  --glide-round: 1px;
+}
+
+[data-glide="moving"]::before {
+  transition: clip-path var(--dur-base) var(--ease-standard);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-glide]::before {
+    transition: none !important;
+  }
+}

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-detach-file"
+description = "Enables the detach_file command without any pre-configured scope."
+commands.allow = ["detach_file"]
+
+[[permission]]
+identifier = "deny-detach-file"
+description = "Denies the detach_file command without any pre-configured scope."
+commands.deny = ["detach_file"]

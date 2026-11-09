@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-restore-occurrence"
+description = "Enables the restore_occurrence command without any pre-configured scope."
+commands.allow = ["restore_occurrence"]
+
+[[permission]]
+identifier = "deny-restore-occurrence"
+description = "Denies the restore_occurrence command without any pre-configured scope."
+commands.deny = ["restore_occurrence"]

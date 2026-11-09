@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-update-ctf"
+description = "Enables the update_ctf command without any pre-configured scope."
+commands.allow = ["update_ctf"]
+
+[[permission]]
+identifier = "deny-update-ctf"
+description = "Denies the update_ctf command without any pre-configured scope."
+commands.deny = ["update_ctf"]

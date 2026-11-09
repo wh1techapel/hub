@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-generate-prd"
+description = "Enables the generate_prd command without any pre-configured scope."
+commands.allow = ["generate_prd"]
+
+[[permission]]
+identifier = "deny-generate-prd"
+description = "Denies the generate_prd command without any pre-configured scope."
+commands.deny = ["generate_prd"]

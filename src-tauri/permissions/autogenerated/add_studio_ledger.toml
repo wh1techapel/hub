@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-add-studio-ledger"
+description = "Enables the add_studio_ledger command without any pre-configured scope."
+commands.allow = ["add_studio_ledger"]
+
+[[permission]]
+identifier = "deny-add-studio-ledger"
+description = "Denies the add_studio_ledger command without any pre-configured scope."
+commands.deny = ["add_studio_ledger"]

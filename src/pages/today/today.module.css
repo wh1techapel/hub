@@ -1,0 +1,604 @@
+.page {
+  display: block;
+}
+
+/* ---------- hero ---------- */
+
+.hero {
+  margin-top: var(--space-10);
+}
+
+.greeting {
+  margin: 0;
+  font-size: var(--text-display-xl);
+  line-height: var(--leading-display-xl);
+  text-wrap: balance;
+}
+
+.greeting em {
+  font-weight: 340;
+}
+
+.heroSub {
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-read);
+  line-height: var(--leading-read);
+  color: var(--ink-2);
+}
+
+.heroSub strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.over {
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-small);
+  font-weight: 550;
+  color: var(--warn);
+}
+
+/* ---------- Day Arc ---------- */
+
+.arcWrap {
+  margin: var(--space-4) 0 0;
+}
+
+.arc {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.arc text {
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  fill: var(--ink-3);
+}
+
+.arc .arcStrong {
+  fill: var(--ink-2);
+  font-weight: 600;
+}
+
+.arcFuture,
+.arcPast,
+.arcEvent {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.arcFuture {
+  stroke: var(--arc-future);
+  stroke-width: 2;
+}
+
+.arcPast {
+  stroke: var(--arc-past);
+  stroke-width: 2.5;
+}
+
+.arcEvent {
+  stroke: var(--pig-line);
+  stroke-width: 9;
+}
+
+.arcReminder {
+  fill: var(--paper);
+  stroke: var(--warn);
+  stroke-width: 2;
+}
+
+.sunHalo {
+  fill: var(--accent-soft);
+}
+
+.sun {
+  fill: var(--accent);
+  stroke: var(--paper);
+  stroke-width: 2.5;
+}
+
+.moonHalo {
+  fill: var(--accent-soft);
+}
+
+.moonBody {
+  fill: var(--accent);
+}
+
+.arcCaption {
+  text-align: center;
+  font-size: var(--text-small);
+  color: var(--ink-2);
+}
+
+/* ---------- evening tally ---------- */
+
+.evening {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  animation: global(rise) var(--dur-slow) var(--ease-standard) backwards;
+}
+
+.evening > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.evening strong {
+  font-weight: 600;
+}
+
+.evening span {
+  font-size: var(--text-small);
+  color: var(--ink-2);
+}
+
+/* ---------- columns ---------- */
+
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: var(--space-14);
+  margin-top: var(--space-10);
+}
+
+.colMain,
+.colSide {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+}
+
+.colSide {
+  gap: var(--space-8);
+}
+
+.colMain > section > :global(.section-label) {
+  margin-bottom: var(--space-3);
+}
+
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.count {
+  font-size: var(--text-caption);
+  font-weight: 500;
+  color: var(--ink-3);
+}
+
+.empty {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: var(--text-small);
+}
+
+/* ---------- Sekarang ---------- */
+
+.nowCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--hairline), var(--shadow-lift);
+}
+
+.nowEvent {
+  display: grid;
+  grid-template-columns: 4px 1fr auto;
+  gap: var(--space-4);
+  align-items: stretch;
+}
+
+.rail {
+  border-radius: var(--radius-full);
+  background: var(--pig-line);
+}
+
+.nowEvent h3 {
+  margin: 0;
+  font-size: var(--text-title);
+  line-height: var(--leading-title);
+  font-weight: 600;
+}
+
+.nowEvent p {
+  margin: 2px 0 0;
+  font-size: var(--text-small);
+  color: var(--ink-2);
+}
+
+.nowLeft {
+  align-self: center;
+  text-align: right;
+}
+
+.nowLeft strong {
+  display: block;
+  font-family: var(--font-display);
+  font-variation-settings: var(--display-axes), "opsz" 72;
+  font-size: var(--text-display-m);
+  font-weight: 420;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.nowLeft span {
+  font-size: var(--text-caption);
+  color: var(--ink-3);
+}
+
+.bar {
+  height: 4px;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: var(--hairline);
+}
+
+.bar i {
+  display: block;
+  height: 100%;
+  transform-origin: left;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: transform var(--dur-slow) var(--ease-standard);
+}
+
+.nowSep {
+  height: 1px;
+  background: var(--hairline);
+}
+
+.nowNext {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-small);
+  color: var(--ink-2);
+}
+
+.nowNext svg {
+  flex: none;
+  color: var(--ink-3);
+}
+
+/* ---------- schedule ---------- */
+
+.schedule {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.slot {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: var(--space-3);
+  align-items: stretch;
+}
+
+.slot time {
+  padding-top: 7px;
+  font-size: var(--text-small);
+  color: var(--ink-3);
+}
+
+.block {
+  position: relative;
+  overflow: hidden;
+  padding: 6px var(--space-3) 6px calc(var(--space-3) + 3px);
+  border-radius: var(--radius-sm);
+  background: var(--pig-fill);
+  color: var(--pig-text);
+}
+
+.block::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--pig-line);
+}
+
+.block strong {
+  display: block;
+  font-size: var(--text-small);
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.block span {
+  font-size: var(--text-caption);
+  opacity: 0.85;
+}
+
+.past .block {
+  opacity: 0.55;
+}
+
+.nowSlot .block {
+  box-shadow: 0 0 0 1.5px var(--accent);
+}
+
+.nowSlot time {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.reminderSlot .block {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-left: var(--space-3);
+  background: transparent;
+  color: var(--ink-2);
+  font-size: var(--text-small);
+}
+
+.reminderSlot .block::before {
+  display: none;
+}
+
+.reminderSlot svg {
+  flex: none;
+  color: var(--warn);
+}
+
+/* ---------- trail ---------- */
+
+.trail {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trail li {
+  display: grid;
+  grid-template-columns: 14px 1fr;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  font-size: var(--text-small);
+  color: var(--ink-2);
+}
+
+.trail li::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  margin: 7px 0 0 4px;
+  border-radius: var(--radius-full);
+  background: var(--ink-3);
+}
+
+.trail li.byUltron::before {
+  border-radius: 1px;
+  background: var(--ultron);
+  transform: rotate(45deg);
+}
+
+.trail time {
+  display: block;
+  font-size: var(--text-caption);
+  color: var(--ink-3);
+}
+
+@media (max-width: 900px) {
+  .columns {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-10);
+  }
+
+  .greeting {
+    font-size: 36px;
+  }
+}
+
+/* ---------- Tutup Hari on the arc ---------- */
+
+.arcInk {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.arcInkDraw {
+  stroke-dasharray: 1 1;
+  animation: ink-run 1400ms var(--ease-ink) both;
+}
+
+@keyframes ink-run {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.moonRise {
+  animation: moon-rise var(--dur-slow) var(--ease-standard) 1200ms both;
+}
+
+@keyframes moon-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- suggestions ---------- */
+
+.suggest {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border: 1px dashed var(--hairline-strong);
+  border-radius: var(--radius-md);
+}
+
+.suggest > ul {
+  align-self: stretch;
+}
+
+.suggestHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  margin: 0;
+  font-size: var(--text-small);
+}
+
+.suggestHead svg {
+  color: var(--accent);
+}
+
+.suggestHead span {
+  flex-basis: 100%;
+  color: var(--ink-3);
+}
+
+/* ---------- Belajar and files (CP4) ---------- */
+
+.learning {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.learningWeek {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  font-size: var(--text-small);
+  color: var(--ink-2);
+}
+
+.learningItem {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2px var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--hairline), inset 3px 0 0 var(--pig-line);
+}
+
+.learningItem span {
+  grid-column: 1;
+  font-size: var(--text-caption);
+  color: var(--ink-3);
+}
+
+.learningItem button {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+.learningTitle {
+  overflow: hidden;
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.learningTitle:hover {
+  text-decoration: underline;
+}
+
+.recentFiles {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recentFiles li {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--hit-min);
+}
+
+.recentFiles button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+}
+
+.recentFiles button:hover {
+  background: var(--hairline);
+}
+
+.recentFiles button span,
+.recentFiles button small {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recentFiles button span {
+  font-size: var(--text-small);
+  font-weight: 550;
+}
+
+.recentFiles button small {
+  font-size: var(--text-caption);
+  color: var(--ink-3);
+}
+
+.recentMore {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  color: var(--ink-3);
+  font-size: 18px;
+  text-decoration: none;
+}
+
+.recentMore:hover {
+  background: var(--hairline);
+  color: var(--ink);
+}

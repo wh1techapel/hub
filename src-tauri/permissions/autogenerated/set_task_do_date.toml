@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-set-task-do-date"
+description = "Enables the set_task_do_date command without any pre-configured scope."
+commands.allow = ["set_task_do_date"]
+
+[[permission]]
+identifier = "deny-set-task-do-date"
+description = "Denies the set_task_do_date command without any pre-configured scope."
+commands.deny = ["set_task_do_date"]

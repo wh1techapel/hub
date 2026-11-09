@@ -1,0 +1,26 @@
+flowchart TB
+  user([Pengguna])
+  subgraph pc[Komputer pengguna, Windows 11]
+    direction TB
+    ui[Antarmuka Hub<br/>React + TypeScript<br/>di WebView2]
+    shell[Aplikasi desktop Tauri<br/>Rust: jendela, tray,<br/>notifikasi, pintasan]
+    core[hub-core<br/>aturan dan validasi data]
+    db[(SQLite hub.db<br/>cadangan harian, ekspor JSON)]
+    api[hub-api<br/>API lokal 127.0.0.1<br/>token, cakupan, batas laju]
+    ai[hub-ai<br/>klien Gemini]
+    cred[(Windows Credential<br/>Manager: kunci Gemini)]
+    mcp[hub-mcp.exe<br/>jembatan MCP stdio]
+    ultron[ULTRON<br/>asisten suara lokal<br/>Python + Ollama]
+    claude[Claude Code<br/>CLI atau aplikasi desktop]
+  end
+  gemini[Google Gemini API]
+  user --> ui
+  ui <-->|perintah Tauri| shell
+  shell --> core --> db
+  shell ---|menjalankan| api
+  api --> core
+  ultron -->|HTTP + token ULTRON| api
+  claude -->|MCP| mcp -->|HTTP + token Claude Code| api
+  shell --> ai
+  ai --> cred
+  ai -->|HTTPS, hanya Hub Studio| gemini

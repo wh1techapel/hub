@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-close-day"
+description = "Enables the close_day command without any pre-configured scope."
+commands.allow = ["close_day"]
+
+[[permission]]
+identifier = "deny-close-day"
+description = "Denies the close_day command without any pre-configured scope."
+commands.deny = ["close_day"]

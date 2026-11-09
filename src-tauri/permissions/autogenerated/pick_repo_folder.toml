@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-pick-repo-folder"
+description = "Enables the pick_repo_folder command without any pre-configured scope."
+commands.allow = ["pick_repo_folder"]
+
+[[permission]]
+identifier = "deny-pick-repo-folder"
+description = "Denies the pick_repo_folder command without any pre-configured scope."
+commands.deny = ["pick_repo_folder"]

@@ -1,0 +1,84 @@
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: var(--scrim);
+  animation: global(fade-in) var(--dur-base) var(--ease-standard) both;
+}
+
+.panel {
+  position: fixed;
+  z-index: 41;
+  left: 50%;
+  top: 50%;
+  width: min(520px, calc(100vw - 32px));
+  max-height: calc(100vh - 64px);
+  display: flex;
+  flex-direction: column;
+  transform: translate(-50%, -50%);
+  border-radius: var(--radius-lg);
+  background: var(--paper);
+  box-shadow:
+    0 0 0 1px var(--hairline),
+    var(--shadow-drag);
+  animation: sheet-in var(--dur-slow) var(--ease-standard) both;
+}
+
+.wide {
+  width: min(640px, calc(100vw - 32px));
+}
+
+.head {
+  padding: var(--space-6) var(--space-6) var(--space-2);
+}
+
+.head h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-variation-settings:
+    var(--display-axes),
+    "opsz" 96;
+  font-weight: 400;
+  font-size: var(--text-display-m);
+  line-height: var(--leading-display-m);
+}
+
+.head p {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-small);
+  color: var(--ink-3);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-6) var(--space-5);
+  overflow-y: auto;
+}
+
+/* The body scrolls when the sheet reaches the window's height; its fields keep their own height
+   instead of shrinking into each other. */
+.body > * {
+  flex-shrink: 0;
+}
+
+.foot {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-6) var(--space-5);
+  border-top: 1px solid var(--hairline);
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 16px)) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}

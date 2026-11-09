@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-apply-stack-to-prd"
+description = "Enables the apply_stack_to_prd command without any pre-configured scope."
+commands.allow = ["apply_stack_to_prd"]
+
+[[permission]]
+identifier = "deny-apply-stack-to-prd"
+description = "Denies the apply_stack_to_prd command without any pre-configured scope."
+commands.deny = ["apply_stack_to_prd"]

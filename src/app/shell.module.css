@@ -1,0 +1,539 @@
+.app {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  height: 100vh;
+}
+
+.sidebar {
+  /* U2: the rail is decided by the sidebar's own width, whether a narrow window or a folded
+     history made it narrow. */
+  container: sidebar / inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-height: 0;
+  padding: var(--space-5) var(--space-3) var(--space-4);
+  background: var(--paper-2);
+  border-right: 1px solid var(--hairline);
+}
+
+.wordmark {
+  padding: 0 var(--space-3);
+  font-family: var(--font-display);
+  font-variation-settings: var(--display-axes), "opsz" 72;
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  user-select: none;
+}
+
+.wordmark span {
+  color: var(--accent);
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* P1: the sidebar's two sides, the pages and Pengaturan's parts, in one place; the one not shown
+   slides out of the way (a push, as a settings screen does) and is then hidden from focus and
+   from screen readers. The edges reach the sidebar's own so an item's ring is never clipped. */
+.panes {
+  display: grid;
+  /* The column is the sidebar's width, never a field's or a long name's (U2). */
+  grid-template-columns: minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+  align-self: stretch;
+  /* Clipped, not a scroll box: focus moving into a side while it still slides in must not scroll
+     the sides out of place (U2). */
+  overflow: clip;
+  margin-inline: calc(-1 * var(--space-3));
+  padding-inline: var(--space-3);
+}
+
+.pane {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-height: 0;
+  transition:
+    transform var(--dur-base) var(--ease-standard),
+    opacity var(--dur-base) var(--ease-standard),
+    visibility 0s linear 0s;
+}
+
+/* U2: a third side, Studio's history, between the two: the pages slide left to it, and it slides
+   left again to Pengaturan opened from it. */
+.panes:not([data-mode="main"]) > [data-pane="main"],
+.panes:not([data-mode="studio"]) > [data-pane="studio"],
+.panes:not([data-mode="settings"]) > [data-pane="settings"] {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    transform var(--dur-base) var(--ease-standard),
+    opacity var(--dur-base) var(--ease-exit),
+    visibility 0s linear var(--dur-base);
+}
+
+.panes:not([data-mode="main"]) > [data-pane="main"],
+.panes[data-mode="settings"] > [data-pane="studio"] {
+  transform: translateX(-100%);
+}
+
+.panes[data-mode="main"] > [data-pane="studio"],
+.panes:not([data-mode="settings"]) > [data-pane="settings"] {
+  transform: translateX(100%);
+}
+
+/* Less motion asked for: the sides only cross-fade. */
+@media (prefers-reduced-motion: reduce) {
+  .panes > .pane {
+    transform: none !important;
+  }
+}
+
+.paneLabel {
+  margin: 0 0 var(--space-2);
+  padding: 0 var(--space-3);
+  font-size: var(--text-caption);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* R6: the secondary pages (File, Jejak) under a quiet line. */
+.divider {
+  width: 100%;
+  margin: var(--space-2) 0;
+  border: 0;
+  border-top: 1px solid var(--hairline);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--hit-min);
+  padding: 0 var(--space-3);
+  /* A button looks like the links beside it (Kembali, U2's fold and search). */
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-2);
+  text-align: start;
+  text-decoration: none;
+  transition:
+    background-color var(--dur-quick) var(--ease-standard),
+    color var(--dur-quick) var(--ease-standard);
+}
+
+.item:hover {
+  background: var(--hairline);
+  color: var(--ink);
+}
+
+.active {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 0 0 1px var(--hairline);
+  font-weight: 550;
+}
+
+.active svg {
+  color: var(--accent);
+}
+
+.foot {
+  margin-top: auto;
+}
+
+.main {
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-5) clamp(var(--space-6), 4vw, var(--space-14)) var(--space-18);
+  background-color: var(--paper);
+  background-image: var(--grain);
+}
+
+.main > * {
+  max-width: var(--content-max);
+  margin-inline: auto;
+}
+
+/* A workspace (a Studio project) fills the window under the top bar and scrolls inside itself. */
+.main[data-workspace] {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-bottom: var(--space-4);
+}
+
+.main[data-workspace] > * {
+  width: 100%;
+  max-width: var(--workspace-max);
+}
+
+.main[data-workspace] > .page {
+  flex: 1;
+  min-height: 0;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.date {
+  font-size: var(--text-small);
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+.paletteHint {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--hit-min);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--ink-3);
+  transition:
+    border-color var(--dur-quick) var(--ease-standard),
+    color var(--dur-quick) var(--ease-standard);
+}
+
+.paletteHint:hover {
+  border-color: var(--hairline-strong);
+  color: var(--ink-2);
+}
+
+.capture {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--hit-min);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 550;
+  /* Studio's Ide baru is a link (U2). */
+  text-decoration: none;
+  transition: border-color var(--dur-quick) var(--ease-standard), box-shadow var(--dur-quick) var(--ease-standard);
+}
+
+.capture svg {
+  color: var(--accent);
+}
+
+.capture:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-lift);
+}
+
+/* ---------- reminders waiting ---------- */
+
+.alerts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.alert {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--warn-soft);
+  box-shadow: inset 3px 0 0 var(--warn);
+  animation: global(rise) var(--dur-base) var(--ease-standard) backwards;
+}
+
+.alert > svg {
+  flex: none;
+  color: var(--warn);
+}
+
+.alertText {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--space-2);
+  min-width: 0;
+}
+
+.alertText small {
+  font-size: var(--text-caption);
+  color: var(--ink-2);
+}
+
+.alertMore {
+  align-self: flex-start;
+  font-size: var(--text-small);
+  color: var(--ink-2);
+}
+
+/* "backwards", not "both": a transform kept after the entrance would make this box the containing
+   block of every fixed panel inside it. */
+.page {
+  animation: global(rise) var(--dur-base) var(--ease-standard) backwards;
+}
+
+/* A rail of icons in narrower windows (`Shell.tsx` follows the same width), and for Studio's
+   history folded by the owner (U2). The rail's look follows the sidebar's own width below. */
+@media (max-width: 1100px) {
+  .app {
+    grid-template-columns: var(--rail-width) minmax(0, 1fr);
+  }
+
+  .app:not([data-peek]) > .sidebar {
+    align-items: center;
+    padding-inline: var(--space-2);
+  }
+}
+
+.app[data-folded] {
+  grid-template-columns: var(--rail-width) minmax(0, 1fr);
+}
+
+.app[data-folded] > .sidebar {
+  align-items: center;
+  padding-inline: var(--space-2);
+}
+
+/* In a narrow window Studio's history opens over the page, the rail's place kept. */
+.app[data-peek] > .sidebar {
+  position: relative;
+  z-index: 35;
+  width: var(--sidebar-width);
+  box-shadow: var(--shadow-lift);
+  animation: global(rise) var(--dur-base) var(--ease-standard) backwards;
+}
+
+@container sidebar (max-width: 120px) {
+  .panes {
+    margin-inline: calc(-1 * var(--space-2));
+    padding-inline: var(--space-2);
+  }
+
+  .pane {
+    align-items: center;
+  }
+
+  .paneLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .wordmark {
+    padding: 0;
+    font-size: 22px;
+  }
+
+  .item,
+  .capture {
+    justify-content: center;
+    width: 44px;
+    padding: 0;
+  }
+
+  .item span,
+  .capture span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* What waits for the owner in Studio: a count, never a colour alone. */
+.badge {
+  margin-left: auto;
+  min-width: 20px;
+  padding: 0 6px;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: var(--text-caption);
+  font-weight: 600;
+  line-height: 20px;
+  text-align: center;
+}
+
+@container sidebar (max-width: 120px) {
+  .item {
+    position: relative;
+  }
+
+  /* In the rail the label hides; the count stays, at the icon's corner. */
+  .item .badge {
+    position: absolute;
+    top: 2px;
+    right: 0;
+    width: auto;
+    height: auto;
+    min-width: 16px;
+    padding: 0 4px;
+    overflow: visible;
+    clip-path: none;
+    font-size: 10px;
+    line-height: 16px;
+  }
+}
+
+/* ---------- U2: Studio's history ---------- */
+
+.studioPane {
+  gap: var(--space-3);
+}
+
+.studioTop {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.studioTop > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.fold {
+  flex: none;
+  justify-content: center;
+  width: var(--hit-min);
+  padding: 0;
+  color: var(--ink-3);
+}
+
+.railOnly {
+  display: none;
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--hit-min);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  color: var(--ink-3);
+  transition: border-color var(--dur-quick) var(--ease-standard);
+}
+
+/* The field's ring is drawn on its box, the way `.input` draws it. */
+.searchBox:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+  border-color: transparent;
+}
+
+.search {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-1) 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-small);
+  outline: none;
+}
+
+.search::placeholder {
+  color: var(--ink-3);
+}
+
+.history {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-height: 0;
+  overflow-y: auto;
+  margin-top: var(--space-2);
+  /* Room for an item's focus ring inside the scroll area. */
+  margin-inline: calc(-1 * var(--space-1));
+  padding-inline: var(--space-1);
+}
+
+/* A scrolling column scrolls; its parts keep their own height instead of shrinking into each
+   other (the model menu's rows did, L4 audit). */
+.history > * {
+  flex-shrink: 0;
+}
+
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.historyName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.historyEmpty {
+  margin: 0;
+  padding: 0 var(--space-3);
+  font-size: var(--text-small);
+  color: var(--ink-3);
+}
+
+.studioPane .foot {
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--hairline);
+}
+
+@container sidebar (max-width: 120px) {
+  .studioTop {
+    flex-direction: column-reverse;
+  }
+
+  .studioTop > :first-child {
+    flex: none;
+  }
+
+  .fold {
+    width: 44px;
+  }
+
+  .railOnly {
+    display: flex;
+  }
+
+  .wideOnly {
+    display: none;
+  }
+
+  .studioPane .foot {
+    border-top: 0;
+  }
+}

@@ -1,0 +1,32 @@
+:global(body.capture-window) {
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.window {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  height: 100vh;
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  border-top: 3px solid var(--accent);
+}
+
+.head {
+  margin: 0;
+  user-select: none;
+}
+
+.saved {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: auto 0;
+  font-size: var(--text-read);
+  animation: global(rise) var(--dur-base) var(--ease-standard) backwards;
+}
+
+.saved svg {
+  flex: none;
+  color: var(--accent);
+}

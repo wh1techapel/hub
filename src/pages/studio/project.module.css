@@ -1,0 +1,1146 @@
+/* One Studio project as a workspace that fills the window (docs/studio.md, "The workspace", U4):
+   a one-row header (the name, the three stages, the canvas button), then the conversation with the
+   canvas beside it. Ringkasan takes the panel width; the stack, the PRD, the plan, and Bangun take
+   the larger share, as Gemini gives its Canvas. Under 860 px the canvas is a sheet over the
+   conversation. */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  height: 100%;
+  min-height: 0;
+  padding-top: var(--space-3);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-6);
+}
+
+.name {
+  flex: 1 1 240px;
+  min-width: 0;
+  padding: 2px var(--space-1);
+  margin-left: calc(var(--space-1) * -1);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font-size: var(--text-display-m);
+  line-height: var(--leading-display-m);
+  color: var(--ink);
+  text-overflow: ellipsis;
+}
+
+.name:hover {
+  border-color: var(--hairline);
+}
+
+.name:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.headActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-left: auto;
+}
+
+.iconButton {
+  position: relative;
+  justify-content: center;
+  min-width: var(--hit-primary);
+  min-height: var(--hit-primary);
+  padding: 0;
+  color: var(--ink-2);
+}
+
+.confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: 640px;
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--danger);
+  font-size: var(--text-small);
+}
+
+.confirm p {
+  margin: 0;
+}
+
+/* The three stages: a number (a check once passed), the word, and a line under the one shown. */
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-5);
+}
+
+.step {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--hit-primary);
+  padding: 0 2px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--ink-3);
+  font-size: var(--text-small);
+  font-weight: 550;
+  transition:
+    color var(--dur-quick) var(--ease-standard),
+    border-color var(--dur-base) var(--ease-ink);
+}
+
+.step:hover {
+  color: var(--ink);
+}
+
+.step[aria-selected="true"] {
+  color: var(--ink);
+}
+
+.step[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+.step[aria-disabled="true"]:hover {
+  color: var(--ink-3);
+}
+
+.stepMark {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-full);
+  font-size: var(--text-caption);
+  font-variant-numeric: tabular-nums;
+  transition:
+    background-color var(--dur-slow) var(--ease-ink),
+    border-color var(--dur-slow) var(--ease-ink);
+}
+
+.step[data-state="done"] {
+  color: var(--ink-2);
+}
+
+.step[data-state="done"] .stepMark {
+  border-color: var(--ink-3);
+  color: var(--ink-2);
+}
+
+.step[data-state="current"] .stepMark {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.step:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.locked {
+  max-width: 70ch;
+  margin: 0;
+  font-size: var(--text-small);
+  color: var(--ink-2);
+}
+
+.dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+}
+
+/* ---------- the body: the conversation and the canvas ---------- */
+
+.body {
+  position: relative;
+  display: grid;
+  flex: 1;
+  grid-template-columns: minmax(0, 1fr) var(--panel-width);
+  min-height: 0;
+  border-top: 1px solid var(--hairline);
+}
+
+.body[data-doc="wide"] {
+  grid-template-columns: minmax(360px, 1fr) minmax(0, clamp(520px, 58%, 920px));
+}
+
+.body[data-canvas="closed"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.chatHost,
+.canvas {
+  min-width: 0;
+  min-height: 0;
+}
+
+.chatHost {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.canvas {
+  display: flex;
+  flex-direction: column;
+  grid-column: 2;
+  grid-row: 1;
+  border-left: 1px solid var(--hairline);
+  background: var(--paper);
+  animation: global(fade-in) var(--dur-base) var(--ease-standard) backwards;
+}
+
+.body[data-canvas="closed"] .canvas {
+  display: none;
+}
+
+.canvasHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-6);
+}
+
+.close {
+  margin-left: auto;
+  min-width: var(--hit-min);
+}
+
+.canvasScroll {
+  container-type: inline-size;
+  flex: 1;
+  min-height: 0;
+  padding: var(--space-5) var(--space-6) var(--space-10);
+  overflow-y: auto;
+}
+
+.body[data-doc="narrow"] .canvasScroll {
+  padding-inline: var(--space-5);
+}
+
+/* A narrow workspace: the conversation alone, the canvas as a sheet over its right side. */
+.body[data-narrow],
+.body[data-narrow][data-doc="wide"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.body[data-narrow] .canvas {
+  z-index: 2;
+  grid-column: 1;
+  justify-self: end;
+  width: min(420px, 100%);
+  box-shadow: var(--shadow-lift);
+}
+
+.body[data-narrow][data-doc="wide"] .canvas {
+  width: 100%;
+}
+
+.body[data-narrow] .canvasHead {
+  min-height: var(--hit-primary);
+  padding-top: var(--space-2);
+}
+
+/* ---------- conversation ---------- */
+
+.chat {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.logWrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.log {
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.log:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.logInner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-6) 0;
+}
+
+/* The conversation keeps a readable measure, centred in its column. */
+.logInner,
+.chatHost .composer,
+.chatHost .problem {
+  width: 100%;
+  max-width: var(--reading-max);
+  margin-inline: auto;
+}
+
+.logInner {
+  padding-inline: var(--space-4);
+}
+
+.latest {
+  position: absolute;
+  bottom: var(--space-3);
+  left: 50%;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--hit-min);
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  box-shadow: var(--shadow-lift);
+  font-size: var(--text-small);
+  transform: translateX(-50%);
+}
+
+.chatEmpty {
+  max-width: 52ch;
+  margin: 0;
+  color: var(--ink-2);
+}
+
+.who {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-caption);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.mine,
+.reply {
+  animation: global(rise) var(--dur-base) var(--ease-standard) backwards;
+}
+
+.mine {
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--hairline-strong);
+}
+
+.mineText {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.prose {
+  font-size: 15px;
+  line-height: var(--leading-read, 1.6);
+  overflow-wrap: anywhere;
+}
+
+.prose p,
+.prose ul,
+.prose ol,
+.prose pre {
+  margin: 0 0 var(--space-3);
+}
+
+.prose ul,
+.prose ol {
+  padding-left: var(--space-5);
+}
+
+.prose li + li {
+  margin-top: var(--space-1);
+}
+
+.prose code {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono);
+}
+
+.prose pre {
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--hairline);
+  overflow-x: auto;
+}
+
+.caret {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  background: var(--accent);
+  vertical-align: text-bottom;
+}
+
+.ended {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-small);
+  color: var(--ink-3);
+}
+
+/* L1: a reply that asks shows no text. While it is written, one quiet line breathes; after its
+   set was answered, one line says how much was asked (the answers follow as the owner's message). */
+.preparing,
+.asked {
+  margin: 0;
+  font-size: var(--text-small);
+  color: var(--ink-3);
+}
+
+.preparing {
+  animation: breathe var(--dur-ambient) var(--ease-ink) infinite alternate;
+}
+
+@keyframes breathe {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.45;
+  }
+}
+
+/* The global rule turns every animation into a fade-in; repeated forever that would blink. */
+@media (prefers-reduced-motion: reduce) {
+  .preparing {
+    animation-name: none !important;
+  }
+}
+
+.retry {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.problem {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-small);
+  color: var(--ink);
+}
+
+.problem:empty {
+  display: none;
+}
+
+/* Gemini's questions: choices that fill the input. */
+.questions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--accent-line, var(--hairline-strong));
+  /* L1: the set is the whole reply now, so it arrives like one. */
+  animation: global(rise) var(--dur-slow) var(--ease-standard) backwards;
+}
+
+.question {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.question legend {
+  padding: 0;
+  font-weight: 600;
+}
+
+.why {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-small);
+  color: var(--ink-3);
+}
+
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.choice {
+  position: relative;
+}
+
+.choice input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.choice span {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--hit-min);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  cursor: pointer;
+  transition: border-color var(--dur-quick) var(--ease-standard);
+}
+
+.choice span small {
+  margin-left: 4px;
+  font-size: var(--text-caption);
+  color: var(--ink-3);
+}
+
+.recommended span {
+  border-color: var(--accent);
+}
+
+.choice input:checked + span {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.choice input:checked + span small {
+  color: var(--on-accent);
+}
+
+.choice input:focus-visible + span {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.proposal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) 0 var(--space-3) var(--space-3);
+  border-left: 2px solid var(--accent);
+}
+
+.proposal p {
+  margin: 0;
+}
+
+.open {
+  margin: 0;
+  padding-left: var(--space-5);
+  font-size: var(--text-small);
+  color: var(--ink-2);
+}
+
+/* The input sits at the bottom of the conversation; only the messages scroll. U4: a pill like
+   Studio home, the send (or stop) button inside it, the note under it. */
+.composer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4) 0;
+}
+
+.pill {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-5);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+  cursor: text;
+}
+
+.pill:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+  border-color: transparent;
+}
+
+.pill[data-disabled] {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  align-self: center;
+  padding: var(--space-2) 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.5;
+  /* It grows with its text (Conversation sets the height) up to about eight lines, then scrolls. */
+  max-height: calc(1.5em * 8 + var(--space-2) * 2);
+  overflow-y: auto;
+  resize: none;
+}
+
+.input:focus-visible {
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--ink-3);
+}
+
+/* L2: the model chip sits on the send button's line, also when the text grows. */
+.pillModel {
+  display: flex;
+  align-self: flex-end;
+  margin-bottom: 2px;
+}
+
+.round {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  color: var(--on-accent);
+  transition:
+    background-color var(--dur-quick) var(--ease-standard),
+    box-shadow var(--dur-quick) var(--ease-standard);
+}
+
+.round:not(:disabled):hover {
+  box-shadow: var(--shadow-lift);
+}
+
+.round:disabled {
+  background: var(--hairline);
+  color: var(--ink-3);
+  cursor: default;
+}
+
+.round[data-kind="stop"] {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.round:focus-visible {
+  outline-offset: 2px;
+  border-radius: var(--radius-full);
+}
+
+.composerRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--space-3);
+  text-align: center;
+}
+
+.note {
+  font-size: var(--text-small);
+  color: var(--ink-3);
+}
+
+.disclosure {
+  display: inline;
+}
+
+.disclosure summary {
+  display: inline;
+  cursor: pointer;
+  color: var(--ink-2);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.disclosure p {
+  max-width: 60ch;
+  margin: var(--space-2) 0 0;
+}
+
+/* ---------- Ringkasan ---------- */
+
+.ledger {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.paneTitle {
+  margin: 0;
+  font-size: var(--text-title);
+  font-weight: 600;
+}
+
+.paneHint {
+  margin: 0;
+  max-width: 52ch;
+  font-size: var(--text-small);
+  color: var(--ink-3);
+}
+
+.ledgerGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.ledgerHead {
+  margin: 0;
+  font-size: var(--text-caption);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.ledgerList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ledgerItem {
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.ledgerTopic {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.ledgerMeta {
+  font-size: var(--text-caption);
+  color: var(--ink-3);
+}
+
+.ledgerStatement {
+  margin: var(--space-1) 0 0;
+  overflow-wrap: anywhere;
+}
+
+.rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+}
+
+.rowActions :global(.btn) {
+  min-height: 28px;
+  font-size: var(--text-small);
+}
+
+.ledgerEdit,
+.ledgerAdd {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.fieldLabel {
+  font-size: var(--text-small);
+  font-weight: 550;
+}
+
+.retired summary {
+  cursor: pointer;
+  font-size: var(--text-small);
+  color: var(--ink-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step,
+  .stepMark {
+    transition: none;
+  }
+}
+
+/* Tabs: the document's sections in stage 3 and the panel's two sides. */
+.docTabs {
+  display: flex;
+  gap: var(--space-5);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.docTab {
+  position: relative;
+  min-height: var(--hit-primary);
+  padding: var(--space-2) 0;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  background: transparent;
+  color: var(--ink-3);
+  font-weight: 550;
+}
+
+.docTab:hover {
+  color: var(--ink);
+}
+
+.docTab[aria-selected="true"] {
+  color: var(--ink);
+}
+
+.docTab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------- R2: the question set ---------- */
+
+.setHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.setHead .who {
+  margin: 0;
+}
+
+.setProgress {
+  margin: 0;
+  font-size: var(--text-small);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-2);
+}
+
+.setGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.setGroup + .setGroup {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--hairline);
+}
+
+.setPart {
+  margin: 0;
+  font-size: var(--text-caption);
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.setFoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.setFoot .why {
+  margin: 0;
+}
+
+/* "Jawaban lain": a chip like the others that opens a line to type in. */
+.ownToggle {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+}
+
+.ownToggle span {
+  border-style: dashed;
+}
+
+.ownToggle[aria-expanded="true"] span {
+  border-style: solid;
+  border-color: var(--accent);
+}
+
+.ownToggle:focus-visible {
+  outline: none;
+}
+
+.ownToggle:focus-visible span {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.ownInput {
+  width: 100%;
+  max-width: 48ch;
+  margin-top: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.ownInput:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+  border-color: transparent;
+}
+
+/* ---------- R2: Yang sudah jelas ---------- */
+
+.clear {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.clearList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Each part: its name and what settles it on the left, its state on the right. */
+.clearRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-1) 0;
+}
+
+.clearText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.clearName {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  color: var(--ink);
+}
+
+button.clearName {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--hairline-strong);
+  text-underline-offset: 3px;
+}
+
+button.clearName:hover {
+  text-decoration-color: currentColor;
+}
+
+button.clearName:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.clearName {
+  align-self: flex-start;
+}
+
+.clearCount {
+  min-width: 0;
+  font-size: var(--text-small);
+  color: var(--ink-3);
+}
+
+/* A state is a glyph and a word: clear (the ink check), partly (amber dot), not yet (dashed). */
+.stateMark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-small);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.stateMark[data-state="clear"] svg {
+  color: var(--accent);
+}
+
+.stateMark[data-state="partial"] svg {
+  color: var(--warn);
+}
+
+.stateMark[data-state="unknown"] {
+  color: var(--ink-3);
+}
+
+.kindTag {
+  margin-left: var(--space-2);
+  padding: 0 6px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-full);
+  font-size: var(--text-caption);
+  font-weight: 550;
+  color: var(--ink-2);
+  vertical-align: 1px;
+  white-space: nowrap;
+}
+
+.ledgerGroup:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+/* ---------- R2: check answers ---------- */
+
+.review {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.reviewRow {
+  display: grid;
+  grid-template-columns: 9em minmax(0, 1fr) auto;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.reviewRow dt {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.reviewRow dd {
+  margin: 0;
+  min-width: 0;
+}
+
+.reviewName {
+  font-weight: 600;
+}
+
+.reviewItems {
+  margin: 0;
+  padding-left: var(--space-4);
+}
+
+.reviewItems li + li {
+  margin-top: var(--space-1);
+}
+
+.reviewAction {
+  align-self: start;
+}
+
+.reviewNote {
+  margin: var(--space-4) 0 0;
+  font-size: var(--text-small);
+  color: var(--ink-2);
+}
+
+@media (max-width: 640px) {
+  .reviewRow {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .reviewRow dd:not(.reviewAction) {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
+/* ---------- U4b: results as cards in the conversation ---------- */
+
+.result {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-1) var(--space-3);
+  align-items: start;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  animation: global(rise) var(--dur-base) var(--ease-standard) backwards;
+}
+
+/* What waits for the owner carries the accent on its edge; the words say it too. */
+.result[data-waiting] {
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.resultIcon {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.resultText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.resultTitle {
+  margin: 0;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.resultStatus {
+  margin: 0;
+  font-size: var(--text-small);
+  color: var(--ink-2);
+}
+
+.resultDetail {
+  margin: 0;
+  overflow: hidden;
+  font-size: var(--text-small);
+  color: var(--ink-3);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resultActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  grid-column: 2;
+  margin-top: var(--space-2);
+}

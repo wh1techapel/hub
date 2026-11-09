@@ -1,0 +1,148 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.label {
+  font-size: var(--text-small);
+  font-weight: 550;
+  color: var(--ink-2);
+}
+
+.hint {
+  margin: 0;
+  font-size: var(--text-caption);
+  color: var(--ink-3);
+}
+
+.error {
+  margin: 0;
+  font-size: var(--text-small);
+  font-weight: 550;
+  color: var(--danger);
+}
+
+/* ---------- segmented ---------- */
+
+.segmented {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-self: flex-start;
+  padding: 4px;
+  border-radius: var(--radius-full);
+  background: var(--hairline);
+}
+
+.segment {
+  position: relative;
+}
+
+.segment input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.segment span {
+  display: block;
+  padding: 5px var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--text-small);
+  font-weight: 550;
+  color: var(--ink-2);
+  transition: background-color var(--dur-quick) var(--ease-standard);
+}
+
+.segment input:checked + span {
+  color: var(--ink);
+}
+
+/* The chosen segment's pill is the group's own, gliding (global.css, [data-glide]). */
+.segmented {
+  --glide-fill: var(--surface);
+}
+
+.segment input:focus-visible + span {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------- pigments ---------- */
+
+.pigments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.pigment {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+}
+
+.pigment input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.pigment i {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  background: var(--pig-fill);
+  box-shadow: inset 0 0 0 2px var(--pig-line);
+}
+
+.pigment:has(input:checked) {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.pigment:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------- switch ---------- */
+
+.switch {
+  flex: none;
+  position: relative;
+  width: 44px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--hairline-strong);
+  transition: background-color var(--dur-quick) var(--ease-standard);
+}
+
+.switch i {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  box-shadow: 0 1px 2px oklch(0 0 0 / 0.2);
+  transition: transform var(--dur-base) var(--spring-gentle);
+}
+
+.switch[aria-checked="true"] {
+  background: var(--accent);
+}
+
+.switch[aria-checked="true"] i {
+  transform: translateX(18px);
+}

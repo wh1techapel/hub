@@ -1,0 +1,211 @@
+.tasks {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.task {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 22px minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: start;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.task:last-child {
+  border-bottom: 0;
+}
+
+.tasks:not(:has(.grip)) .task {
+  grid-template-columns: 22px minmax(0, 1fr);
+}
+
+.selected {
+  background: linear-gradient(90deg, var(--accent-soft), transparent 70%);
+}
+
+.dragging {
+  opacity: 0.5;
+}
+
+.insert,
+.insertEnd {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -1px;
+  height: 2px;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+}
+
+.insertEnd {
+  position: relative;
+  list-style: none;
+}
+
+.grip {
+  display: grid;
+  place-items: center;
+  /* A 24 x 32 target in the room of a 12 x 22 one: the negative margins keep the row as it was. */
+  width: 24px;
+  height: 32px;
+  margin: -5px -4px -5px -8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink-3);
+  cursor: grab;
+  opacity: 0;
+  touch-action: none;
+  transition: opacity var(--dur-quick) var(--ease-standard);
+}
+
+.task:hover .grip,
+.dragging .grip {
+  opacity: 1;
+}
+
+.grip:active {
+  cursor: grabbing;
+}
+
+.body {
+  min-width: 0;
+  border-radius: var(--radius-sm);
+  cursor: default;
+}
+
+.body:focus-visible {
+  outline-offset: 4px;
+}
+
+.title {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  font-size: var(--text-read);
+  line-height: 22px;
+  transition: color var(--dur-base) var(--ease-standard) 260ms;
+}
+
+.quiet .title {
+  font-size: var(--text-body);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-top: var(--space-1);
+  font-size: var(--text-caption);
+  color: var(--ink-3);
+}
+
+.meta:empty {
+  display: none;
+}
+
+.warn {
+  color: var(--warn);
+  font-weight: 550;
+}
+
+.priority {
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.check {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  overflow: hidden;
+  border: 1.5px solid var(--ink-3);
+  border-radius: var(--radius-full);
+  background: transparent;
+  transition:
+    border-color var(--dur-quick) var(--ease-standard),
+    transform var(--dur-instant) var(--ease-standard);
+}
+
+.check:hover {
+  border-color: var(--accent);
+}
+
+.check:active {
+  transform: scale(0.9);
+}
+
+/* The ink spreading from the centre. */
+.check::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background: var(--accent);
+  clip-path: circle(0% at 50% 50%);
+  transition: clip-path var(--dur-slow) var(--ease-ink);
+}
+
+.check svg {
+  position: absolute;
+  inset: 2px;
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: var(--on-accent);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.check svg path {
+  stroke-dasharray: 1 2;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 240ms var(--ease-ink) 160ms;
+}
+
+.strike {
+  position: absolute;
+  left: -2px;
+  top: 50%;
+  width: calc(100% + 4px);
+  height: 8px;
+  margin-top: -3px;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.strike path {
+  fill: none;
+  stroke: var(--ink-3);
+  stroke-width: 1.6;
+  stroke-linecap: butt;
+  stroke-dasharray: 1 2;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 320ms var(--ease-ink) 260ms;
+}
+
+.done .check {
+  border-color: var(--accent);
+}
+
+.done .check::before {
+  clip-path: circle(75% at 50% 50%);
+}
+
+.done .check svg path,
+.done .strike path {
+  stroke-dashoffset: 0;
+}
+
+.done .title {
+  color: var(--ink-3);
+}

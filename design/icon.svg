@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- Hub's mark: the Day Arc on warm paper, the passed part inked, the sun in Biru Tinta.
+       Source for `npx tauri icon design/icon.svg -o src-tauri/icons`. -->
+  <rect x="64" y="64" width="896" height="896" rx="208" fill="#f6efe2"/>
+  <rect x="64" y="64" width="896" height="896" rx="208" fill="none" stroke="#1d2230" stroke-opacity="0.12" stroke-width="8"/>
+  <path d="M208 600 A340 340 0 0 1 816 600" fill="none" stroke="#1d2230" stroke-opacity="0.2" stroke-width="36" stroke-linecap="round"/>
+  <path d="M208 600 A340 340 0 0 1 474.7 414.4" fill="none" stroke="#1d2230" stroke-width="36" stroke-linecap="round"/>
+  <circle cx="474.7" cy="414.4" r="100" fill="#2f55c4" fill-opacity="0.16"/>
+  <circle cx="474.7" cy="414.4" r="58" fill="#2f55c4"/>
+  <path d="M272 716 H752" stroke="#1d2230" stroke-opacity="0.2" stroke-width="24" stroke-linecap="round"/>
+</svg>

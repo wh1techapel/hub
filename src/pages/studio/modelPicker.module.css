@@ -1,0 +1,182 @@
+/* L2: the model chip and its menu. The chip is quiet text in the input (as Studio's home had it);
+   the menu is a small sheet of paper over the page, its rows at least the hit size. */
+.picker {
+  position: relative;
+  flex: none;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--hit-min);
+  padding: 0 var(--space-2) 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  font-size: var(--text-small);
+  font-weight: 500;
+  color: var(--ink-2);
+  white-space: nowrap;
+  transition:
+    background-color var(--dur-quick) var(--ease-standard),
+    color var(--dur-quick) var(--ease-standard);
+}
+
+.chip:hover,
+.chip[aria-expanded="true"] {
+  background: var(--hairline);
+  color: var(--ink);
+}
+
+.chip svg {
+  transition: transform var(--dur-quick) var(--ease-standard);
+}
+
+.chip[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+.chip:focus-visible {
+  outline-offset: 2px;
+}
+
+.menu {
+  position: absolute;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  width: max-content;
+  min-width: 248px;
+  max-width: min(320px, calc(100vw - 2 * var(--space-4)));
+  max-height: min(420px, 60vh);
+  overflow-y: auto;
+  padding: var(--space-1);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-drag);
+  text-align: left;
+  animation: global(fade-in) var(--dur-quick) var(--ease-standard);
+}
+
+.menu[data-placement="up"] {
+  bottom: calc(100% + var(--space-2));
+}
+
+.menu[data-placement="down"] {
+  top: calc(100% + var(--space-2));
+}
+
+.menu[data-align="start"] {
+  left: 0;
+}
+
+.menu[data-align="end"] {
+  right: 0;
+}
+
+/* The menu scrolls; its rows must not shrink to fit its height (they did, and their two lines
+   ran into the next row once the owner's key listed 13 models). */
+.menu > * {
+  flex-shrink: 0;
+}
+
+/* One group per family: its name and its hint once, then one line per model. */
+.group {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: var(--space-1);
+}
+
+.group + .group {
+  margin-top: var(--space-1);
+  padding-top: var(--space-1);
+  border-top: 1px solid var(--hairline);
+}
+
+.groupHead {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-2) var(--space-3) var(--space-1);
+}
+
+.groupName {
+  font-size: var(--text-caption);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.groupHint {
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  color: var(--ink-3);
+}
+
+.item {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: calc(var(--hit-min) + var(--space-1));
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.item:hover,
+.item:focus-visible {
+  background: var(--hairline);
+  outline: none;
+}
+
+.item:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.item:disabled {
+  cursor: progress;
+}
+
+.name {
+  font-size: var(--text-body);
+  font-weight: 550;
+}
+
+.check {
+  flex: none;
+  color: var(--accent);
+  visibility: hidden;
+}
+
+.item[aria-checked="true"] .check {
+  visibility: visible;
+}
+
+.state,
+.error {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-small);
+  color: var(--ink-3);
+}
+
+.error {
+  color: var(--danger);
+}
+
+.divider {
+  height: 1px;
+  margin: var(--space-1) var(--space-2);
+  background: var(--hairline);
+}

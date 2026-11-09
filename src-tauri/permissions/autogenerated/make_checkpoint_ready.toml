@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-make-checkpoint-ready"
+description = "Enables the make_checkpoint_ready command without any pre-configured scope."
+commands.allow = ["make_checkpoint_ready"]
+
+[[permission]]
+identifier = "deny-make-checkpoint-ready"
+description = "Denies the make_checkpoint_ready command without any pre-configured scope."
+commands.deny = ["make_checkpoint_ready"]

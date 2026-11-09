@@ -1,0 +1,310 @@
+/* Stage 2, the tech stack (R3): two ways in, then seven layers as rows on paper. */
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 880px;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-display-m);
+  font-weight: 500;
+}
+
+.status {
+  font-family: var(--font-ui);
+  font-size: var(--text-small);
+  font-weight: 550;
+  color: var(--ink-2);
+}
+
+.status[data-status="approved"] {
+  color: var(--accent);
+}
+
+.intro,
+.note,
+.summary {
+  max-width: 68ch;
+  margin: 0;
+  font-size: var(--text-small);
+  color: var(--ink-2);
+}
+
+.summary {
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--hairline-strong);
+  font-size: 15px;
+  color: var(--ink);
+}
+
+/* The two ways in: the one decision on an empty stage, so two raised choices. */
+.ways {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-3);
+}
+
+.way {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-height: 96px;
+  padding: var(--space-4);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--ink);
+  text-align: left;
+  transition:
+    border-color var(--dur-quick) var(--ease-standard),
+    box-shadow var(--dur-quick) var(--ease-standard);
+}
+
+.way strong {
+  font-size: 15px;
+}
+
+.way span {
+  font-size: var(--text-small);
+  color: var(--ink-2);
+}
+
+.way:hover:not(:disabled) {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-lift);
+}
+
+.way:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.way:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.working {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-small);
+  color: var(--ink-2);
+}
+
+.notice {
+  margin: 0;
+  font-size: var(--text-small);
+  color: var(--ink);
+}
+
+.error {
+  margin: 0;
+  font-size: var(--text-small);
+  color: var(--danger);
+}
+
+/* ---------- the layers ---------- */
+
+.layers {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--hairline);
+}
+
+.layer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.layerRow {
+  display: grid;
+  grid-template-columns: 11em minmax(0, 1fr) 5em;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.layerName {
+  font-weight: 600;
+}
+
+.choice,
+.input {
+  width: 100%;
+  min-height: var(--hit-min);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-size: 15px;
+}
+
+.layer[data-empty] .choice {
+  border-style: dashed;
+}
+
+.choice:focus-visible,
+.input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+  border-color: transparent;
+}
+
+.by {
+  margin-left: var(--space-2);
+  font-size: var(--text-caption);
+  color: var(--ink-3);
+}
+
+.layerRow .by {
+  margin: 0;
+}
+
+.notes,
+.alternatives {
+  margin-left: calc(11em + var(--space-3));
+}
+
+.notes summary {
+  width: fit-content;
+  cursor: pointer;
+  font-size: var(--text-small);
+  color: var(--ink-2);
+}
+
+.notes dl {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 0;
+}
+
+.notes dt {
+  font-size: var(--text-caption);
+  font-weight: 600;
+  color: var(--ink-3);
+}
+
+.notes dd {
+  max-width: 68ch;
+  margin: 0;
+  font-size: var(--text-small);
+}
+
+.alternatives {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.altLabel {
+  font-size: var(--text-caption);
+  color: var(--ink-3);
+}
+
+.alt {
+  min-height: 28px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-full);
+  background: transparent;
+  font-size: var(--text-small);
+  color: var(--ink);
+}
+
+.alt:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.alt:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------- approval and asking Gemini ---------- */
+
+.foot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.approve {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.ask {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-width: 560px;
+}
+
+.askLabel {
+  font-size: var(--text-small);
+  font-weight: 550;
+}
+
+.askRow {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.sheet {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.sheetRow {
+  display: grid;
+  grid-template-columns: 10em minmax(0, 1fr);
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.sheetRow dt {
+  font-weight: 600;
+}
+
+.sheetRow dd {
+  margin: 0;
+}
+
+@container (max-width: 640px) {
+  .layerRow {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .layerName {
+    grid-column: 1 / -1;
+  }
+
+  .notes,
+  .alternatives {
+    margin-left: 0;
+  }
+}

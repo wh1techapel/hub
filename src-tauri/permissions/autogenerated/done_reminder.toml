@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-done-reminder"
+description = "Enables the done_reminder command without any pre-configured scope."
+commands.allow = ["done_reminder"]
+
+[[permission]]
+identifier = "deny-done-reminder"
+description = "Denies the done_reminder command without any pre-configured scope."
+commands.deny = ["done_reminder"]

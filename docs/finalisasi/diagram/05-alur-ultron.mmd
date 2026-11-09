@@ -1,0 +1,17 @@
+sequenceDiagram
+  actor P as Pengguna
+  participant U as ULTRON
+  participant A as hub-api (127.0.0.1)
+  participant C as hub-core
+  participant D as SQLite
+  participant H as Jendela Hub
+  P->>U: "tambahkan tugas belajar subnetting besok"
+  U->>U: GUARD memeriksa perintah
+  U->>A: POST /v1/tasks + token ULTRON
+  A->>A: periksa asal lokal, Host, token, cakupan, batas laju
+  A->>C: buat tugas (pelaku: ULTRON)
+  C->>D: simpan tugas dan Jejak
+  C-->>H: kabar perubahan
+  H-->>P: tugas tampil dengan tanda ULTRON
+  A-->>U: 201 Created
+  U-->>P: konfirmasi lewat suara

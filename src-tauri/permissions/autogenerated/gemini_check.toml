@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-gemini-check"
+description = "Enables the gemini_check command without any pre-configured scope."
+commands.allow = ["gemini_check"]
+
+[[permission]]
+identifier = "deny-gemini-check"
+description = "Denies the gemini_check command without any pre-configured scope."
+commands.deny = ["gemini_check"]

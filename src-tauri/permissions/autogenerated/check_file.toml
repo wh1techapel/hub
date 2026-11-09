@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-check-file"
+description = "Enables the check_file command without any pre-configured scope."
+commands.allow = ["check_file"]
+
+[[permission]]
+identifier = "deny-check-file"
+description = "Denies the check_file command without any pre-configured scope."
+commands.deny = ["check_file"]

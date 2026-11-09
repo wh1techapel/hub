@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-generate-roadmap"
+description = "Enables the generate_roadmap command without any pre-configured scope."
+commands.allow = ["generate_roadmap"]
+
+[[permission]]
+identifier = "deny-generate-roadmap"
+description = "Denies the generate_roadmap command without any pre-configured scope."
+commands.deny = ["generate_roadmap"]

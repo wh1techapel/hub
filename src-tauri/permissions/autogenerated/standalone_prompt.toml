@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-standalone-prompt"
+description = "Enables the standalone_prompt command without any pre-configured scope."
+commands.allow = ["standalone_prompt"]
+
+[[permission]]
+identifier = "deny-standalone-prompt"
+description = "Denies the standalone_prompt command without any pre-configured scope."
+commands.deny = ["standalone_prompt"]

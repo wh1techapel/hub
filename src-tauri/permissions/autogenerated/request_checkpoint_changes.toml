@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-request-checkpoint-changes"
+description = "Enables the request_checkpoint_changes command without any pre-configured scope."
+commands.allow = ["request_checkpoint_changes"]
+
+[[permission]]
+identifier = "deny-request-checkpoint-changes"
+description = "Denies the request_checkpoint_changes command without any pre-configured scope."
+commands.deny = ["request_checkpoint_changes"]

@@ -1,0 +1,31 @@
+[workspace]
+resolver = "3"
+members = ["crates/hub-core", "crates/hub-api", "crates/hub-ai", "crates/hub-mcp", "src-tauri"]
+
+[workspace.package]
+version = "1.0.1"
+edition = "2024"
+rust-version = "1.90"
+license = "MIT"
+publish = false
+
+[workspace.dependencies]
+hub-core = { path = "crates/hub-core" }
+hub-api = { path = "crates/hub-api" }
+hub-ai = { path = "crates/hub-ai" }
+jiff = { version = "0.2", features = ["serde"] }
+rusqlite = { version = "0.40", features = ["bundled"] }
+serde = { version = "1", features = ["derive"] }
+# U5a: keys keep the order they are written in. Gemini writes structured output in the order of the
+# schema's keys, so the PRD schemas (hub-ai prd.rs) must not be sorted alphabetically.
+serde_json = { version = "1", features = ["preserve_order"] }
+thiserror = "2"
+ts-rs = "12"
+uuid = { version = "1", features = ["v7"] }
+tempfile = "3"
+
+[profile.release]
+opt-level = "s"
+lto = "thin"
+codegen-units = 1
+strip = true

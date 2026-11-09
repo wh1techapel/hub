@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-test-claude-bridge"
+description = "Enables the test_claude_bridge command without any pre-configured scope."
+commands.allow = ["test_claude_bridge"]
+
+[[permission]]
+identifier = "deny-test-claude-bridge"
+description = "Denies the test_claude_bridge command without any pre-configured scope."
+commands.deny = ["test_claude_bridge"]

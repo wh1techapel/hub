@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-studio-stack"
+description = "Enables the studio_stack command without any pre-configured scope."
+commands.allow = ["studio_stack"]
+
+[[permission]]
+identifier = "deny-studio-stack"
+description = "Denies the studio_stack command without any pre-configured scope."
+commands.deny = ["studio_stack"]

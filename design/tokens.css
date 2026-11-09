@@ -1,0 +1,260 @@
+/* Hub design tokens: Daylight Studio (docs/design.md).
+ *
+ * The app imports this file and so does the CP1 prototype; it is the single source of truth.
+ * The root carries three attributes (any element may carry them too, for a preview in its own
+ * light, such as the theme tiles in Settings):
+ *   data-phase  = pagi | siang | senja | malam   the light of the moment
+ *   data-scheme = light | dark                   follows the phase (malam is dark)
+ *   data-ink    = biru | hijau | sepia | ungu | grafit   the accent the owner picked
+ * Contrast of every text pair is checked by design/check-contrast.mjs.
+ */
+
+/* Registered so the light can cross-fade when the phase changes, instead of jumping. Everything
+ * that differs between light and dark is here, or derived from something that is: a value that
+ * jumped while the paper faded would show dark pigments on light paper for two seconds. */
+@property --paper { syntax: "<color>"; inherits: true; initial-value: #faf8f3; }
+@property --paper-2 { syntax: "<color>"; inherits: true; initial-value: #f2efe8; }
+@property --surface { syntax: "<color>"; inherits: true; initial-value: #ffffff; }
+@property --ink { syntax: "<color>"; inherits: true; initial-value: #1d2230; }
+@property --ink-2 { syntax: "<color>"; inherits: true; initial-value: #474d5c; }
+@property --ink-3 { syntax: "<color>"; inherits: true; initial-value: #5b6170; }
+@property --hairline { syntax: "<color>"; inherits: true; initial-value: #0000001f; }
+@property --hairline-strong { syntax: "<color>"; inherits: true; initial-value: #00000038; }
+@property --accent { syntax: "<color>"; inherits: true; initial-value: #2f55c4; }
+@property --on-accent { syntax: "<color>"; inherits: true; initial-value: #fcfbf8; }
+@property --warn { syntax: "<color>"; inherits: true; initial-value: #9a5b12; }
+@property --danger { syntax: "<color>"; inherits: true; initial-value: #a8401f; }
+@property --ultron { syntax: "<color>"; inherits: true; initial-value: #b0213a; }
+@property --arc-past { syntax: "<color>"; inherits: true; initial-value: #1d22308c; }
+@property --arc-future { syntax: "<color>"; inherits: true; initial-value: #1d223029; }
+@property --pig-fill-l { syntax: "<number>"; inherits: true; initial-value: 0.925; }
+@property --pig-fill-c { syntax: "<number>"; inherits: true; initial-value: 0.04; }
+@property --pig-line-l { syntax: "<number>"; inherits: true; initial-value: 0.64; }
+@property --pig-line-c { syntax: "<number>"; inherits: true; initial-value: 0.1; }
+@property --pig-text-l { syntax: "<number>"; inherits: true; initial-value: 0.4; }
+@property --pig-text-c { syntax: "<number>"; inherits: true; initial-value: 0.08; }
+/* L3: the glow behind Studio's home, three lights per phase (the fourth is the accent's). */
+@property --glow-a { syntax: "<color>"; inherits: true; initial-value: #0000; }
+@property --glow-b { syntax: "<color>"; inherits: true; initial-value: #0000; }
+@property --glow-c { syntax: "<color>"; inherits: true; initial-value: #0000; }
+
+:root {
+  /* ---------- type ---------- */
+  --font-display: "Fraunces Variable", "Fraunces", Georgia, serif;
+  --font-ui: "Instrument Sans Variable", "Instrument Sans", "Segoe UI Variable Text", "Segoe UI",
+    system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+
+  /* Fraunces is set soft and at a large optical size for the moments that matter. */
+  --display-axes: "SOFT" 100, "WONK" 0;
+
+  --text-display-xl: 44px;  --leading-display-xl: 1.08;
+  --text-display-l: 32px;   --leading-display-l: 1.12;
+  --text-display-m: 24px;   --leading-display-m: 1.2;
+  --text-title: 17px;       --leading-title: 1.4;
+  --text-read: 15px;        --leading-read: 1.6;
+  --text-body: 14px;        --leading-body: 1.5;
+  --text-small: 13px;       --leading-small: 1.45;
+  --text-caption: 12px;     --leading-caption: 1.35;
+  --text-mono: 12.5px;      --leading-mono: 1.45;
+
+  /* ---------- space, shape ---------- */
+  --space-1: 4px;  --space-2: 8px;   --space-3: 12px;  --space-4: 16px;  --space-5: 20px;
+  --space-6: 24px; --space-8: 32px;  --space-10: 40px; --space-14: 56px; --space-18: 72px;
+
+  --radius-xs: 4px; --radius-sm: 6px; --radius-md: 10px; --radius-lg: 16px; --radius-xl: 24px; --radius-full: 999px;
+
+  --sidebar-width: 232px;
+  --rail-width: 64px;
+  --content-max: 1180px;
+  /* A workspace (a Studio project) uses the window's width up to this, its text kept to a measure. */
+  --workspace-max: 1920px;
+  --reading-max: 760px;
+  --panel-width: clamp(320px, 26%, 420px);
+  --hit-min: 32px;
+  --hit-primary: 40px;
+
+  /* ---------- motion ---------- */
+  --dur-instant: 90ms;
+  --dur-quick: 160ms;
+  --dur-base: 240ms;
+  --dur-slow: 420ms;
+  --dur-ambient: 2400ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --ease-ink: cubic-bezier(0.65, 0, 0.35, 1);
+  /* ULTRON's MORPH spring (stiffness 200, damping 24) sampled for CSS, so both apps move alike:
+     95 % there at about 263 ms, 0.4 % overshoot. Copied from Ultron/shell/src/styles/tokens.css. */
+  --spring-gentle: linear(
+    0, 0.0313, 0.0978, 0.1844, 0.28, 0.3769, 0.4701, 0.5565, 0.6343, 0.7027, 0.7617, 0.8117,
+    0.8535, 0.8879, 0.9158, 0.9381, 0.9557, 0.9693, 0.9797, 0.9875, 0.9932, 0.9973, 1.0001, 1.0019,
+    1.003, 1.0036, 1.0038, 1.0038, 1.0036, 1.0033, 1
+  );
+  --spring-gentle-duration: 520ms;
+  --stagger: 30ms;
+
+  /* ---------- ULTRON's crimson: only where ULTRON acted ---------- */
+  --ultron-light: #b0213a; /* ULTRON crimson-500 */
+  --ultron-dark: #e5667a;  /* ULTRON crimson-300 */
+
+  /* ---------- light phases: shared light values ---------- */
+  --ink-light: oklch(0.24 0.03 265);
+  --ink-2-light: oklch(0.42 0.025 265);
+  --ink-3-light: oklch(0.5 0.02 265);
+
+  transition-property:
+    --paper, --paper-2, --surface, --ink, --ink-2, --ink-3, --hairline, --hairline-strong,
+    --accent, --on-accent, --warn, --danger, --ultron, --arc-past, --arc-future,
+    --pig-fill-l, --pig-fill-c, --pig-line-l, --pig-line-c, --pig-text-l, --pig-text-c,
+    --glow-a, --glow-b, --glow-c;
+  transition-duration: var(--dur-ambient);
+  transition-timing-function: var(--ease-standard);
+}
+
+/* ---------- the four lights ---------- */
+
+[data-phase="pagi"] {
+  --paper: oklch(0.968 0.016 80);
+  --paper-2: oklch(0.944 0.02 78);
+  --surface: oklch(0.988 0.008 85);
+  --ink: var(--ink-light);
+  --ink-2: var(--ink-2-light);
+  --ink-3: var(--ink-3-light);
+  --hairline: oklch(0.24 0.03 265 / 0.12);
+  --hairline-strong: oklch(0.24 0.03 265 / 0.22);
+  /* Sunrise: apricot, rose, a pale morning sky. */
+  --glow-a: oklch(0.88 0.1 65 / 0.65);
+  --glow-b: oklch(0.88 0.08 20 / 0.55);
+  --glow-c: oklch(0.9 0.06 230 / 0.55);
+}
+
+[data-phase="siang"] {
+  --paper: oklch(0.982 0.006 90);
+  --paper-2: oklch(0.958 0.008 88);
+  --surface: oklch(0.997 0.002 90);
+  --ink: var(--ink-light);
+  --ink-2: var(--ink-2-light);
+  --ink-3: var(--ink-3-light);
+  --hairline: oklch(0.24 0.03 265 / 0.12);
+  --hairline-strong: oklch(0.24 0.03 265 / 0.22);
+  /* Full day: sky, mint, sunlight. */
+  --glow-a: oklch(0.88 0.08 235 / 0.65);
+  --glow-b: oklch(0.9 0.07 175 / 0.55);
+  --glow-c: oklch(0.93 0.08 95 / 0.6);
+}
+
+[data-phase="senja"] {
+  --paper: oklch(0.952 0.022 62);
+  --paper-2: oklch(0.926 0.026 58);
+  --surface: oklch(0.982 0.012 65);
+  --ink: var(--ink-light);
+  --ink-2: var(--ink-2-light);
+  --ink-3: var(--ink-3-light);
+  --hairline: oklch(0.24 0.03 265 / 0.13);
+  --hairline-strong: oklch(0.24 0.03 265 / 0.24);
+  /* Dusk: orange, rose, the first violet. */
+  --glow-a: oklch(0.86 0.11 55 / 0.65);
+  --glow-b: oklch(0.86 0.09 10 / 0.55);
+  --glow-c: oklch(0.86 0.08 300 / 0.5);
+}
+
+[data-phase="malam"] {
+  --paper: oklch(0.19 0.016 268);
+  --paper-2: oklch(0.165 0.015 268);
+  --surface: oklch(0.235 0.018 268);
+  --ink: oklch(0.94 0.012 85);
+  --ink-2: oklch(0.8 0.012 85);
+  --ink-3: oklch(0.68 0.012 85);
+  --hairline: oklch(0.94 0.012 85 / 0.1);
+  --hairline-strong: oklch(0.94 0.012 85 / 0.18);
+  /* Night: indigo, violet, a deep blue. */
+  --glow-a: oklch(0.42 0.14 270 / 0.58);
+  --glow-b: oklch(0.4 0.13 305 / 0.48);
+  --glow-c: oklch(0.44 0.11 225 / 0.42);
+}
+
+/* ---------- scheme-dependent values ---------- */
+
+[data-scheme="light"] {
+  color-scheme: light;
+  --accent: var(--ink-accent-light);
+  --on-accent: oklch(0.99 0.004 90);
+  --accent-soft: oklch(from var(--accent) l c h / 0.1);
+  --accent-line: oklch(from var(--accent) l c h / 0.35);
+  /* The accent as a pale light for the glow (L3); its lightness keeps text readable over it. */
+  --glow-accent: oklch(from var(--accent) 0.88 c h / 0.5);
+  --warn: oklch(0.52 0.12 62);
+  --warn-soft: oklch(from var(--warn) l c h / 0.12);
+  --danger: oklch(0.5 0.17 38);
+  --danger-soft: oklch(from var(--danger) l c h / 0.1);
+  --ultron: var(--ultron-light);
+  --arc-past: oklch(0.24 0.03 265 / 0.55);
+  --arc-future: oklch(0.24 0.03 265 / 0.16);
+  --shadow-lift: 0 1px 2px oklch(0.2 0.02 265 / 0.06), 0 8px 24px oklch(0.2 0.02 265 / 0.1);
+  --shadow-drag: 0 2px 4px oklch(0.2 0.02 265 / 0.08), 0 18px 40px oklch(0.2 0.02 265 / 0.18);
+  --scrim: oklch(0.24 0.03 265 / 0.28);
+  /* pigments: lightness and chroma per role, the hue comes from [data-pigment] */
+  --pig-fill-l: 0.925; --pig-fill-c: 0.04;
+  --pig-line-l: 0.64;  --pig-line-c: 0.1;
+  --pig-text-l: 0.4;   --pig-text-c: 0.08;
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.1 0 0 0 0 0.15 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+}
+
+[data-scheme="dark"] {
+  color-scheme: dark;
+  --accent: var(--ink-accent-dark);
+  --on-accent: oklch(0.18 0.02 265);
+  --accent-soft: oklch(from var(--accent) l c h / 0.14);
+  --accent-line: oklch(from var(--accent) l c h / 0.4);
+  --glow-accent: oklch(from var(--accent) 0.42 c h / 0.42);
+  --warn: oklch(0.82 0.12 78);
+  --warn-soft: oklch(from var(--warn) l c h / 0.14);
+  --danger: oklch(0.74 0.14 38);
+  --danger-soft: oklch(from var(--danger) l c h / 0.14);
+  --ultron: var(--ultron-dark);
+  --arc-past: oklch(0.94 0.012 85 / 0.6);
+  --arc-future: oklch(0.94 0.012 85 / 0.16);
+  --shadow-lift: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 32px rgb(0 0 0 / 0.45);
+  --shadow-drag: 0 2px 6px rgb(0 0 0 / 0.45), 0 22px 48px rgb(0 0 0 / 0.55);
+  --scrim: oklch(0.1 0.01 268 / 0.55);
+  --pig-fill-l: 0.31;  --pig-fill-c: 0.045;
+  --pig-line-l: 0.7;   --pig-line-c: 0.1;
+  --pig-text-l: 0.88;  --pig-text-c: 0.05;
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+}
+
+/* ---------- accent inks (Tinta) ---------- */
+
+[data-ink="biru"]   { --ink-accent-light: oklch(0.5 0.16 262);  --ink-accent-dark: oklch(0.76 0.12 258); }
+[data-ink="hijau"]  { --ink-accent-light: oklch(0.49 0.1 165);  --ink-accent-dark: oklch(0.78 0.11 165); }
+[data-ink="sepia"]  { --ink-accent-light: oklch(0.5 0.11 58);   --ink-accent-dark: oklch(0.8 0.1 70); }
+[data-ink="ungu"]   { --ink-accent-light: oklch(0.5 0.15 300);  --ink-accent-dark: oklch(0.77 0.12 300); }
+[data-ink="grafit"] { --ink-accent-light: oklch(0.32 0.02 265); --ink-accent-dark: oklch(0.9 0.01 265); }
+
+/* ---------- pigments ---------- */
+
+[data-pigment="lazuardi"] { --h: 250; }
+[data-pigment="toska"]    { --h: 195; }
+[data-pigment="lumut"]    { --h: 140; }
+[data-pigment="kunyit"]   { --h: 85; }
+[data-pigment="terakota"] { --h: 45; }
+[data-pigment="mawar"]    { --h: 10; }
+[data-pigment="lavender"] { --h: 300; }
+[data-pigment="batu"]     { --h: 265; --pig-fill-c: 0.012; --pig-line-c: 0.03; --pig-text-c: 0.02; }
+
+[data-pigment] {
+  --pig-fill: oklch(var(--pig-fill-l) var(--pig-fill-c) var(--h));
+  --pig-line: oklch(var(--pig-line-l) var(--pig-line-c) var(--h));
+  --pig-text: oklch(var(--pig-text-l) var(--pig-text-c) var(--h));
+}
+
+/* ---------- reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-base: 120ms;
+    --dur-slow: 120ms;
+    --dur-ambient: 600ms;
+    --stagger: 0ms;
+  }
+}

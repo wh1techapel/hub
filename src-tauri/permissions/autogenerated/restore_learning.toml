@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-restore-learning"
+description = "Enables the restore_learning command without any pre-configured scope."
+commands.allow = ["restore_learning"]
+
+[[permission]]
+identifier = "deny-restore-learning"
+description = "Denies the restore_learning command without any pre-configured scope."
+commands.deny = ["restore_learning"]

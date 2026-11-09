@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-export-prd"
+description = "Enables the export_prd command without any pre-configured scope."
+commands.allow = ["export_prd"]
+
+[[permission]]
+identifier = "deny-export-prd"
+description = "Denies the export_prd command without any pre-configured scope."
+commands.deny = ["export_prd"]

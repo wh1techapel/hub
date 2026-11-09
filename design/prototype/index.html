@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="id" data-phase="siang" data-scheme="light" data-ink="biru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hub: prototipe CP1</title>
+  <!-- Prototype only: the app self-hosts these with @fontsource-variable (no network at run time). -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..700,0..100,0..1;1,9..144,300..700,0..100,0..1&family=Instrument+Sans:ital,wdth,wght@0,75..100,400..700;1,75..100,400..700&family=JetBrains+Mono:wght@400..600&display=swap">
+  <link rel="stylesheet" href="../tokens.css">
+  <link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></symbol>
+      <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="m8 12.5 2.8 2.8L16.5 9"/></symbol>
+      <symbol id="i-project" viewBox="0 0 24 24"><path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2.5h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/><path d="M8 14h3M8 17h6"/></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.6 3.1 8.3 7.5 9.5 4.4-1.2 7.5-4.9 7.5-9.5V6z"/><path d="m9 12 2 2 4-4"/></symbol>
+      <symbol id="i-files" viewBox="0 0 24 24"><path d="M14 3.5H7.5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V8z"/><path d="M14 3.5V8h4.5M9 13h6M9 16.5h4"/></symbol>
+      <symbol id="i-trail" viewBox="0 0 24 24"><path d="M4 18c3 0 3-4 6-4s3 4 6 4 3-4 4-4"/><circle cx="6" cy="7" r="1.6"/><circle cx="12" cy="5.5" r="1.6"/><circle cx="18" cy="7" r="1.6"/></symbol>
+      <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></symbol>
+      <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10-6.5z"/></symbol>
+      <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></symbol>
+      <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9"/><path d="M10.3 20a1.9 1.9 0 0 0 3.4 0"/></symbol>
+      <symbol id="i-ultron" viewBox="0 0 24 24"><path d="M12 3.5 20 12l-8 8.5L4 12z"/></symbol>
+      <symbol id="i-doc" viewBox="0 0 24 24"><path d="M14 3.5H7.5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V8z"/><path d="M14 3.5V8h4.5"/></symbol>
+      <symbol id="i-image" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m20.5 16-4.5-4.5-8 8"/></symbol>
+      <symbol id="i-net" viewBox="0 0 24 24"><rect x="9" y="3.5" width="6" height="5" rx="1"/><rect x="3" y="15.5" width="6" height="5" rx="1"/><rect x="15" y="15.5" width="6" height="5" rx="1"/><path d="M12 8.5V12M6 15.5V12h12v3.5"/></symbol>
+    </defs>
+  </svg>
+
+  <div class="app" id="app">
+    <aside class="sidebar" aria-label="Navigasi">
+      <div class="wordmark">hub<span>.</span></div>
+      <nav class="nav">
+        <a class="nav-item is-active" href="#" aria-current="page"><svg><use href="#i-sun"/></svg><span>Hari Ini</span></a>
+        <a class="nav-item" href="#"><svg><use href="#i-calendar"/></svg><span>Kalender</span></a>
+        <a class="nav-item" href="#"><svg><use href="#i-check"/></svg><span>Tugas</span><em>7</em></a>
+        <a class="nav-item" href="#"><svg><use href="#i-project"/></svg><span>Proyek</span></a>
+        <a class="nav-item" href="#"><svg><use href="#i-shield"/></svg><span>Belajar</span></a>
+        <a class="nav-item" href="#"><svg><use href="#i-files"/></svg><span>File</span></a>
+        <a class="nav-item" href="#"><svg><use href="#i-trail"/></svg><span>Jejak</span></a>
+      </nav>
+
+      <div class="nav-group">
+        <div class="nav-label">Proyek aktif</div>
+        <a class="nav-project" href="#" data-pigment="toska"><i></i><span>Laporan Lab Jaringan</span></a>
+        <a class="nav-project" href="#" data-pigment="kunyit"><i></i><span>Hub</span></a>
+        <a class="nav-project" href="#" data-pigment="lazuardi"><i></i><span>ULTRON</span></a>
+      </div>
+
+      <div class="sidebar-foot">
+        <button class="capture" type="button" id="capture-btn">
+          <svg><use href="#i-plus"/></svg><span>Catat cepat</span><kbd>Ctrl Alt H</kbd>
+        </button>
+        <div class="foot-row">
+          <span class="ultron-status" title="Contoh CP5: ULTRON terhubung lewat API lokal"><i></i>ULTRON terhubung</span>
+          <button class="icon-btn" type="button" aria-label="Pengaturan"><svg><use href="#i-settings"/></svg></button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main" id="main">
+      <header class="topbar">
+        <div class="date-line" id="date-line">Kamis, 22 Oktober</div>
+        <button class="palette-hint" type="button"><svg><use href="#i-search"/></svg><span>Cari atau perintah</span><kbd>Ctrl K</kbd></button>
+      </header>
+
+      <section class="hero" aria-labelledby="greeting">
+        <h1 class="greeting" id="greeting">Selamat siang, <em>Glenvio.</em></h1>
+        <p class="hero-sub" id="hero-sub"></p>
+      </section>
+
+      <section class="arc-wrap" aria-label="Busur Hari">
+        <svg class="day-arc" id="day-arc" viewBox="0 0 1000 190" role="img" aria-labelledby="arc-caption"></svg>
+        <p class="arc-caption" id="arc-caption"></p>
+      </section>
+
+      <section class="invite" id="invite" hidden>
+        <div>
+          <strong id="invite-title">4 dari 5 hal selesai hari ini.</strong>
+          <span>Tutup hari dan siapkan besok, dua menit saja.</span>
+        </div>
+        <button class="btn btn-primary" type="button" id="invite-btn"><svg><use href="#i-moon"/></svg>Tutup Hari</button>
+      </section>
+
+      <div class="columns">
+        <div class="col-main">
+          <section class="now" aria-labelledby="now-title">
+            <h2 class="section-label" id="now-title">Sekarang</h2>
+            <div class="now-card" id="now-card"></div>
+          </section>
+
+          <section aria-labelledby="focus-title">
+            <div class="section-head">
+              <h2 class="section-label" id="focus-title">Fokus</h2>
+              <span class="count" id="focus-count">0 dari 3</span>
+            </div>
+            <ul class="tasks" id="focus-list"></ul>
+          </section>
+
+          <section aria-labelledby="other-title">
+            <div class="section-head">
+              <h2 class="section-label" id="other-title">Juga hari ini</h2>
+            </div>
+            <ul class="tasks tasks-quiet" id="other-list"></ul>
+          </section>
+        </div>
+
+        <div class="col-side">
+          <section aria-labelledby="schedule-title">
+            <div class="section-head">
+              <h2 class="section-label" id="schedule-title">Jadwal</h2>
+              <a class="quiet-link" href="#">Kalender</a>
+            </div>
+            <ol class="schedule" id="schedule"></ol>
+          </section>
+
+          <section aria-labelledby="learn-title">
+            <div class="section-head">
+              <h2 class="section-label" id="learn-title">Belajar minggu ini</h2>
+              <span class="count">4 j 20 m</span>
+            </div>
+            <div class="week" aria-label="3 dari 4 hari aktif minggu ini">
+              <div class="week-dots" id="week-dots"></div>
+              <span class="week-text"><strong>3 dari 4</strong> hari aktif. Satu lagi untuk target minggu ini.</span>
+            </div>
+            <div class="learn-item">
+              <div class="learn-meta"><span class="chip" data-pigment="lavender">network</span><span class="mono">TryHackMe</span></div>
+              <div class="learn-title mono">Nmap Live Host Discovery</div>
+              <div class="bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" aria-label="Kemajuan materi"><i style="--p:0.6"></i></div>
+              <button class="btn btn-quiet" type="button"><svg><use href="#i-play"/></svg>Lanjutkan sesi</button>
+            </div>
+          </section>
+
+          <section aria-labelledby="files-title">
+            <div class="section-head">
+              <h2 class="section-label" id="files-title">File terakhir</h2>
+              <span class="count">Laporan Lab Jaringan</span>
+            </div>
+            <ul class="files" id="files"></ul>
+          </section>
+
+          <section aria-labelledby="trail-title">
+            <div class="section-head">
+              <h2 class="section-label" id="trail-title">Jejak</h2>
+              <a class="quiet-link" href="#">Semua</a>
+            </div>
+            <ul class="trail" id="trail"></ul>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Drop pools: shown while files are dragged over the window. -->
+  <div class="drop" id="drop" hidden>
+    <div class="drop-title">Lepaskan untuk menyimpan</div>
+    <div class="pools">
+      <div class="pool" data-target="library"><svg><use href="#i-files"/></svg><strong>Library</strong><span>Simpan sebagai referensi</span></div>
+      <div class="pool" data-target="project" data-pigment="toska"><svg><use href="#i-project"/></svg><strong>Laporan Lab Jaringan</strong><span>Lampirkan ke proyek</span></div>
+      <div class="pool" data-target="task"><svg><use href="#i-check"/></svg><strong>Laporan Praktikum 5</strong><span>Lampirkan ke tugas</span></div>
+    </div>
+  </div>
+
+  <!-- Tutup Hari: the evening review. -->
+  <div class="scrim" id="scrim" hidden></div>
+  <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" hidden>
+    <header class="sheet-head">
+      <h2 id="sheet-title">Tutup Hari</h2>
+      <p>Kamis, 22 Oktober</p>
+    </header>
+    <div class="sheet-body">
+      <h3 class="section-label">Yang selesai</h3>
+      <ul class="done-list" id="done-list"></ul>
+
+      <h3 class="section-label">Yang tertunda</h3>
+      <div class="slipped" id="slipped"></div>
+
+      <h3 class="section-label"><label for="reflection">Satu kalimat untuk hari ini</label></h3>
+      <textarea id="reflection" rows="2" placeholder="Boleh dikosongkan"></textarea>
+
+      <h3 class="section-label">Fokus besok <span class="count" id="tomorrow-count">0 dari 3</span></h3>
+      <div class="tomorrow" id="tomorrow"></div>
+    </div>
+    <footer class="sheet-foot">
+      <button class="btn btn-quiet" type="button" id="sheet-cancel">Nanti saja</button>
+      <button class="btn btn-primary" type="button" id="sheet-close"><svg><use href="#i-moon"/></svg>Tutup hari</button>
+    </footer>
+  </section>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <!-- Foundations: the tokens on one sheet. -->
+  <section class="foundations" id="foundations" hidden aria-label="Fondasi desain">
+    <div class="f-inner">
+      <header class="f-head">
+        <h1>Fondasi</h1>
+        <p>Daylight Studio. Semua nilai dari <code>design/tokens.css</code>.</p>
+      </header>
+
+      <h2 class="section-label">Cahaya</h2>
+      <div class="f-phases" id="f-phases"></div>
+
+      <h2 class="section-label">Tinta</h2>
+      <div class="f-inks" id="f-inks"></div>
+
+      <h2 class="section-label">Pigmen</h2>
+      <div class="f-pigments" id="f-pigments"></div>
+
+      <h2 class="section-label">Tipografi</h2>
+      <div class="f-type">
+        <div class="t-display-xl">Selamat malam, <em>Glenvio.</em></div>
+        <div class="t-meta">Fraunces, 44 px, optical size besar, SOFT 100</div>
+        <div class="t-display-l">Laporan Lab Jaringan</div>
+        <div class="t-meta">Fraunces, 32 px, judul halaman</div>
+        <div class="t-display-m">4 j 20 m</div>
+        <div class="t-meta">Fraunces, 24 px, angka besar</div>
+        <div class="t-title">Praktikum Jaringan: VLAN dan Trunking</div>
+        <div class="t-meta">Instrument Sans, 17 px, 600</div>
+        <div class="t-body">Kerjakan bagian topologi dulu, lalu konfigurasi trunk di switch kedua. Instrument Sans 14 px untuk semua yang dibaca dan diklik.</div>
+        <div class="t-mono">nmap -sn 192.168.10.0/24</div>
+        <div class="t-meta">JetBrains Mono, 12.5 px, untuk hal teknis</div>
+      </div>
+
+      <h2 class="section-label">Gerak</h2>
+      <div class="f-motion">
+        <div><code>--dur-instant</code><span>90 ms, tekan</span></div>
+        <div><code>--dur-quick</code><span>160 ms, hover dan toggle</span></div>
+        <div><code>--dur-base</code><span>240 ms, panel dan daftar</span></div>
+        <div><code>--dur-slow</code><span>420 ms, halaman, Busur Hari, ink check</span></div>
+        <div><code>--dur-ambient</code><span>2400 ms, cahaya berganti</span></div>
+        <div><code>--spring-gentle</code><span>pegas MORPH ULTRON (200/24)</span></div>
+      </div>
+
+      <h2 class="section-label">Komponen</h2>
+      <div class="f-components">
+        <button class="btn btn-primary" type="button">Simpan</button>
+        <button class="btn btn-secondary" type="button">Pilih tanggal</button>
+        <button class="btn btn-quiet" type="button">Nanti saja</button>
+        <span class="chip" data-pigment="toska">Laporan Lab</span>
+        <span class="chip chip-warn">Lewat tenggat</span>
+        <span class="ultron-mark"><svg><use href="#i-ultron"/></svg>oleh ULTRON</span>
+        <input class="input" type="text" placeholder="laporan lab besok 19:00 #jaringan" aria-label="Contoh catat cepat">
+      </div>
+    </div>
+  </section>
+
+  <!-- Prototype controls, not part of Hub. -->
+  <aside class="dock" aria-label="Kontrol prototipe">
+    <div class="dock-row">
+      <span class="dock-label">Prototipe</span>
+      <label class="dock-time">
+        <span class="sr-only">Jam simulasi</span>
+        <input type="range" id="time" min="0" max="1439" step="5">
+        <output id="time-out">12:00</output>
+      </label>
+      <button type="button" class="dock-btn" id="live-btn" aria-pressed="true">Waktu nyata</button>
+    </div>
+    <div class="dock-row">
+      <select id="mode" aria-label="Mode tema">
+        <option value="auto">Otomatis</option>
+        <option value="light">Terang</option>
+        <option value="dark">Gelap</option>
+      </select>
+      <div class="inks" role="radiogroup" aria-label="Tinta" id="ink-picker"></div>
+    </div>
+    <div class="dock-row">
+      <button type="button" class="dock-btn" id="demo-drop">Drop file</button>
+      <button type="button" class="dock-btn" id="demo-ultron">ULTRON beraksi</button>
+      <button type="button" class="dock-btn" id="demo-foundations" aria-pressed="false">Fondasi</button>
+    </div>
+  </aside>
+
+  <script src="prototype.js"></script>
+</body>
+</html>

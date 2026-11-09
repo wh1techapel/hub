@@ -1,0 +1,14 @@
+erDiagram
+  AREAS ||--o{ PROJECTS : mengelompokkan
+  PROJECTS ||--o{ MILESTONES : punya
+  PROJECTS ||--o{ TASKS : berisi
+  TASKS ||--o{ TASKS : langkah
+  TASKS ||--o{ EVENTS : "blok waktu"
+  TASKS ||--o{ REMINDERS : diingatkan
+  ROUTINES ||--o{ ROUTINE_EXCEPTIONS : pengecualian
+  FILES ||--o{ FILE_LINKS : ditautkan
+  FILES ||--o{ FILE_COLLECTIONS : masuk
+  COLLECTIONS ||--o{ FILE_COLLECTIONS : berisi
+  TRACKS ||--o{ LEARNING_ITEMS : berisi
+  LEARNING_ITEMS ||--o{ LEARNING_SESSIONS : dicatat
+  JOURNAL ||--o| DAY_CLOSURES : refleksi

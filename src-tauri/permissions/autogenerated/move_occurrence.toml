@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-move-occurrence"
+description = "Enables the move_occurrence command without any pre-configured scope."
+commands.allow = ["move_occurrence"]
+
+[[permission]]
+identifier = "deny-move-occurrence"
+description = "Denies the move_occurrence command without any pre-configured scope."
+commands.deny = ["move_occurrence"]

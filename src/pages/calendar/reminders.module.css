@@ -1,0 +1,59 @@
+/* Pengingat, in Kalender since R6: what went off, what is to come, and this week's handled ones. */
+
+.add {
+  margin: var(--space-5) 0 var(--space-3);
+}
+
+.empty {
+  margin: var(--space-6) 0;
+  color: var(--ink-3);
+}
+
+.reminders {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.reminderList {
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reminder {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.reminder:last-child {
+  border-bottom: 0;
+}
+
+.reminder > div:first-child {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.reminderText {
+  font-size: var(--text-read);
+}
+
+.reminderWhen {
+  font-size: var(--text-caption);
+  color: var(--ink-3);
+}
+
+.reminderActions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.quietList .reminderText {
+  color: var(--ink-3);
+}

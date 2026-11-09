@@ -1,0 +1,619 @@
+.page {
+  margin-top: var(--space-8);
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--text-display-l);
+  line-height: var(--leading-display-l);
+}
+
+.quiet {
+  margin: 0;
+  font-size: var(--text-small);
+  color: var(--ink-3);
+}
+
+/* ---------- the week ---------- */
+
+.week {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.weekText {
+  display: flex;
+  flex-direction: column;
+}
+
+.weekText strong {
+  font-weight: 600;
+}
+
+.weekText span {
+  font-size: var(--text-small);
+  color: var(--ink-2);
+}
+
+.weekDots {
+  display: flex;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.weekDots li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-3);
+}
+
+.weekDots i {
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid var(--hairline-strong);
+  border-radius: var(--radius-full);
+}
+
+.weekDots .active i {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.weekDots li[aria-current="date"] {
+  color: var(--accent);
+}
+
+.weekDots li[aria-current="date"] i {
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* ---------- the timer ---------- */
+
+.timer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--pig-fill);
+  box-shadow: inset 3px 0 0 var(--pig-line);
+  animation: global(rise) var(--dur-base) var(--ease-standard) backwards;
+}
+
+/* A still mark: nothing on the page loops (docs/design.md, "Motion"). The clock says it runs. */
+.timerPulse {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  background: var(--pig-line);
+}
+
+.timerText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.timerText small {
+  font-size: var(--text-caption);
+  color: var(--pig-text);
+}
+
+.timerText strong {
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timerClock {
+  font-family: var(--font-mono);
+  font-size: var(--text-title);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- columns ---------- */
+
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+  gap: var(--space-10);
+  margin-top: var(--space-8);
+}
+
+.main {
+  min-width: 0;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  min-width: 0;
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--hit-min);
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-2);
+  font-weight: 550;
+}
+
+.tab:hover {
+  background: var(--hairline);
+}
+
+.tab i {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--pig-line);
+}
+
+.tab small {
+  font-size: var(--text-caption);
+  font-weight: 500;
+  color: var(--ink-3);
+}
+
+.tab[aria-selected="true"] {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow:
+    0 0 0 1px var(--hairline),
+    inset 0 -2px 0 var(--pig-line);
+}
+
+.tabAdd {
+  color: var(--ink-3);
+}
+
+.track {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin-top: var(--space-4);
+}
+
+.trackHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-small);
+  color: var(--ink-3);
+}
+
+.trackHead > :last-child {
+  margin-left: auto;
+}
+
+.ctfList {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.ctf {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  align-self: stretch;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--hairline);
+}
+
+.ctf svg {
+  flex: none;
+  color: var(--accent);
+}
+
+.ctf div {
+  display: flex;
+  flex-direction: column;
+}
+
+.ctf span {
+  font-size: var(--text-small);
+  color: var(--ink-3);
+}
+
+.add .input {
+  width: 100%;
+}
+
+.group h3 em {
+  font-style: normal;
+  color: var(--ink-3);
+}
+
+.items {
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.items li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.items li:last-child {
+  border-bottom: 0;
+}
+
+.items .selected {
+  background: linear-gradient(90deg, var(--accent-soft), transparent 70%);
+}
+
+.itemBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  min-width: 0;
+  padding: var(--space-3) var(--space-2);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+}
+
+.itemBody strong {
+  font-weight: 550;
+}
+
+.itemMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  font-size: var(--text-caption);
+  color: var(--ink-3);
+}
+
+.progress {
+  align-self: stretch;
+  max-width: 240px;
+  height: 3px;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: var(--hairline);
+}
+
+.progress i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transform-origin: left;
+}
+
+/* ---------- picking up again ---------- */
+
+.current {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow:
+    0 0 0 1px var(--hairline),
+    inset 3px 0 0 var(--pig-line);
+}
+
+.currentTitle {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-variation-settings:
+    var(--display-axes),
+    "opsz" 36;
+  font-size: 19px;
+  text-align: left;
+}
+
+.currentMeta {
+  font-size: var(--text-small);
+  color: var(--ink-3);
+}
+
+/* ---------- heatmap ---------- */
+
+.heatmap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.heatmapSummary {
+  font-size: var(--text-small);
+  color: var(--ink-2);
+}
+
+.months,
+.cellRow {
+  display: grid;
+  grid-template-columns: repeat(var(--weeks), minmax(0, 1fr));
+  gap: 3px;
+}
+
+.months span {
+  overflow: visible;
+  font-size: 10px;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
+.cells {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cell {
+  display: block;
+  aspect-ratio: 1;
+  border-radius: 3px;
+  background: var(--hairline);
+}
+
+/* Steps of ink; the empty day is an outline, so "none" is a shape, not only a colour. */
+.cell[data-level="0"] {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--hairline-strong);
+}
+
+.cell[data-level="1"] {
+  background: color-mix(in oklch, var(--accent) 25%, var(--paper));
+}
+
+.cell[data-level="2"] {
+  background: color-mix(in oklch, var(--accent) 50%, var(--paper));
+}
+
+.cell[data-level="3"] {
+  background: color-mix(in oklch, var(--accent) 75%, var(--paper));
+}
+
+.cell[data-level="4"] {
+  background: var(--accent);
+}
+
+.cell[data-level="future"] {
+  background: transparent;
+}
+
+.cell:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 1px;
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+  font-size: 10px;
+  color: var(--ink-3);
+}
+
+.legend .cell {
+  width: 10px;
+}
+
+.legend span:first-child {
+  margin-right: 4px;
+}
+
+.legend span:last-child {
+  margin-left: 4px;
+}
+
+/* ---------- domains ---------- */
+
+.domains {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.domains li {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-small);
+}
+
+.domainName {
+  color: var(--ink-2);
+}
+
+.domainBar {
+  height: 8px;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: var(--hairline);
+}
+
+.domainBar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transform-origin: left;
+  transition: transform var(--dur-slow) var(--ease-standard);
+}
+
+.domainValue {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-variant-numeric: tabular-nums;
+}
+
+.domainValue small {
+  font-size: 11px;
+  color: var(--ink-3);
+}
+
+/* ---------- item panel ---------- */
+
+.panel {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  max-height: calc(100vh - 96px);
+  overflow-y: auto;
+  padding: var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow:
+    0 0 0 1px var(--hairline),
+    var(--shadow-lift);
+  animation: global(rise) var(--dur-base) var(--ease-standard) backwards;
+}
+
+.closePanel {
+  float: right;
+  margin: -6px -6px 0 0;
+}
+
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.titleInput {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  resize: none;
+  font-family: var(--font-display);
+  font-variation-settings:
+    var(--display-axes),
+    "opsz" 48;
+  font-size: 22px;
+  font-weight: 450;
+  line-height: 1.25;
+}
+
+.titleInput:focus-visible {
+  outline: none;
+  box-shadow: 0 2px 0 var(--accent);
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.sessions {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sessions li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 36px;
+  font-size: var(--text-small);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.sessions span {
+  color: var(--ink-3);
+}
+
+.logForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) 72px;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.logForm button {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
+@media (max-width: 1100px) {
+  .columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .panel {
+    position: fixed;
+    /* Pinned to both edges: "start" alignment would size a fixed box to its content. */
+    align-self: stretch;
+    top: 72px;
+    right: var(--space-4);
+    bottom: var(--space-4);
+    z-index: 30;
+    width: min(380px, calc(100vw - 32px));
+    max-height: none;
+  }
+}

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-update-roadmap-checkpoint"
+description = "Enables the update_roadmap_checkpoint command without any pre-configured scope."
+commands.allow = ["update_roadmap_checkpoint"]
+
+[[permission]]
+identifier = "deny-update-roadmap-checkpoint"
+description = "Denies the update_roadmap_checkpoint command without any pre-configured scope."
+commands.deny = ["update_roadmap_checkpoint"]

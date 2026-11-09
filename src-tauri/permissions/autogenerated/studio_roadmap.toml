@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-studio-roadmap"
+description = "Enables the studio_roadmap command without any pre-configured scope."
+commands.allow = ["studio_roadmap"]
+
+[[permission]]
+identifier = "deny-studio-roadmap"
+description = "Denies the studio_roadmap command without any pre-configured scope."
+commands.deny = ["studio_roadmap"]

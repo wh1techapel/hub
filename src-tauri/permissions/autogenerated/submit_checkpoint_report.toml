@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-submit-checkpoint-report"
+description = "Enables the submit_checkpoint_report command without any pre-configured scope."
+commands.allow = ["submit_checkpoint_report"]
+
+[[permission]]
+identifier = "deny-submit-checkpoint-report"
+description = "Denies the submit_checkpoint_report command without any pre-configured scope."
+commands.deny = ["submit_checkpoint_report"]

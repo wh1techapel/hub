@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-reorder-task"
+description = "Enables the reorder_task command without any pre-configured scope."
+commands.allow = ["reorder_task"]
+
+[[permission]]
+identifier = "deny-reorder-task"
+description = "Denies the reorder_task command without any pre-configured scope."
+commands.deny = ["reorder_task"]

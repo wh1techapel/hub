@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-delete-milestone"
+description = "Enables the delete_milestone command without any pre-configured scope."
+commands.allow = ["delete_milestone"]
+
+[[permission]]
+identifier = "deny-delete-milestone"
+description = "Denies the delete_milestone command without any pre-configured scope."
+commands.deny = ["delete_milestone"]

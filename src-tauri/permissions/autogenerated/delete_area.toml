@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-delete-area"
+description = "Enables the delete_area command without any pre-configured scope."
+commands.allow = ["delete_area"]
+
+[[permission]]
+identifier = "deny-delete-area"
+description = "Denies the delete_area command without any pre-configured scope."
+commands.deny = ["delete_area"]

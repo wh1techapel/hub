@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-list-areas"
+description = "Enables the list_areas command without any pre-configured scope."
+commands.allow = ["list_areas"]
+
+[[permission]]
+identifier = "deny-list-areas"
+description = "Denies the list_areas command without any pre-configured scope."
+commands.deny = ["list_areas"]

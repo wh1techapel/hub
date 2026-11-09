@@ -1,0 +1,252 @@
+/* U3: Studio's home after Gemini's layout. The page fills the window under the top bar (a
+   workspace, Shell.tsx) and holds one column in its middle, a little above it; when the window is
+   too short for it, the page scrolls. */
+.page {
+  position: relative;
+  /* The glow sits under the page's own content, never under the rest of Hub. */
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  animation: global(rise) var(--dur-slow) var(--ease-standard) backwards;
+}
+
+/* L3: the glow, after Gemini's but in Daylight Studio's light: the phase's three lights
+   (tokens.css, --glow-a to --glow-c) and the owner's accent (--glow-accent) rise from under the
+   input. Two soft layers drift slowly against each other; under reduced motion they stay still.
+   Text over it is ink or ink-2, checked by design/check-contrast.mjs. Only transforms move, so
+   the drift costs the compositor, not layout or paint. */
+.glow {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  /* The page ends short of the window (Hub's margins), so the light fades out before its edges
+     instead of being cut there. */
+  mask-image:
+    linear-gradient(to right, transparent, #000 14%, #000 86%, transparent),
+    linear-gradient(to bottom, #000 78%, transparent);
+  mask-composite: intersect;
+}
+
+.glow::before,
+.glow::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  /* No rounded clip: each light already fades to nothing inside its box (closest-side), and a
+     clip would cut a faint light into a visible oval line. */
+  will-change: transform;
+}
+
+/* The wide light: two of the phase's colours side by side, under the input. */
+.glow::before {
+  bottom: -30%;
+  width: min(1400px, 130%);
+  height: 85%;
+  margin-left: calc(min(1400px, 130%) / -2);
+  background:
+    radial-gradient(closest-side at 32% 55%, var(--glow-a), transparent),
+    radial-gradient(closest-side at 68% 50%, var(--glow-b), transparent);
+  animation: drift-wide 14s var(--ease-ink) infinite alternate;
+}
+
+/* The near light: the third colour and the accent, closer to the input. */
+.glow::after {
+  bottom: -18%;
+  width: min(900px, 90%);
+  height: 60%;
+  margin-left: calc(min(900px, 90%) / -2);
+  background:
+    radial-gradient(closest-side at 40% 50%, var(--glow-c), transparent),
+    radial-gradient(closest-side at 62% 45%, var(--glow-accent), transparent);
+  animation: drift-near 11s var(--ease-ink) infinite alternate;
+}
+
+@keyframes drift-wide {
+  from {
+    transform: translate3d(-4%, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(4%, -5%, 0) scale(1.08);
+  }
+}
+
+@keyframes drift-near {
+  from {
+    transform: translate3d(5%, -2%, 0) scale(1.05);
+  }
+  to {
+    transform: translate3d(-5%, 2%, 0) scale(0.96);
+  }
+}
+
+/* The global rule turns animations into a fade-in; repeated forever that would blink. */
+@media (prefers-reduced-motion: reduce) {
+  .glow::before,
+  .glow::after {
+    animation-name: none !important;
+  }
+}
+
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-8);
+  width: 100%;
+  max-width: 760px;
+  margin: auto;
+  padding: var(--space-8) 0 var(--space-14);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  text-align: center;
+}
+
+.hello {
+  margin: 0;
+  font-size: var(--text-display-m);
+  line-height: var(--leading-display-m);
+  color: var(--ink-2);
+}
+
+.hello em {
+  font-weight: 340;
+  color: var(--ink);
+}
+
+.greeting {
+  margin: 0;
+  font-size: var(--text-display-xl);
+  line-height: var(--leading-display-xl);
+  text-wrap: balance;
+}
+
+.intro {
+  max-width: 52ch;
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-read);
+  line-height: var(--leading-read);
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+
+/* Without a Gemini key: the reason and the way to Pengaturan, where the field would be. */
+.setup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  max-width: 52ch;
+  padding: var(--space-5) var(--space-6);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  text-align: center;
+}
+
+.setup p {
+  margin: 0;
+}
+
+/* The pill: the idea on top, the model and the send button under it. Its ring is drawn on the
+   pill, not on the field inside. */
+.composer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-5);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+  cursor: text;
+  transition: box-shadow var(--dur-quick) var(--ease-standard);
+}
+
+.composer:hover {
+  box-shadow: var(--shadow-lift);
+}
+
+.composer:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+  border-color: transparent;
+}
+
+.idea {
+  width: 100%;
+  /* Up to about eight lines, then it scrolls. */
+  max-height: calc(17px * 1.5 * 8 + var(--space-2));
+  padding: var(--space-2) var(--space-2) 0 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1.5;
+  resize: none;
+  overflow-y: auto;
+}
+
+.idea:focus-visible {
+  outline: none;
+}
+
+.idea::placeholder {
+  color: var(--ink-3);
+}
+
+.composerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  cursor: default;
+}
+
+.send {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  color: var(--on-accent);
+  transition:
+    background-color var(--dur-quick) var(--ease-standard),
+    color var(--dur-quick) var(--ease-standard),
+    box-shadow var(--dur-quick) var(--ease-standard);
+}
+
+.send:not(:disabled):hover {
+  box-shadow: var(--shadow-lift);
+}
+
+.send:disabled {
+  background: var(--hairline);
+  color: var(--ink-3);
+  cursor: default;
+}
+
+.send:focus-visible {
+  outline-offset: 2px;
+  border-radius: var(--radius-full);
+}
+
+.privacy {
+  margin: calc(-1 * var(--space-4)) 0 0;
+  font-size: var(--text-caption);
+  /* ink-2, not ink-3: it sits over the glow (L3). */
+  color: var(--ink-2);
+  text-align: center;
+}

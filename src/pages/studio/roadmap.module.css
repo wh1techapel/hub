@@ -1,0 +1,447 @@
+/* The Roadmap tab: checkpoints as rows on paper, not cards (docs/studio.md, "Roadmap"). Shared
+   pieces (actions, notices, editor fields) come from prd.module.css. */
+
+.list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--hairline);
+}
+
+.row {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--hairline);
+  scroll-margin-top: var(--space-4);
+}
+
+.row :global(.btn) {
+  min-height: 32px;
+  padding-inline: var(--space-2);
+}
+
+.rowHead {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-3);
+}
+
+.list:not(:has(.grip)) .rowHead {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.code {
+  padding-top: 2px;
+  font-family: var(--font-mono);
+  font-size: var(--text-mono);
+  color: var(--ink-2);
+}
+
+.rowMain {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.cpTitle {
+  margin: 0;
+  font-size: var(--text-body);
+  font-weight: 600;
+  line-height: var(--leading-small);
+}
+
+.goal {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--text-small);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+  font-size: var(--text-small);
+  color: var(--ink-3);
+}
+
+.meta code + code {
+  margin-left: var(--space-1);
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--ink-2);
+  font-weight: 550;
+}
+
+.status[data-status="ready"],
+.status[data-status="in_progress"],
+.status[data-status="in_review"] {
+  color: var(--ink);
+}
+
+.status[data-status="ready"] svg,
+.status[data-status="in_progress"] svg,
+.status[data-status="in_review"] svg {
+  color: var(--accent);
+}
+
+.status[data-status="blocked"] svg {
+  color: var(--warn);
+}
+
+.mono,
+.path {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono);
+}
+
+.path {
+  overflow-wrap: anywhere;
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-left: var(--space-3);
+  border-left: 1px solid var(--hairline-strong);
+}
+
+.details p {
+  margin: 0;
+}
+
+.tasks ul {
+  margin: var(--space-1) 0 0;
+}
+
+.grip {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 32px;
+  margin: -4px -4px 0 -6px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-xs);
+  background: transparent;
+  color: var(--ink-3);
+  cursor: grab;
+  touch-action: none;
+}
+
+.grip:active {
+  cursor: grabbing;
+}
+
+.dragging {
+  opacity: 0.5;
+}
+
+.insert,
+.insertEnd {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -1px;
+  height: 2px;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+}
+
+.insertEnd {
+  position: relative;
+  list-style: none;
+}
+
+.warn {
+  margin: 0;
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--warn);
+  font-size: var(--text-small);
+  color: var(--ink-2);
+}
+
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.choice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  cursor: pointer;
+}
+
+.choice input {
+  margin-top: 4px;
+}
+
+.choice > span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.testRow {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 2fr) auto;
+  align-items: end;
+  gap: var(--space-2);
+}
+
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--hairline);
+}
+
+.settings h3 {
+  margin: 0;
+  font-size: var(--text-small);
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.settings dl {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--space-1) var(--space-4);
+  margin: 0;
+  font-size: var(--text-small);
+}
+
+.settings dt {
+  color: var(--ink-3);
+}
+
+.settings dd {
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .testRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Pantau */
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--hairline);
+}
+
+.block > h3 {
+  margin: 0;
+  font-size: var(--text-small);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--ink-2);
+}
+
+.block > p {
+  margin: 0;
+}
+
+.nowHead {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-3);
+}
+
+.taskChecks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.prompt {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.promptLabel {
+  font-size: var(--text-small);
+  font-weight: 600;
+}
+
+.prompt textarea {
+  white-space: pre-wrap;
+  line-height: var(--leading-mono);
+}
+
+.waiting {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.waitingItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--accent);
+}
+
+.waitingItem p {
+  margin: 0;
+}
+
+.compact {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pick {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: var(--hit-min);
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-small);
+  text-align: left;
+  cursor: pointer;
+}
+
+.pick:hover {
+  background: var(--paper-2);
+}
+
+.pick[aria-pressed="true"] {
+  background: linear-gradient(90deg, var(--accent-soft), transparent 80%);
+}
+
+.pickTitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.report {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-left: var(--space-3);
+  border-left: 1px solid var(--hairline-strong);
+}
+
+.report > p {
+  margin: 0;
+}
+
+.testList li[data-result="failed"] strong,
+.testList li[data-result="not_run"] strong {
+  color: var(--danger);
+}
+
+.output {
+  max-height: 16rem;
+  overflow: auto;
+  margin: var(--space-1) 0 0;
+  padding: var(--space-2);
+  border-radius: var(--radius-xs);
+  background: var(--paper-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-mono);
+  white-space: pre-wrap;
+}
+
+.claudeLine {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.claudeLine p {
+  margin: 0;
+}
+
+.claudeTitle {
+  margin: 0;
+  font-size: var(--text-small);
+  font-weight: 600;
+}
+
+/* R4: the two versions of the prompt, as a small segmented choice. */
+.kinds {
+  display: inline-flex;
+  width: fit-content;
+  padding: 3px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-sm);
+}
+
+.kind {
+  position: relative;
+}
+
+.kind input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.kind span {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--hit-min);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-xs);
+  font-size: var(--text-small);
+  font-weight: 550;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.kind input:checked + span {
+  color: var(--ink);
+}
+
+.kinds {
+  --glide-fill: var(--surface);
+  --glide-round: var(--radius-xs);
+}
+
+.kind input:focus-visible + span {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

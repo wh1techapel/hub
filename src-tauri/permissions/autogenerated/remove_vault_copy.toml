@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-remove-vault-copy"
+description = "Enables the remove_vault_copy command without any pre-configured scope."
+commands.allow = ["remove_vault_copy"]
+
+[[permission]]
+identifier = "deny-remove-vault-copy"
+description = "Denies the remove_vault_copy command without any pre-configured scope."
+commands.deny = ["remove_vault_copy"]

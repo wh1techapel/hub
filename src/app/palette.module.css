@@ -1,0 +1,117 @@
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: var(--scrim);
+  animation: global(fade-in) var(--dur-quick) var(--ease-standard) both;
+}
+
+.panel {
+  position: fixed;
+  z-index: 41;
+  top: 16vh;
+  left: 50%;
+  width: min(560px, calc(100vw - 32px));
+  transform: translateX(-50%);
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--hairline), var(--shadow-drag);
+  animation: palette-in var(--dur-base) var(--ease-standard) both;
+}
+
+.input {
+  width: 100%;
+  height: 56px;
+  padding: 0 var(--space-5);
+  border: 0;
+  border-bottom: 1px solid var(--hairline);
+  background: transparent;
+  font-size: var(--text-read);
+}
+
+.input::placeholder {
+  color: var(--ink-3);
+}
+
+.input:focus-visible {
+  outline: none;
+}
+
+.list {
+  max-height: 50vh;
+  overflow-y: auto;
+  margin: 0;
+  padding: var(--space-2);
+  list-style: none;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 40px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.option[aria-selected="true"] {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+.option[aria-selected="true"] svg:first-child {
+  color: var(--accent);
+}
+
+.label {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.label,
+.label small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.label small {
+  font-size: var(--text-caption);
+  color: var(--ink-3);
+}
+
+.group {
+  flex: none;
+  margin-left: auto;
+  font-size: var(--text-caption);
+  color: var(--ink-3);
+}
+
+.enter {
+  flex: none;
+  color: var(--ink-3);
+}
+
+.capturePanel {
+  padding: var(--space-4);
+}
+
+.empty {
+  padding: var(--space-4) var(--space-3);
+  color: var(--ink-3);
+}
+
+@keyframes palette-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%);
+  }
+}

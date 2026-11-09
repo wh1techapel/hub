@@ -1,0 +1,427 @@
+.page {
+  max-width: 720px;
+}
+
+/* P1: each part's page says "Pengaturan" above its own name. */
+.eyebrow {
+  margin: var(--space-10) 0 var(--space-1);
+  font-size: var(--text-small);
+  font-weight: 550;
+  color: var(--ink-3);
+}
+
+.title {
+  margin: 0 0 var(--space-8);
+  font-size: var(--text-display-l);
+  line-height: var(--leading-display-l);
+}
+
+/* A part with one section needs no line above it: its title is the page's. */
+.title + .section {
+  border-top: 0;
+  padding-top: 0;
+}
+
+/* After Pasang: the two ways to start, then what cannot use Hub. */
+.after {
+  margin: 0;
+}
+
+.afterSteps {
+  margin: var(--space-2) 0;
+  padding-left: var(--space-5);
+}
+
+.afterSteps li + li {
+  margin-top: var(--space-1);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-6) 0;
+  border-top: 1px solid var(--hairline);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  font-weight: 550;
+}
+
+.hint {
+  margin: 0;
+  font-size: var(--text-small);
+  color: var(--ink-3);
+}
+
+.error {
+  margin: 0;
+  min-height: 0;
+  font-size: var(--text-small);
+  font-weight: 550;
+  color: var(--danger);
+}
+
+.error:empty {
+  display: none;
+}
+
+.input {
+  width: 100%;
+  max-width: 320px;
+  min-height: var(--hit-primary);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.input[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+  border-color: transparent;
+}
+
+.times {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+}
+
+.times .input {
+  width: 140px;
+}
+
+/* ---------- light mode: a segmented control ---------- */
+
+.segmented {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-self: flex-start;
+  padding: 4px;
+  border-radius: var(--radius-full);
+  background: var(--hairline);
+}
+
+.segment {
+  position: relative;
+}
+
+.segment input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.segment span {
+  display: block;
+  padding: 6px var(--space-4);
+  border-radius: var(--radius-full);
+  font-size: var(--text-small);
+  font-weight: 550;
+  color: var(--ink-2);
+  transition: background-color var(--dur-quick) var(--ease-standard);
+}
+
+.segment input:checked + span {
+  color: var(--ink);
+}
+
+.segment input:focus-visible + span {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------- inks ---------- */
+
+.inks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.ink {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4) var(--space-2) var(--space-2);
+  border-radius: var(--radius-full);
+  box-shadow: 0 0 0 1px var(--hairline);
+  font-size: var(--text-small);
+  cursor: pointer;
+  transition: box-shadow var(--dur-quick) var(--ease-standard);
+}
+
+.ink input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* Each swatch shows its own ink in the current light: the token's light or dark value. */
+.ink i {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+}
+
+:global([data-scheme="light"]) .ink i {
+  background: var(--ink-accent-light);
+}
+
+:global([data-scheme="dark"]) .ink i {
+  background: var(--ink-accent-dark);
+}
+
+.ink:has(input:checked) {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.ink:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* ---------- switch ---------- */
+
+.switchRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+}
+
+.switch {
+  flex: none;
+  position: relative;
+  width: 44px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--hairline-strong);
+  transition: background-color var(--dur-quick) var(--ease-standard);
+}
+
+.switch i {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  box-shadow: 0 1px 2px oklch(0 0 0 / 0.2);
+  transition: transform var(--dur-base) var(--spring-gentle);
+}
+
+.switch[aria-checked="true"] {
+  background: var(--accent);
+}
+
+.switch[aria-checked="true"] i {
+  transform: translateX(18px);
+}
+
+/* ---------- about this Hub ---------- */
+
+.info {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-2) var(--space-6);
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-small);
+}
+
+.info dt {
+  color: var(--ink-3);
+}
+
+.info dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.muted {
+  color: var(--ink-3);
+}
+
+.timeInput {
+  width: 140px;
+}
+
+/* ---------- ULTRON ---------- */
+
+.apiState {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--ultron);
+}
+
+/* ---------- Integrasi AI ---------- */
+
+.subhead {
+  margin: 0;
+  font-size: var(--text-title);
+  line-height: var(--leading-title);
+  font-weight: 600;
+}
+
+.keyRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.keyRow .input {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono);
+}
+
+.iconButton {
+  min-width: var(--hit-min);
+  padding: 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.confirm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 520px;
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--danger);
+}
+
+.confirm p {
+  margin: 0;
+}
+
+.outcome {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.outcomeOk,
+.outcomeBad {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: 0;
+  max-width: 560px;
+}
+
+.outcomeOk svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--accent);
+}
+
+.outcomeBad {
+  color: var(--ink);
+}
+
+.outcomeBad svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--warn);
+}
+
+.note {
+  margin: 0;
+  max-width: 600px;
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--hairline-strong);
+  font-size: var(--text-small);
+  color: var(--ink-2);
+}
+
+/* ---------- Integrasi AI > Claude Code ---------- */
+
+.okMark,
+.badMark {
+  vertical-align: -2px;
+}
+
+.okMark {
+  color: var(--accent);
+}
+
+.badMark {
+  color: var(--ink-3);
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-small);
+}
+
+.changes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding-left: var(--space-4);
+}
+
+.changes p {
+  margin: 0 0 var(--space-2);
+}
+
+.commandRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.command {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-2);
+  border-radius: var(--radius-xs);
+  background: var(--paper-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-mono);
+  overflow-wrap: anywhere;
+}
+
+/* P2: Hub's own volume, a quiet slider with its value beside it. */
+.volume {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  max-width: 320px;
+}
+
+.volume input {
+  flex: 1;
+  accent-color: var(--accent);
+}

@@ -1,0 +1,67 @@
+/* Claude Code's three signals: a term, a glyph, the line, and a quieter detail under it. The glyph
+   carries the tone in shape; its colour only repeats it. */
+
+.signals {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  font-size: var(--text-small);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 6rem minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: start;
+}
+
+.row dt {
+  color: var(--ink-3);
+}
+
+.row dd {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  margin: 0;
+  min-width: 0;
+}
+
+/* Centred on the first line, not on the whole entry. */
+.glyph {
+  flex: none;
+  margin-top: calc((1lh - 14px) / 2);
+  color: var(--ink-3);
+}
+
+.row[data-tone="ok"] .glyph {
+  color: var(--accent);
+}
+
+.row[data-tone="problem"] .glyph {
+  color: var(--warn);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.line {
+  color: var(--ink);
+}
+
+.detail {
+  color: var(--ink-3);
+  overflow-wrap: anywhere;
+}
+
+.code {
+  margin-left: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-mono);
+  color: var(--ink-2);
+}

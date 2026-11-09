@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-create-learning"
+description = "Enables the create_learning command without any pre-configured scope."
+commands.allow = ["create_learning"]
+
+[[permission]]
+identifier = "deny-create-learning"
+description = "Denies the create_learning command without any pre-configured scope."
+commands.deny = ["create_learning"]

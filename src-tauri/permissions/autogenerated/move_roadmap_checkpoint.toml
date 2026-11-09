@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-move-roadmap-checkpoint"
+description = "Enables the move_roadmap_checkpoint command without any pre-configured scope."
+commands.allow = ["move_roadmap_checkpoint"]
+
+[[permission]]
+identifier = "deny-move-roadmap-checkpoint"
+description = "Denies the move_roadmap_checkpoint command without any pre-configured scope."
+commands.deny = ["move_roadmap_checkpoint"]

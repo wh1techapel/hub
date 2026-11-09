@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-save-studio-stack"
+description = "Enables the save_studio_stack command without any pre-configured scope."
+commands.allow = ["save_studio_stack"]
+
+[[permission]]
+identifier = "deny-save-studio-stack"
+description = "Denies the save_studio_stack command without any pre-configured scope."
+commands.deny = ["save_studio_stack"]

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-file-counts"
+description = "Enables the file_counts command without any pre-configured scope."
+commands.allow = ["file_counts"]
+
+[[permission]]
+identifier = "deny-file-counts"
+description = "Denies the file_counts command without any pre-configured scope."
+commands.deny = ["file_counts"]

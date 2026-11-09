@@ -1,0 +1,118 @@
+/* The page dims; the pools sit in the middle as soft rounded wells. Pointer events pass through
+   to nothing: Windows owns the drag, the page only follows the pointer it is told about. */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  padding: var(--space-8);
+  background: var(--scrim);
+  animation: global(fade-in) var(--dur-quick) var(--ease-standard) both;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  max-width: min(640px, 100%);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-lift);
+  color: var(--ink);
+  text-align: center;
+}
+
+.head strong {
+  font-family: var(--font-display);
+  font-variation-settings:
+    var(--display-axes),
+    "opsz" 72;
+  font-size: var(--text-display-m);
+  font-weight: 450;
+}
+
+.head span {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: var(--text-small);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink-2);
+}
+
+.pools {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-5);
+}
+
+.pool {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 220px;
+  min-height: 160px;
+  padding: var(--space-5);
+  border: 2px dashed var(--hairline-strong);
+  border-radius: 28px;
+  background: var(--surface);
+  color: var(--ink-2);
+  text-align: center;
+  transition:
+    transform var(--dur-base) var(--ease-standard),
+    border-color var(--dur-quick) var(--ease-standard);
+}
+
+.pool[data-pigment] {
+  border-color: var(--pig-line);
+}
+
+.pool strong {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.pool span {
+  font-size: var(--text-caption);
+}
+
+.pool svg {
+  color: var(--accent);
+}
+
+.pool[data-pigment] svg {
+  color: var(--pig-text);
+}
+
+.over {
+  transform: scale(1.06);
+  border-style: solid;
+  border-color: var(--accent);
+}
+
+.pool[data-pigment].over {
+  border-color: var(--pig-line);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pool {
+    transition: none;
+  }
+
+  .over {
+    transform: none;
+  }
+}

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-get-week-insight"
+description = "Enables the get_week_insight command without any pre-configured scope."
+commands.allow = ["get_week_insight"]
+
+[[permission]]
+identifier = "deny-get-week-insight"
+description = "Denies the get_week_insight command without any pre-configured scope."
+commands.deny = ["get_week_insight"]

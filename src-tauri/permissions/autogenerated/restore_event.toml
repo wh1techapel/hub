@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-restore-event"
+description = "Enables the restore_event command without any pre-configured scope."
+commands.allow = ["restore_event"]
+
+[[permission]]
+identifier = "deny-restore-event"
+description = "Denies the restore_event command without any pre-configured scope."
+commands.deny = ["restore_event"]

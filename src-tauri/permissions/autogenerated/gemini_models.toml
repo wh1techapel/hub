@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-gemini-models"
+description = "Enables the gemini_models command without any pre-configured scope."
+commands.allow = ["gemini_models"]
+
+[[permission]]
+identifier = "deny-gemini-models"
+description = "Denies the gemini_models command without any pre-configured scope."
+commands.deny = ["gemini_models"]

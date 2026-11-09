@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-answer-studio-request"
+description = "Enables the answer_studio_request command without any pre-configured scope."
+commands.allow = ["answer_studio_request"]
+
+[[permission]]
+identifier = "deny-answer-studio-request"
+description = "Denies the answer_studio_request command without any pre-configured scope."
+commands.deny = ["answer_studio_request"]

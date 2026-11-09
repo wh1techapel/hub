@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-delete-studio-project"
+description = "Enables the delete_studio_project command without any pre-configured scope."
+commands.allow = ["delete_studio_project"]
+
+[[permission]]
+identifier = "deny-delete-studio-project"
+description = "Denies the delete_studio_project command without any pre-configured scope."
+commands.deny = ["delete_studio_project"]

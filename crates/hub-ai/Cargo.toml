@@ -1,0 +1,32 @@
+[package]
+name = "hub-ai"
+description = "Hub Studio's side of Google Gemini: the REST client, its errors, the connection check, and where the key is kept. No Tauri, no database."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+ts-rs.workspace = true
+# HTTPS to generativelanguage.googleapis.com only. Windows' own TLS (SChannel through native-tls)
+# and certificate store: no second TLS stack or build tools, and the system proxy is honoured
+# (school networks).
+reqwest = { version = "0.13", default-features = false, features = ["native-tls", "http2", "json", "query", "stream", "system-proxy"] }
+futures-util = { version = "0.3", default-features = false, features = ["std"] }
+# prompts/studio.toml, read once at start.
+toml = { version = "0.8", default-features = false, features = ["parse"] }
+tokio = { version = "1", features = ["time", "sync", "macros", "rt"] }
+
+[target.'cfg(windows)'.dependencies]
+# The Gemini key lives in Windows Credential Manager (key.rs), not in Hub's database or files.
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Security_Credentials"] }
+
+[dev-dependencies]
+# A fake Gemini on 127.0.0.1 that answers the way the documentation shows.
+axum = { version = "0.8", default-features = false, features = ["http1", "json", "query", "tokio"] }
+tokio = { version = "1", features = ["net", "time", "rt", "rt-multi-thread", "macros"] }
+uuid.workspace = true

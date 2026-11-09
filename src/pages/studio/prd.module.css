@@ -1,0 +1,732 @@
+/* The PRD tab: a document set for reading, with quiet controls (docs/studio.md, "PRD"). */
+
+/* The documents of stage 3 (PRD, Rencana checkpoint, Bangun). R7: kept to a document's width, as
+   the tech stack is, so rows and their statuses stay within one glance on a 2,560 px screen. */
+.pane {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 1040px;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--text-title);
+  font-weight: 600;
+}
+
+.status {
+  font-weight: 500;
+  color: var(--ink-3);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.notices {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.notice,
+.muted {
+  margin: 0;
+  font-size: var(--text-small);
+  color: var(--ink-2);
+}
+
+.muted {
+  color: var(--ink-3);
+}
+
+.progress {
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--accent);
+}
+
+.progress p {
+  margin: 0;
+}
+
+.confirm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--warn);
+}
+
+.confirm p {
+  margin: 0;
+}
+
+.saveRow {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.input {
+  width: 100%;
+  min-height: var(--hit-min);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font: inherit;
+}
+
+textarea.input {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+  border-color: transparent;
+}
+
+.problems {
+  padding: var(--space-3);
+  border-left: 2px solid var(--warn);
+  background: var(--warn-soft);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: var(--text-small);
+}
+
+.problems p {
+  margin: 0 0 var(--space-2);
+}
+
+.problems ul {
+  margin: 0;
+  padding-left: var(--space-5);
+}
+
+.problems a {
+  color: inherit;
+}
+
+.history {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-small);
+}
+
+.history li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.viewing {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-left: 2px solid var(--ink-3);
+}
+
+.viewing p {
+  margin: 0;
+}
+
+/* ---------- the document ---------- */
+
+.document {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  max-width: 72ch;
+}
+
+.docName {
+  margin: 0;
+  font-size: var(--text-display-m);
+  line-height: var(--leading-display-m);
+}
+
+.toc ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-small);
+}
+
+.toc a {
+  color: var(--ink-2);
+}
+
+.section {
+  scroll-margin-top: var(--space-4);
+}
+
+.sectionHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding-bottom: var(--space-1);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.sectionHead h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-variation-settings: var(--display-axes), "opsz" 72;
+  font-weight: 420;
+  font-size: var(--text-display-m);
+  line-height: var(--leading-display-m);
+}
+
+.sectionHead :global(.btn),
+.history :global(.btn),
+.itemActions :global(.btn) {
+  min-height: 28px;
+  font-size: var(--text-small);
+}
+
+.body {
+  margin-top: var(--space-3);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.lead {
+  margin: 0 0 var(--space-3);
+  font-size: 17px;
+}
+
+.para {
+  margin-bottom: var(--space-4);
+}
+
+.para h4 {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-caption);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.para p,
+.body p {
+  margin: 0 0 var(--space-2);
+}
+
+.para ul,
+.para ol,
+.plain {
+  margin: 0;
+  padding-left: var(--space-5);
+}
+
+.body code,
+.idLine code,
+.history code,
+.problems code {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono);
+}
+
+.flow + .flow {
+  margin-top: var(--space-2);
+}
+
+.flowName {
+  font-weight: 600;
+}
+
+.features {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.feature {
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.featureHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.priority {
+  padding: 0 var(--space-2);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-full);
+  font-size: var(--text-caption);
+  color: var(--ink-2);
+}
+
+.story {
+  font-style: italic;
+  color: var(--ink-2);
+}
+
+.criteria {
+  list-style: none;
+  padding-left: 0 !important;
+}
+
+.criteria li {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+
+.criteria em {
+  font-style: normal;
+  font-weight: 600;
+}
+
+.warnTag {
+  font-size: var(--text-small);
+  font-weight: 550;
+  color: var(--warn);
+}
+
+/* ---------- editing ---------- */
+
+.editing,
+.revise,
+.proposal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.proposal {
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--accent);
+}
+
+.proposal p,
+.proposal ul {
+  margin: 0;
+}
+
+.proposalHead {
+  font-weight: 600;
+}
+
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.field label,
+.revise label {
+  font-size: var(--text-small);
+  font-weight: 550;
+}
+
+.hint {
+  font-size: var(--text-caption);
+  color: var(--ink-3);
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+}
+
+.group legend {
+  padding: 0 var(--space-1);
+  font-size: var(--text-small);
+  font-weight: 600;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px dashed var(--hairline-strong);
+}
+
+.itemHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: var(--text-small);
+  font-weight: 600;
+}
+
+.itemActions {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.idLine {
+  margin: 0;
+}
+
+.error {
+  margin: 0;
+  font-size: var(--text-small);
+  font-weight: 550;
+  color: var(--danger);
+}
+
+.error:empty {
+  display: none;
+}
+
+/* ---------- U5b: the user flow diagram ---------- */
+
+.flowFigure {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.flowCaption {
+  font-size: var(--text-small);
+  color: var(--ink-2);
+}
+
+/* A wide diagram scrolls sideways inside the canvas, never the page. */
+.flowScroll {
+  overflow-x: auto;
+  padding: var(--space-3);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  background: var(--paper);
+}
+
+.flowSvg {
+  display: block;
+  margin-inline: auto;
+  font-family: var(--font-ui);
+}
+
+.flowScreen {
+  fill: var(--surface);
+  stroke: var(--hairline-strong);
+  stroke-width: 1;
+}
+
+.flowAction {
+  fill: var(--paper-2);
+  stroke: var(--hairline-strong);
+  stroke-width: 1;
+}
+
+.flowDecision {
+  fill: var(--surface);
+  stroke: var(--accent);
+  stroke-width: 1.5;
+}
+
+.flowEnds {
+  fill: var(--accent);
+  stroke: none;
+}
+
+.flowText {
+  fill: var(--ink);
+  font-size: 13px;
+}
+
+.flowTextOnAccent {
+  fill: var(--on-accent);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.flowFeature {
+  fill: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.flowTextOnAccent .flowFeature {
+  fill: var(--on-accent);
+}
+
+.flowEdge,
+.flowBack {
+  fill: none;
+  stroke: var(--ink-3);
+  stroke-width: 1.4;
+}
+
+/* A way back (coba lagi) is dashed, so it reads as a return, not a next step. */
+.flowBack {
+  stroke-dasharray: 5 4;
+}
+
+.flowArrowHead {
+  fill: var(--ink-3);
+}
+
+/* Labels on arrows sit on a halo of paper, readable over the lines they cross. */
+.flowEdgeLabel {
+  fill: var(--ink-2);
+  font-size: 12px;
+  paint-order: stroke;
+  stroke: var(--paper);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+.flowAsText summary {
+  cursor: pointer;
+  font-size: var(--text-small);
+  color: var(--ink-2);
+}
+
+.flowAsText ol {
+  margin: var(--space-2) 0 0;
+  padding-left: var(--space-5);
+  font-size: var(--text-small);
+}
+
+.flowAsText ul {
+  margin: 2px 0 var(--space-1);
+  padding-left: var(--space-4);
+  color: var(--ink-2);
+}
+
+/* L3: the PRD being written. A card with the three parts as steps joined by a line, the time
+   since it began, and under it a quiet outline of the document to come. Under reduced motion the
+   spinner and the shimmer stand still. */
+.writing {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 640px;
+  padding: var(--space-5);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  animation: global(rise) var(--dur-slow) var(--ease-standard) backwards;
+}
+
+.writingHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+}
+
+.writingNow {
+  margin: 0;
+  font-weight: 600;
+}
+
+.elapsed {
+  margin: 0;
+  font-size: var(--text-small);
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: start;
+  padding-bottom: var(--space-4);
+}
+
+.step:last-child {
+  padding-bottom: 0;
+}
+
+/* The line to the next step: inked once this step is done. */
+.step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 28px;
+  bottom: 4px;
+  left: 11px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--hairline-strong);
+  transition: background-color var(--dur-base) var(--ease-standard);
+}
+
+.step[data-state="done"]:not(:last-child)::after {
+  background: var(--accent-line);
+}
+
+.stepMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--hairline-strong);
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  color: var(--on-accent);
+  transition:
+    background-color var(--dur-base) var(--ease-standard),
+    border-color var(--dur-base) var(--ease-standard);
+}
+
+.step[data-state="done"] .stepMark {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.step[data-state="running"] .stepMark {
+  border-color: var(--accent-line);
+  border-top-color: var(--accent);
+  animation: spin 900ms linear infinite;
+}
+
+.stepText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding-top: 2px;
+}
+
+.stepName {
+  font-size: var(--text-body);
+  color: var(--ink-2);
+  transition: color var(--dur-base) var(--ease-standard);
+}
+
+.step[data-state="running"] .stepName {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.step[data-state="waiting"] .stepName {
+  color: var(--ink-3);
+}
+
+.stepState {
+  font-size: var(--text-caption);
+  color: var(--ink-3);
+}
+
+.step[data-state="running"] .stepState {
+  color: var(--accent);
+}
+
+.patience {
+  margin: 0;
+  font-size: var(--text-small);
+  color: var(--ink-3);
+}
+
+/* Where the document will appear: a few bars, a light passing over them. */
+.outline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 640px;
+  padding: 0 var(--space-1);
+}
+
+.outline span {
+  display: block;
+  height: 10px;
+  border-radius: var(--radius-xs);
+  background: linear-gradient(90deg, var(--hairline) 25%, var(--accent-soft) 50%, var(--hairline) 75%);
+  background-size: 300% 100%;
+  animation: shimmer 1.8s var(--ease-ink) infinite;
+}
+
+.outline .outlineTitle {
+  width: 38%;
+  height: 16px;
+  margin-top: var(--space-2);
+}
+
+.outline .outlineShort {
+  width: 64%;
+}
+
+/* What was just written arrives, once. */
+.arrived {
+  animation: global(rise) var(--dur-slow) var(--ease-standard) backwards;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
+/* The global rule turns animations into a fade-in; repeated forever that would blink. */
+@media (prefers-reduced-motion: reduce) {
+  .step[data-state="running"] .stepMark,
+  .outline span {
+    animation-name: none !important;
+  }
+}

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-stop-timer"
+description = "Enables the stop_timer command without any pre-configured scope."
+commands.allow = ["stop_timer"]
+
+[[permission]]
+identifier = "deny-stop-timer"
+description = "Denies the stop_timer command without any pre-configured scope."
+commands.deny = ["stop_timer"]

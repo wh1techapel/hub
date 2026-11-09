@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-set-learning-status"
+description = "Enables the set_learning_status command without any pre-configured scope."
+commands.allow = ["set_learning_status"]
+
+[[permission]]
+identifier = "deny-set-learning-status"
+description = "Denies the set_learning_status command without any pre-configured scope."
+commands.deny = ["set_learning_status"]

@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "hub-ui",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 1430
+    },
+    {
+      "name": "hub-ui-alt",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["vite", "--port", "1431"],
+      "port": 1431
+    }
+  ]
+}

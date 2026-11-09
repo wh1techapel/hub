@@ -1,0 +1,83 @@
+.thumb {
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  flex: none;
+  border-radius: var(--radius-sm);
+  background: var(--paper-2);
+  color: var(--ink-3);
+}
+
+.tile {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+}
+
+.row {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-xs);
+}
+
+.large {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-md);
+}
+
+.fill {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.icon {
+  width: 56%;
+  height: 56%;
+  object-fit: contain;
+}
+
+.row .icon {
+  width: 80%;
+  height: 80%;
+}
+
+.glyph {
+  width: 40%;
+  height: 40%;
+}
+
+.row .glyph {
+  width: 18px;
+  height: 18px;
+}
+
+/* A quiet hue per kind, from the pigments, so a list of glyphs is still easy to scan. */
+.thumb[data-kind="document"] {
+  --h: 250;
+}
+
+.thumb[data-kind="image"] {
+  --h: 160;
+}
+
+.thumb[data-kind="code"] {
+  --h: 300;
+}
+
+.thumb[data-kind="archive"] {
+  --h: 75;
+}
+
+.thumb[data-kind="media"] {
+  --h: 15;
+}
+
+.thumb[data-kind="folder"] {
+  --h: 55;
+}
+
+.thumb[data-kind] .glyph {
+  color: oklch(0.55 0.08 var(--h));
+}

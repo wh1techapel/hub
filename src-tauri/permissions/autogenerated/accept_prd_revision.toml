@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-accept-prd-revision"
+description = "Enables the accept_prd_revision command without any pre-configured scope."
+commands.allow = ["accept_prd_revision"]
+
+[[permission]]
+identifier = "deny-accept-prd-revision"
+description = "Denies the accept_prd_revision command without any pre-configured scope."
+commands.deny = ["accept_prd_revision"]

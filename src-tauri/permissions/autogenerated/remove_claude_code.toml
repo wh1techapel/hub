@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-remove-claude-code"
+description = "Enables the remove_claude_code command without any pre-configured scope."
+commands.allow = ["remove_claude_code"]
+
+[[permission]]
+identifier = "deny-remove-claude-code"
+description = "Denies the remove_claude_code command without any pre-configured scope."
+commands.deny = ["remove_claude_code"]

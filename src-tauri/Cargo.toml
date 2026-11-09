@@ -1,0 +1,59 @@
+[package]
+name = "hub"
+description = "Hub desktop app: the windows, the tray, reminders, and the commands the UI may call."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[lib]
+name = "hub_lib"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+hub-core.workspace = true
+hub-api.workspace = true
+hub-ai.workspace = true
+# Hentikan for a Studio reply (a watch channel per reply). Already in the build through Tauri.
+tokio = { version = "1", features = ["sync"] }
+jiff.workspace = true
+rusqlite.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tauri = { version = "2", features = ["tray-icon", "image-png"] }
+tauri-plugin-autostart = "2"
+tauri-plugin-global-shortcut = "2"
+tauri-plugin-single-instance = "2"
+
+[target.'cfg(windows)'.dependencies]
+# The title bar in the colour of the page (DWM caption colour), the startup error box, and the
+# registry entries for notifications (AppUserModelId) and the hubapp:// link of their buttons.
+windows-sys = { version = "0.61", features = [
+    "Win32_Foundation",
+    "Win32_Graphics_Dwm",
+    "Win32_System_Registry",
+    "Win32_UI_WindowsAndMessaging",
+] }
+# Windows notifications (notify.rs): only the toast and XML namespaces.
+windows = { version = "0.62", features = [
+    "Data_Xml_Dom",
+    "UI_Notifications",
+    "Win32_System_WinRT",
+    # The Library (shell.rs, thumbs.rs): Explorer's thumbnails, opening and showing files, the
+    # Open dialog.
+    "Win32_Foundation",
+    "Win32_Graphics_Gdi",
+    "Win32_System_Com",
+    "Win32_UI_Shell",
+    "Win32_UI_Shell_Common",
+    "Win32_UI_WindowsAndMessaging",
+] }
+# Thumbnails as PNG data URLs (thumbs.rs): both already in the build through Tauri (Cargo.lock).
+png = "0.18"
+base64 = "0.22"
+
+[dev-dependencies]
+tempfile.workspace = true

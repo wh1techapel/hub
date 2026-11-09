@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-list-ctf"
+description = "Enables the list_ctf command without any pre-configured scope."
+commands.allow = ["list_ctf"]
+
+[[permission]]
+identifier = "deny-list-ctf"
+description = "Denies the list_ctf command without any pre-configured scope."
+commands.deny = ["list_ctf"]

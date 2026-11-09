@@ -1,0 +1,12 @@
+version: 2
+updates:
+  # Keeps the actions' pinned commit SHAs current. A new version waits a week before it is offered.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns: ["*"]

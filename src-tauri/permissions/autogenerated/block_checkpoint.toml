@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-block-checkpoint"
+description = "Enables the block_checkpoint command without any pre-configured scope."
+commands.allow = ["block_checkpoint"]
+
+[[permission]]
+identifier = "deny-block-checkpoint"
+description = "Denies the block_checkpoint command without any pre-configured scope."
+commands.deny = ["block_checkpoint"]

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-advance-studio-stage"
+description = "Enables the advance_studio_stage command without any pre-configured scope."
+commands.allow = ["advance_studio_stage"]
+
+[[permission]]
+identifier = "deny-advance-studio-stage"
+description = "Denies the advance_studio_stage command without any pre-configured scope."
+commands.deny = ["advance_studio_stage"]
