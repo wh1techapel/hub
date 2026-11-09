@@ -25,6 +25,10 @@ tokio = { version = "1", features = ["rt-multi-thread", "macros", "time", "sync"
 # Plain HTTP to 127.0.0.1 only: no TLS, and no proxy (the system proxy must never see the token).
 reqwest = { version = "0.13", default-features = false, features = ["json"] }
 
+[target.'cfg(windows)'.dependencies]
+# GetLongPathNameW (place.rs): a data folder written with 8.3 short names is not a redirection.
+windows-sys = { version = "0.61", features = ["Win32_Storage_FileSystem"] }
+
 [dev-dependencies]
 hub-core.workspace = true
 hub-api.workspace = true

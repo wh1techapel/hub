@@ -11,7 +11,10 @@
 //! themselves (both checked on the owner's machine, 2026-11-08). A Hub started from there would
 //! keep its data where the owner's Hub never looks, so the bridge does not start Hub then; it asks
 //! the owner to open Hub. The check writes one empty file into the data folder and asks Windows
-//! where it really went (`canonicalize` reads the final path of the open file).
+//! where it really went (`canonicalize` reads the final path of the open file). That final path
+//! spells every folder out in full, so it is compared with the probe's own path in full as well
+//! (`GetLongPathNameW`, which follows no redirection): `C:\Users\RUNNER~1\...`, the 8.3 short
+//! form GitHub's Windows runners give `%TEMP%`, is the same folder, not a redirection.
 
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
@@ -37,11 +40,40 @@ pub fn writes_redirected(data_dir: &Path) -> bool {
         return true;
     }
     let landed = std::fs::canonicalize(&probe).ok();
+    let written = long_path(&probe);
     let _ = std::fs::remove_file(&probe);
     match landed {
-        Some(landed) => !same_path(&landed, &probe),
+        Some(landed) => !same_path(&landed, &written),
         None => true,
     }
+}
+
+/// `path` with every 8.3 short name (`RUNNER~1`) written out in full, or `path` as it is when
+/// Windows cannot say. Unlike `canonicalize`, it keeps the path the process asked for: a
+/// redirected write still shows up as a different folder.
+#[cfg(windows)]
+fn long_path(path: &Path) -> PathBuf {
+    use std::os::windows::ffi::{OsStrExt, OsStringExt};
+    use windows_sys::Win32::Storage::FileSystem::GetLongPathNameW;
+
+    let wide: Vec<u16> = path.as_os_str().encode_wide().chain(Some(0)).collect();
+    let mut buffer = vec![0u16; 260];
+    loop {
+        let capacity = u32::try_from(buffer.len()).unwrap_or(u32::MAX);
+        // SAFETY: `wide` ends in a NUL, and Windows writes at most `capacity` units into `buffer`.
+        let written = unsafe { GetLongPathNameW(wide.as_ptr(), buffer.as_mut_ptr(), capacity) } as usize;
+        match written {
+            0 => return path.to_path_buf(),
+            n if n < buffer.len() => return PathBuf::from(OsString::from_wide(&buffer[..n])),
+            // Too small: `n` is the length the long path needs, its NUL included.
+            n => buffer.resize(n, 0),
+        }
+    }
+}
+
+#[cfg(not(windows))]
+fn long_path(path: &Path) -> PathBuf {
+    path.to_path_buf()
 }
 
 /// Two paths as Windows compares them: no `\\?\` prefix, either slash, any case.
@@ -80,6 +112,34 @@ mod tests {
         assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 0);
         // A data folder that does not exist yet is judged by its parent.
         assert!(!writes_redirected(&dir.path().join("Hub")));
+    }
+
+    /// GitHub's Windows runners set `%TEMP%` to `C:\Users\RUNNER~1\...`. The folder's 8.3 short
+    /// name is the same folder, so it is not a redirection either.
+    #[cfg(windows)]
+    #[test]
+    fn a_folder_named_by_its_short_name_is_not_redirected() {
+        let base = tempfile::tempdir().unwrap();
+        let folder = base.path().join("a folder with a long name");
+        std::fs::create_dir(&folder).unwrap();
+        let short = short_path(&folder);
+        assert!(!writes_redirected(&short));
+        assert_eq!(long_path(&short), long_path(&folder));
+        assert_eq!(std::fs::read_dir(&folder).unwrap().count(), 0);
+    }
+
+    /// The 8.3 form of `path`, or `path` itself on a volume that makes no short names.
+    #[cfg(windows)]
+    fn short_path(path: &Path) -> PathBuf {
+        use std::os::windows::ffi::{OsStrExt, OsStringExt};
+        use windows_sys::Win32::Storage::FileSystem::GetShortPathNameW;
+
+        let wide: Vec<u16> = path.as_os_str().encode_wide().chain(Some(0)).collect();
+        let mut buffer = vec![0u16; 1024];
+        // SAFETY: `wide` ends in a NUL, and Windows writes at most the buffer's length into it.
+        let written = unsafe { GetShortPathNameW(wide.as_ptr(), buffer.as_mut_ptr(), 1024) } as usize;
+        assert!(written > 0 && written < buffer.len(), "GetShortPathNameW failed for {}", path.display());
+        PathBuf::from(std::ffi::OsString::from_wide(&buffer[..written]))
     }
 
     #[test]
