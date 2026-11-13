@@ -153,9 +153,9 @@ overrides it for tests and smokes. Note: inside the Claude sandbox `%LOCALAPPDAT
 | Table | Holds |
 |---|---|
 | `areas` | Ruang: name, pigment, order. |
-| `projects` | name, description, area, pigment, status (`active`, `paused`, `done`, `archived`), start and target dates, progress mode (`milestones`, `tasks`). |
+| `projects` | name, description, area, pigment, status (`active`, `paused`, `done`, `archived`), start and target dates. |
 | `milestones` | project, title, due date, done time, order. |
-| `tasks` | title, notes, status (`todo`, `doing`, `done`, `cancelled`), priority 0 to 3, do date, deadline, estimate, project, area, parent (subtasks), order key, completed time, source. |
+| `tasks` | title, notes, status (`todo`, `doing`, `done`, `cancelled`), priority 0 to 3, do date, deadline, estimate, project, area, milestone (one of its project's, migration 0009), parent (subtasks), order key, completed time, source. |
 | `focus` | date, task, slot 1 to 3 (Fokus for a day). |
 | `events` | title, start, end, all day, location, notes, project, pigment, linked task (a time block), routine occurrence override, source. |
 | `routines` | title, kind (`lesson`, `habit`, `study`, `other`), RRULE, local start time, duration, pigment, active. |
@@ -178,8 +178,10 @@ overrides it for tests and smokes. Note: inside the Claude sandbox `%LOCALAPPDAT
 | `studio_*` | Hub Studio (migration 0005, `docs/studio.md` "Data"): projects, messages, ledger, PRD versions, roadmaps, checkpoints, their tasks, reports, requests. A saved PRD version and a report never change (triggers). Migration 0006 adds the ledger's `area` (the part of an idea an item settles, R2); 0007 adds `studio_stacks` (stage 2's tech stack, R3); 0008 adds `studio_claude_sessions` (Claude Code's sessions and last calls as the bridge reports them, R5; not exported, not in Jejak, kept 30 days and at most 100). |
 | `search` | FTS5 index over titles and notes of tasks, projects, files, Koleksi, learning items, events, journal; kept in step by triggers. |
 
-Progress is derived: a project's progress is done milestones over milestones (or done tasks over
-tasks when it has none). Insights are SQL over `activity`, `learning_sessions`, and `tasks`. There is
+Progress is derived: a project's progress is done tasks over tasks (top-level, not cancelled), the
+same way whether it has milestones or not. A milestone groups some of the project's tasks and is
+reached once all of them are done; a milestone without tasks keeps the owner's own tick
+(migration 0009, which also dropped the unused `progress_mode`). Insights are SQL over `activity`, `learning_sessions`, and `tasks`. There is
 no hand-typed percentage anywhere.
 
 ### Backups

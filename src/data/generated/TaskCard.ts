@@ -16,7 +16,11 @@ dueDate: string | null, dueTime: string | null, estimateMin: number | null,
 /**
  * The deadline has passed and the task is not done.
  */
-overdue: boolean, project: ProjectRef | null, area: AreaRef | null, parentId: string | null, subtasksDone: number, subtasksTotal: number, 
+overdue: boolean, project: ProjectRef | null, area: AreaRef | null, parentId: string | null, 
+/**
+ * The milestone of its project this task belongs to, if any.
+ */
+milestoneId: string | null, subtasksDone: number, subtasksTotal: number, 
 /**
  * The task has a time block on the calendar.
  */

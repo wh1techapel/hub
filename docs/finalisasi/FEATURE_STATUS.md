@@ -21,7 +21,7 @@ Kolom "Uji pemilik" berisi pemeriksaan manual yang masih terbuka.
 |---|---|---|---|---|
 | Hari Ini (Busur Hari, Sekarang, Fokus, Jadwal, Belajar) | Selesai dan terverifikasi | Tidak ada | - | Tangkapan layar untuk laporan |
 | Proyek & Tugas (Kotak Masuk, Mendatang, Semua, Selesai, panel tugas, langkah, prioritas, urutan, hapus dengan Urungkan) | Selesai dan terverifikasi | Tidak ada | - | - |
-| Proyek dan Ruang (progres turunan, milestone, langkah berikutnya, riwayat) | Selesai dan terverifikasi | Tidak ada | - | - |
+| Proyek dan Ruang (progres dari tugas, tonggak berisi tugas, langkah berikutnya, riwayat) | Selesai dan terverifikasi | Tidak ada | - | - |
 | Kalender (Hari, Minggu, Bulan, seret untuk membuat dan memindah, blok waktu) | Selesai dan terverifikasi | Uji pemilik: menyeret tugas dari baki Kalender ke kisi dengan tetikus di jendela asli | P1 | Daftar uji manual (F1) |
 | Rutinitas (jadwal sekolah, lewati, pindah sekali) | Selesai dan terverifikasi | Jadwal sekolah asli belum dimasukkan pemilik (data, bukan kode) | P2 | Opsional untuk demo |
 | Pengingat (penjadwal, notifikasi Windows, terlewat) | Selesai dan terverifikasi (penjadwal di uji asap) | Tidak dapat diverifikasi: tombol "Tunda 10 m" dan "Selesai" pada notifikasi Windows nyata; notifikasi Tutup Hari 21.00 | P1 | Daftar uji manual (F1) |

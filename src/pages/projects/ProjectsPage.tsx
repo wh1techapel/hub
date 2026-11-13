@@ -107,7 +107,7 @@ function ProjectRow({ project, now }: { project: ProjectSummary; now: Date }) {
       </Link>
       <ProgressBar progress={progress} label={project.name} />
       <div className={styles.cardMeta}>
-        <span>{progress.total > 0 ? id.projects.progressOf(progress.mode, progress.done, progress.total) : id.projects.noProgress}</span>
+        <span>{progress.total > 0 ? id.projects.progressOf(progress.done, progress.total) : id.projects.noProgress}</span>
         {project.targetDate && <span>{id.projects.target(relativeDate(project.targetDate, now))}</span>}
         {project.openTasks > 0 && <span>{id.projects.openTasks(project.openTasks)}</span>}
       </div>

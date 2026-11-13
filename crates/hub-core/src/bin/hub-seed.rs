@@ -80,8 +80,8 @@ fn seed(root: PathBuf) -> Result<String> {
         let hub_project = project(conn, "Hub", Pigment::Kunyit, &own_area, None)?;
         let learning = project(conn, "Jalur Jr Penetration Tester", Pigment::Lavender, &cyber_area, None)?;
         let school = project(conn, "Presentasi KIK", Pigment::Lazuardi, &school_area, Some(in_days(6)))?;
-        projects::add_milestone(conn, &lab, "Topologi dan konfigurasi", None, Actor::Owner, now)?;
-        projects::add_milestone(conn, &lab, "Laporan ditulis", Some(&in_days(1)), Actor::Owner, now)?;
+        let (topology, _) = projects::add_milestone(conn, &lab, "Topologi dan konfigurasi", None, Actor::Owner, now)?;
+        let (written, _) = projects::add_milestone(conn, &lab, "Laporan ditulis", Some(&in_days(1)), Actor::Owner, now)?;
 
         let lesson = |title: &str, days: &[WeekDay], start: &str, minutes: u32, location: &str, pigment| RoutineInput {
             title: title.into(),
@@ -125,7 +125,9 @@ fn seed(root: PathBuf) -> Result<String> {
         let task = |conn: &mut rusqlite::Connection, title: &str, project: &str, input: TaskInput, actor| {
             tasks::create(conn, TaskInput { title: title.into(), project_id: Some(project.into()), ..input }, actor, now).map(|(id, _)| id)
         };
-        let report = task(conn, "Laporan Praktikum 5: VLAN dan Trunking", &lab, TaskInput { due_date: Some(in_days(1)), due_time: Some("23:59".into()), priority: 2, estimate_min: Some(90), ..Default::default() }, Actor::Owner)?;
+        let packet_tracer = task(conn, "Rangkai topologi VLAN di Packet Tracer", &lab, TaskInput { milestone_id: Some(topology), ..Default::default() }, Actor::Owner)?;
+        tasks::complete(conn, &packet_tracer, Actor::Owner, now)?;
+        let report = task(conn, "Laporan Praktikum 5: VLAN dan Trunking", &lab, TaskInput { due_date: Some(in_days(1)), due_time: Some("23:59".into()), priority: 2, estimate_min: Some(90), milestone_id: Some(written), ..Default::default() }, Actor::Owner)?;
         let nmap = task(conn, "THM: Nmap Live Host Discovery", &learning, TaskInput { do_date: Some(date.clone()), priority: 1, estimate_min: Some(45), ..Default::default() }, Actor::Owner)?;
         let design = task(conn, "Hub: kunci arah desain", &hub_project, TaskInput { do_date: Some(date.clone()), ..Default::default() }, Actor::Owner)?;
         task(conn, "Revisi slide presentasi KIK", &school, TaskInput { do_date: Some(date.clone()), ..Default::default() }, Actor::Owner)?;

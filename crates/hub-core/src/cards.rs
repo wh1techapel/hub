@@ -43,6 +43,8 @@ pub struct TaskCard {
     pub project: Option<ProjectRef>,
     pub area: Option<AreaRef>,
     pub parent_id: Option<String>,
+    /// The milestone of its project this task belongs to, if any.
+    pub milestone_id: Option<String>,
     pub subtasks_done: u32,
     pub subtasks_total: u32,
     /// The task has a time block on the calendar.
@@ -59,7 +61,8 @@ pub const TASK_COLUMNS: &str = "t.id, t.title, t.status, t.priority, t.do_date, 
      (SELECT count(*) FROM tasks s WHERE s.parent_id = t.id AND s.deleted_at IS NULL AND s.status <> 'cancelled'),
      EXISTS (SELECT 1 FROM events e WHERE e.task_id = t.id AND e.deleted_at IS NULL),
      t.completed_at,
-     (t.status NOT IN ('done', 'cancelled') AND t.due_date IS NOT NULL AND t.due_date < ?1)";
+     (t.status NOT IN ('done', 'cancelled') AND t.due_date IS NOT NULL AND t.due_date < ?1),
+     t.milestone_id";
 
 pub const TASK_JOINS: &str = "LEFT JOIN projects p ON p.id = t.project_id AND p.deleted_at IS NULL
      LEFT JOIN areas a ON a.id = coalesce(t.area_id, p.area_id) AND a.deleted_at IS NULL";
@@ -94,6 +97,7 @@ pub fn task_card(row: &Row<'_>) -> rusqlite::Result<TaskCard> {
         project,
         area,
         parent_id: row.get(15)?,
+        milestone_id: row.get(21)?,
         subtasks_done: row.get(16)?,
         subtasks_total: row.get(17)?,
         scheduled: row.get(18)?,

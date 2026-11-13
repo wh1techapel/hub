@@ -84,6 +84,7 @@ interface TaskRec {
   projectId: string | null;
   areaId: string | null;
   parentId: string | null;
+  milestoneId: string | null;
   order: number;
   completedAt: string | null;
   source: Source;
@@ -130,8 +131,13 @@ interface ProjectRec {
   deleted: boolean;
 }
 
-interface MilestoneRec extends Milestone {
+/** A milestone as stored: its own tick only counts while it has no tasks (like the core). */
+interface MilestoneRec {
+  id: string;
   projectId: string;
+  title: string;
+  dueDate: string | null;
+  ticked: boolean;
 }
 
 type Exception = { kind: "skipped" } | { kind: "moved"; slot: Slot };
@@ -227,9 +233,11 @@ function demoStore(now: Date): Store {
   const hub = project("Hub", "kunyit", own);
   const learning = project("Jalur Jr Penetration Tester", "lavender", cyber);
   const kik = project("Presentasi KIK", "lazuardi", school, addDays(today, 6));
+  const topology = newId();
+  const written = newId();
   store.milestones.push(
-    { id: newId(), projectId: lab, title: "Topologi dan konfigurasi", dueDate: null, done: true },
-    { id: newId(), projectId: lab, title: "Laporan ditulis", dueDate: addDays(today, 1), done: false },
+    { id: topology, projectId: lab, title: "Topologi dan konfigurasi", dueDate: null, ticked: false },
+    { id: written, projectId: lab, title: "Laporan ditulis", dueDate: addDays(today, 1), ticked: false },
   );
   const lesson = (
     title: string,
@@ -274,6 +282,7 @@ function demoStore(now: Date): Store {
       projectId,
       areaId: null,
       parentId: null,
+      milestoneId: null,
       order: store.tasks.length + 1,
       completedAt: null,
       source: "owner",
@@ -283,7 +292,13 @@ function demoStore(now: Date): Store {
     store.tasks.push(t);
     return t.id;
   };
+  task("Rangkai topologi VLAN di Packet Tracer", lab, {
+    milestoneId: topology,
+    status: "done",
+    completedAt: new Date(now.getTime() - 7_200_000).toISOString(),
+  });
   const report = task("Laporan Praktikum 5: VLAN dan Trunking", lab, {
+    milestoneId: written,
     dueDate: addDays(today, 1),
     dueTime: "23:59",
     priority: 2,
@@ -453,6 +468,7 @@ export function createMockBackend(
       project: p ? { id: p.id, name: p.name, pigment: p.pigment } : null,
       area: a ? { id: a.id, name: a.name, pigment: a.pigment } : null,
       parentId: t.parentId,
+      milestoneId: t.milestoneId,
       subtasksDone: steps.filter((s) => s.status === "done").length,
       subtasksTotal: steps.length,
       scheduled: store.events.some((e) => !e.deleted && e.taskId === t.id),
@@ -491,11 +507,34 @@ export function createMockBackend(
     return picked.map(card);
   }
 
-  function taskInput(input: TaskInput) {
+  function taskInput(input: TaskInput, isStep = input.parentId !== null) {
     const title = input.title.trim();
     if (!title || title.length > 300) fail("title", "length");
     if (input.dueTime && !input.dueDate) fail("dueTime", "order");
-    return { ...input, title };
+    if (input.milestoneId) {
+      // Like the core: one of the task's own project's milestones, and never on a step.
+      const m = store.milestones.find((x) => x.id === input.milestoneId);
+      if (!m || isStep || m.projectId !== input.projectId) fail("milestoneId", "unknown");
+    }
+    return { ...input, title, milestoneId: input.milestoneId ?? null };
+  }
+
+  /** A milestone's tasks: top-level, not cancelled, still in its project. */
+  function milestoneTasks(m: MilestoneRec): TaskRec[] {
+    return live().filter((t) => t.milestoneId === m.id && t.projectId === m.projectId && t.parentId === null && t.status !== "cancelled");
+  }
+
+  function milestoneView(m: MilestoneRec): Milestone {
+    const tasks = milestoneTasks(m);
+    const tasksDone = tasks.filter((t) => t.status === "done").length;
+    return {
+      id: m.id,
+      title: m.title,
+      dueDate: m.dueDate,
+      done: tasks.length > 0 ? tasksDone === tasks.length : m.ticked,
+      tasksDone,
+      tasksTotal: tasks.length,
+    };
   }
 
   function focusOf(date: string): TaskCard[] {
@@ -628,11 +667,9 @@ export function createMockBackend(
   }
 
   function summary(p: ProjectRec): ProjectSummary {
-    const milestones = store.milestones.filter((m) => m.projectId === p.id);
     const tasks = live().filter((t) => t.projectId === p.id && t.parentId === null && t.status !== "cancelled");
-    const useMilestones = milestones.length > 0;
-    const doneCount = useMilestones ? milestones.filter((m) => m.done).length : tasks.filter((t) => t.status === "done").length;
-    const total = useMilestones ? milestones.length : tasks.length;
+    const doneCount = tasks.filter((t) => t.status === "done").length;
+    const total = tasks.length;
     const next = tasks.filter(open).sort((a, b) => a.order - b.order)[0];
     const a = area(p.areaId);
     return {
@@ -644,7 +681,6 @@ export function createMockBackend(
       status: p.status,
       targetDate: p.targetDate,
       progress: {
-        mode: useMilestones ? "milestones" : "tasks",
         done: doneCount,
         total,
         percent: total ? Math.floor((doneCount * 100) / total) : 0,
@@ -946,6 +982,7 @@ export function createMockBackend(
         projectId: i.projectId,
         areaId: i.areaId,
         parentId: i.parentId,
+        milestoneId: i.milestoneId,
         order: Math.max(0, ...store.tasks.map((x) => x.order)) + 1,
         completedAt: null,
         source: "owner",
@@ -958,7 +995,7 @@ export function createMockBackend(
     },
     update_task: ({ id, input }) => {
       const t = live().find((x) => x.id === id) ?? fail("id", "unknown");
-      const i = taskInput(input as TaskInput);
+      const i = taskInput(input as TaskInput, t.parentId !== null);
       Object.assign(t, {
         title: i.title,
         notes: i.notes,
@@ -969,6 +1006,7 @@ export function createMockBackend(
         estimateMin: i.estimateMin,
         projectId: i.projectId,
         areaId: i.areaId,
+        milestoneId: i.milestoneId,
       });
       record("owner", "updated", "task", t.id, t.title);
       done("task", t.id);
@@ -1013,9 +1051,7 @@ export function createMockBackend(
       const p = project(id as string) ?? fail("id", "unknown");
       return {
         summary: summary(p),
-        milestones: store.milestones
-          .filter((m) => m.projectId === p.id)
-          .map(({ id: mid, title, dueDate, done: isDone }) => ({ id: mid, title, dueDate, done: isDone })),
+        milestones: store.milestones.filter((m) => m.projectId === p.id).map(milestoneView),
         tasks: [
           ...live()
             .filter((t) => t.projectId === p.id && t.parentId === null && open(t))
@@ -1068,7 +1104,7 @@ export function createMockBackend(
     delete_project: ({ id }) => {
       const p = project(id as string) ?? fail("id", "unknown");
       p.deleted = true;
-      for (const t of store.tasks.filter((x) => x.projectId === p.id)) t.projectId = null;
+      for (const t of store.tasks.filter((x) => x.projectId === p.id)) Object.assign(t, { projectId: null, milestoneId: null });
       done("project");
     },
     add_milestone: ({ projectId, title, dueDate }) => {
@@ -1077,7 +1113,7 @@ export function createMockBackend(
         projectId: projectId as string,
         title: (title as string).trim(),
         dueDate: dueDate as string | null,
-        done: false,
+        ticked: false,
       };
       if (!m.title) fail("title", "length");
       store.milestones.push(m);
@@ -1091,12 +1127,14 @@ export function createMockBackend(
     },
     set_milestone_done: ({ id, done: isDone }) => {
       const m = store.milestones.find((x) => x.id === id) ?? fail("id", "unknown");
-      m.done = isDone as boolean;
+      if (milestoneTasks(m).length > 0) fail("done", "derived");
+      m.ticked = isDone as boolean;
       done("project", m.projectId);
     },
     delete_milestone: ({ id }) => {
       const index = store.milestones.findIndex((x) => x.id === id);
       const [m] = store.milestones.splice(index, 1);
+      for (const t of store.tasks.filter((x) => x.milestoneId === m?.id)) t.milestoneId = null;
       done("project", m?.projectId);
     },
     list_areas: () =>
@@ -1438,6 +1476,7 @@ export function createMockBackend(
         projectId: null,
         areaId: null,
         parentId: null,
+        milestoneId: null,
         order: Math.max(0, ...store.tasks.map((x) => x.order)) + 1,
         completedAt: null,
         source: actor === "ultron" ? "ultron" : "owner",

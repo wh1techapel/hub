@@ -1,5 +1,6 @@
-//! Proyek: outcomes with tasks, milestones, and a history. Progress is derived, never typed in:
-//! done milestones over milestones, or done tasks over tasks when there are no milestones.
+//! Proyek: outcomes with tasks, milestones, and a history. Progress is derived, never typed in, and
+//! always the same way: done tasks over tasks (top-level, not cancelled). A milestone is a dated
+//! group of the project's tasks: done once all of them are, or ticked by hand while it has none.
 
 use jiff::Timestamp;
 use rusqlite::{params, Connection, OptionalExtension, Transaction};
@@ -33,19 +34,11 @@ pub struct ProjectInput {
     pub target_date: Option<String>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, TS)]
-#[serde(rename_all = "snake_case")]
-#[ts(export)]
-pub enum ProgressMode {
-    Milestones,
-    Tasks,
-}
-
+/// Done tasks over tasks.
 #[derive(Debug, Clone, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export)]
 pub struct Progress {
-    pub mode: ProgressMode,
     pub done: u32,
     pub total: u32,
     pub percent: u32,
@@ -84,7 +77,12 @@ pub struct Milestone {
     pub id: String,
     pub title: String,
     pub due_date: Option<String>,
+    /// All its tasks are done; with no tasks, the owner's own tick.
     pub done: bool,
+    /// Its tasks (top-level, not cancelled), and how many of them are done. With any, `done`
+    /// follows them and cannot be ticked by hand.
+    pub tasks_done: u32,
+    pub tasks_total: u32,
 }
 
 #[derive(Debug, Clone, Serialize, TS)]
@@ -206,7 +204,10 @@ pub fn delete(conn: &mut Connection, id: &str, actor: Actor, now: Timestamp) -> 
     let name = name.ok_or(Error::NotFound("project"))?;
     let stamp = instant(now);
     tx.execute("UPDATE projects SET deleted_at = ?2, updated_at = ?2 WHERE id = ?1", params![id, stamp])?;
-    tx.execute("UPDATE tasks SET project_id = NULL, updated_at = ?2 WHERE project_id = ?1", params![id, stamp])?;
+    tx.execute(
+        "UPDATE tasks SET project_id = NULL, milestone_id = NULL, updated_at = ?2 WHERE project_id = ?1",
+        params![id, stamp],
+    )?;
     record(&tx, now, actor, Verb::Deleted, Entity::Project, &id, &name)?;
     tx.commit()?;
     Ok(Change::all(Entity::Project))
@@ -214,8 +215,6 @@ pub fn delete(conn: &mut Connection, id: &str, actor: Actor, now: Timestamp) -> 
 
 const SUMMARY_COLUMNS: &str = "p.id, p.name, p.description, p.pigment, a.id, a.name, a.pigment, p.status,
      p.target_date, p.source,
-     (SELECT count(*) FROM milestones m WHERE m.project_id = p.id AND m.deleted_at IS NULL),
-     (SELECT count(*) FROM milestones m WHERE m.project_id = p.id AND m.deleted_at IS NULL AND m.done_at IS NOT NULL),
      (SELECT count(*) FROM tasks t WHERE t.project_id = p.id AND t.deleted_at IS NULL AND t.parent_id IS NULL AND t.status <> 'cancelled'),
      (SELECT count(*) FROM tasks t WHERE t.project_id = p.id AND t.deleted_at IS NULL AND t.parent_id IS NULL AND t.status = 'done'),
      (SELECT t.id FROM tasks t WHERE t.project_id = p.id AND t.deleted_at IS NULL AND t.parent_id IS NULL
@@ -228,17 +227,10 @@ fn summary(row: &rusqlite::Row<'_>) -> rusqlite::Result<ProjectSummary> {
         Some(id) => Some(AreaRef { id, name: row.get(5)?, pigment: row.get(6)? }),
         None => None,
     };
-    let milestones: u32 = row.get(10)?;
-    let milestones_done: u32 = row.get(11)?;
-    let tasks: u32 = row.get(12)?;
-    let tasks_done: u32 = row.get(13)?;
-    let (mode, done, total) = if milestones > 0 {
-        (ProgressMode::Milestones, milestones_done, milestones)
-    } else {
-        (ProgressMode::Tasks, tasks_done, tasks)
-    };
-    let next_step = match row.get::<_, Option<String>>(14)? {
-        Some(id) => Some(NextStep { id, title: row.get(15)? }),
+    let tasks: u32 = row.get(10)?;
+    let tasks_done: u32 = row.get(11)?;
+    let next_step = match row.get::<_, Option<String>>(12)? {
+        Some(id) => Some(NextStep { id, title: row.get(13)? }),
         None => None,
     };
     Ok(ProjectSummary {
@@ -250,7 +242,7 @@ fn summary(row: &rusqlite::Row<'_>) -> rusqlite::Result<ProjectSummary> {
         status: row.get(7)?,
         target_date: row.get(8)?,
         source: row.get(9)?,
-        progress: Progress { mode, done, total, percent: (done * 100).checked_div(total).unwrap_or(0) },
+        progress: Progress { done: tasks_done, total: tasks, percent: (tasks_done * 100).checked_div(tasks).unwrap_or(0) },
         next_step,
         open_tasks: tasks - tasks_done,
     })
@@ -278,13 +270,23 @@ pub fn detail(conn: &Connection, id: &str, today: &str) -> Result<ProjectDetail>
     );
     let summary = conn.query_row(&sql, [&id], summary).optional()?.ok_or(Error::NotFound("project"))?;
 
-    let mut statement = conn.prepare(
-        "SELECT id, title, due_date, done_at IS NOT NULL FROM milestones
-         WHERE project_id = ?1 AND deleted_at IS NULL ORDER BY order_key",
-    )?;
+    let mut statement = conn.prepare(&format!(
+        "SELECT m.id, m.title, m.due_date, m.done_at IS NOT NULL, {MILESTONE_TASKS} FROM milestones m
+         WHERE m.project_id = ?1 AND m.deleted_at IS NULL ORDER BY m.order_key"
+    ))?;
     let milestones = statement
         .query_map([&id], |row| {
-            Ok(Milestone { id: row.get(0)?, title: row.get(1)?, due_date: row.get(2)?, done: row.get(3)? })
+            let ticked: bool = row.get(3)?;
+            let tasks_total: u32 = row.get(4)?;
+            let tasks_done: u32 = row.get(5)?;
+            Ok(Milestone {
+                id: row.get(0)?,
+                title: row.get(1)?,
+                due_date: row.get(2)?,
+                done: if tasks_total > 0 { tasks_done == tasks_total } else { ticked },
+                tasks_done,
+                tasks_total,
+            })
         })?
         .collect::<rusqlite::Result<Vec<_>>>()?;
 
@@ -326,6 +328,13 @@ pub fn detail(conn: &Connection, id: &str, today: &str) -> Result<ProjectDetail>
     let files = crate::files::list(conn, &crate::files::FileQuery { project_id: Some(id.clone()), limit: Some(100), ..Default::default() })?;
     Ok(ProjectDetail { summary, milestones, tasks, activity, files })
 }
+
+/// A milestone's tasks (`m` is the milestone): how many, then how many are done.
+const MILESTONE_TASKS: &str = "
+     (SELECT count(*) FROM tasks t WHERE t.milestone_id = m.id AND t.project_id = m.project_id
+        AND t.deleted_at IS NULL AND t.parent_id IS NULL AND t.status <> 'cancelled'),
+     (SELECT count(*) FROM tasks t WHERE t.milestone_id = m.id AND t.project_id = m.project_id
+        AND t.deleted_at IS NULL AND t.parent_id IS NULL AND t.status = 'done')";
 
 fn milestone_title(title: &str) -> Result<String> {
     let title = title.trim();
@@ -399,17 +408,24 @@ pub fn update_milestone(
     Ok(Change::one(Entity::Project, project))
 }
 
+/// Tick (or untick) a milestone that has no tasks. One with tasks is done when they are.
 pub fn set_milestone_done(conn: &mut Connection, id: &str, done: bool, actor: Actor, now: Timestamp) -> Result<Option<Change>> {
     let id = ids::parse("id", id)?;
     let tx = conn.transaction()?;
-    let row: Option<(String, String, bool)> = tx
+    let row: Option<(String, String, bool, u32)> = tx
         .query_row(
-            "SELECT project_id, title, done_at IS NOT NULL FROM milestones WHERE id = ?1 AND deleted_at IS NULL",
+            &format!(
+                "SELECT m.project_id, m.title, m.done_at IS NOT NULL, {MILESTONE_TASKS} FROM milestones m
+                 WHERE m.id = ?1 AND m.deleted_at IS NULL"
+            ),
             [&id],
-            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)),
         )
         .optional()?;
-    let (project, title, was_done) = row.ok_or(Error::NotFound("milestone"))?;
+    let (project, title, was_done, tasks) = row.ok_or(Error::NotFound("milestone"))?;
+    if tasks > 0 {
+        return invalid("done", Reason::Derived);
+    }
     if was_done == done {
         return Ok(None);
     }
@@ -423,6 +439,7 @@ pub fn set_milestone_done(conn: &mut Connection, id: &str, done: bool, actor: Ac
     Ok(Some(Change::one(Entity::Project, project)))
 }
 
+/// Remove a milestone. Its tasks stay in the project, without a milestone.
 pub fn delete_milestone(conn: &mut Connection, id: &str, actor: Actor, now: Timestamp) -> Result<Change> {
     let id = ids::parse("id", id)?;
     let tx = conn.transaction()?;
@@ -436,6 +453,7 @@ pub fn delete_milestone(conn: &mut Connection, id: &str, actor: Actor, now: Time
     let (project, title) = row.ok_or(Error::NotFound("milestone"))?;
     let stamp = instant(now);
     tx.execute("UPDATE milestones SET deleted_at = ?2, updated_at = ?2 WHERE id = ?1", params![id, stamp])?;
+    tx.execute("UPDATE tasks SET milestone_id = NULL, updated_at = ?2 WHERE milestone_id = ?1", params![id, stamp])?;
     record(&tx, now, actor, Verb::Deleted, Entity::Milestone, &id, &title)?;
     tx.commit()?;
     Ok(Change::one(Entity::Project, project))
@@ -463,30 +481,119 @@ mod tests {
             .0
     }
 
+    fn task_in(conn: &mut Connection, project: &str, milestone: &str, title: &str) -> String {
+        let input = NewTask { title: title.into(), project_id: Some(project.into()), milestone_id: Some(milestone.into()), ..Default::default() };
+        tasks::create(conn, input, Actor::Owner, now()).unwrap().0
+    }
+
+    fn milestone(detail: &ProjectDetail, title: &str) -> (bool, u32, u32) {
+        let m = detail.milestones.iter().find(|m| m.title == title).unwrap();
+        (m.done, m.tasks_done, m.tasks_total)
+    }
+
     #[test]
-    fn progress_follows_tasks_until_there_are_milestones() {
+    fn progress_always_counts_tasks() {
         let mut conn = open_in_memory().unwrap();
         let id = project(&mut conn, "Laporan Lab Jaringan");
         let a = task(&mut conn, &id, "Topologi");
         task(&mut conn, &id, "Konfigurasi trunk");
         tasks::complete(&mut conn, &a, Actor::Owner, now()).unwrap();
         let summary = &list(&conn).unwrap()[0];
-        assert_eq!((summary.progress.mode, summary.progress.done, summary.progress.total, summary.progress.percent), (ProgressMode::Tasks, 1, 2, 50));
+        assert_eq!((summary.progress.done, summary.progress.total, summary.progress.percent), (1, 2, 50));
         assert_eq!(summary.next_step.as_ref().unwrap().title, "Konfigurasi trunk");
         assert_eq!(summary.open_tasks, 1);
 
+        // Milestones, ticked or not, do not change how far the project has come.
         let (m1, _) = add_milestone(&mut conn, &id, "Draf", None, Actor::Owner, now()).unwrap();
         add_milestone(&mut conn, &id, "Kumpul", Some("2026-10-30"), Actor::Owner, now()).unwrap();
-        add_milestone(&mut conn, &id, "Presentasi", None, Actor::Owner, now()).unwrap();
         set_milestone_done(&mut conn, &m1, true, Actor::Owner, now()).unwrap();
         assert!(set_milestone_done(&mut conn, &m1, true, Actor::Owner, now()).unwrap().is_none());
         let detail = detail(&conn, &id, "2026-10-23").unwrap();
-        assert_eq!((detail.summary.progress.mode, detail.summary.progress.done, detail.summary.progress.total), (ProgressMode::Milestones, 1, 3));
-        assert_eq!(detail.milestones.len(), 3);
+        assert_eq!((detail.summary.progress.done, detail.summary.progress.total), (1, 2));
+        assert_eq!(milestone(&detail, "Draf"), (true, 0, 0), "a milestone without tasks is ticked by hand");
+        assert_eq!(milestone(&detail, "Kumpul"), (false, 0, 0));
         // Open tasks first, then the finished one.
         let titles: Vec<&str> = detail.tasks.iter().map(|t| t.title.as_str()).collect();
         assert_eq!(titles, ["Konfigurasi trunk", "Topologi"]);
         assert!(detail.activity.iter().any(|item| item.summary == "Topologi"));
+    }
+
+    #[test]
+    fn a_milestone_with_tasks_is_done_when_they_are() {
+        let mut conn = open_in_memory().unwrap();
+        let id = project(&mut conn, "PSAJ");
+        let (v2, _) = add_milestone(&mut conn, &id, "V2 dikirim", Some("2026-11-14"), Actor::Owner, now()).unwrap();
+        // Ticked before it had tasks: the tick no longer counts once it has some.
+        set_milestone_done(&mut conn, &v2, true, Actor::Owner, now()).unwrap();
+        let a = task_in(&mut conn, &id, &v2, "Revisi Bab III");
+        let b = task_in(&mut conn, &id, &v2, "Ekspor PDF");
+        let cancelled = task_in(&mut conn, &id, &v2, "Cetak");
+        conn.execute("UPDATE tasks SET status = 'cancelled' WHERE id = ?1", [&cancelled]).unwrap();
+        task(&mut conn, &id, "Latihan pitching");
+
+        let check = |conn: &Connection| milestone(&detail(conn, &id, "2026-11-10").unwrap(), "V2 dikirim");
+        assert_eq!(check(&conn), (false, 0, 2), "cancelled tasks do not count");
+        let card = detail(&conn, &id, "2026-11-10").unwrap().tasks.into_iter().find(|t| t.id == a).unwrap();
+        assert_eq!(card.milestone_id.as_deref(), Some(v2.as_str()));
+        assert!(matches!(
+            set_milestone_done(&mut conn, &v2, false, Actor::Owner, now()),
+            Err(Error::Invalid { field: "done", reason: Reason::Derived })
+        ));
+
+        tasks::complete(&mut conn, &a, Actor::Owner, now()).unwrap();
+        assert_eq!(check(&conn), (false, 1, 2));
+        tasks::complete(&mut conn, &b, Actor::Owner, now()).unwrap();
+        assert_eq!(check(&conn), (true, 2, 2));
+        let summary = detail(&conn, &id, "2026-11-10").unwrap().summary;
+        assert_eq!((summary.progress.done, summary.progress.total), (2, 3), "the project still counts every task");
+        tasks::reopen(&mut conn, &b, Actor::Owner, now()).unwrap();
+        assert_eq!(check(&conn), (false, 1, 2));
+    }
+
+    #[test]
+    fn a_task_takes_only_a_milestone_of_its_own_project() {
+        let mut conn = open_in_memory().unwrap();
+        let psaj = project(&mut conn, "PSAJ");
+        let lab = project(&mut conn, "Lab");
+        let (m, _) = add_milestone(&mut conn, &psaj, "V2 dikirim", None, Actor::Owner, now()).unwrap();
+        let elsewhere = NewTask { title: "x".into(), project_id: Some(lab.clone()), milestone_id: Some(m.clone()), ..Default::default() };
+        let nowhere = NewTask { title: "x".into(), milestone_id: Some(m.clone()), ..Default::default() };
+        for input in [elsewhere, nowhere] {
+            assert!(matches!(tasks::create(&mut conn, input, Actor::Owner, now()), Err(Error::Invalid { field: "milestoneId", .. })));
+        }
+
+        let t = task_in(&mut conn, &psaj, &m, "Revisi");
+        let step = NewTask { title: "Langkah".into(), project_id: Some(psaj.clone()), milestone_id: Some(m.clone()), parent_id: Some(t.clone()), ..Default::default() };
+        assert!(tasks::create(&mut conn, step, Actor::Owner, now()).is_err(), "a step counts with its task, not on its own");
+
+        // Moving the task to another project needs its milestone let go in the same edit.
+        let mut input = tasks::input_of(&conn, &t).unwrap();
+        assert_eq!(input.milestone_id.as_deref(), Some(m.as_str()), "a partial edit keeps the milestone");
+        input.project_id = Some(lab.clone());
+        assert!(tasks::update(&mut conn, &t, input.clone(), Actor::Owner, now()).is_err());
+        input.milestone_id = None;
+        tasks::update(&mut conn, &t, input, Actor::Owner, now()).unwrap();
+        assert_eq!(milestone(&detail(&conn, &psaj, "2026-11-10").unwrap(), "V2 dikirim"), (false, 0, 0));
+    }
+
+    #[test]
+    fn removing_a_milestone_or_a_project_lets_its_tasks_go() {
+        let mut conn = open_in_memory().unwrap();
+        let id = project(&mut conn, "PSAJ");
+        let (m, _) = add_milestone(&mut conn, &id, "V2 dikirim", None, Actor::Owner, now()).unwrap();
+        let (m2, _) = add_milestone(&mut conn, &id, "Pitching", None, Actor::Owner, now()).unwrap();
+        let a = task_in(&mut conn, &id, &m, "Revisi");
+        let b = task_in(&mut conn, &id, &m2, "Latihan");
+
+        delete_milestone(&mut conn, &m, Actor::Owner, now()).unwrap();
+        let milestone_of = |conn: &Connection, task: &str| -> (Option<String>, Option<String>) {
+            conn.query_row("SELECT project_id, milestone_id FROM tasks WHERE id = ?1", [task], |row| Ok((row.get(0)?, row.get(1)?))).unwrap()
+        };
+        assert_eq!(milestone_of(&conn, &a), (Some(id.clone()), None), "the task stays in the project");
+        assert!(tasks::detail(&conn, &a, "2026-11-10").is_ok());
+
+        delete(&mut conn, &id, Actor::Owner, now()).unwrap();
+        assert_eq!(milestone_of(&conn, &b), (None, None));
     }
 
     #[test]

@@ -45,6 +45,9 @@ pub struct TaskInput {
     pub project_id: Option<String>,
     #[serde(default)]
     pub area_id: Option<String>,
+    /// A milestone of the task's own project. Steps have none: they count with their task.
+    #[serde(default)]
+    pub milestone_id: Option<String>,
     /// Only on creation: the task this one is a step of.
     #[serde(default)]
     pub parent_id: Option<String>,
@@ -58,6 +61,7 @@ struct Checked {
     notes: String,
     project_id: Option<String>,
     area_id: Option<String>,
+    milestone_id: Option<String>,
     parent_id: Option<String>,
 }
 
@@ -93,6 +97,7 @@ fn check(input: &TaskInput) -> Result<Checked> {
         notes: input.notes.trim_end().to_string(),
         project_id: parse("projectId", &input.project_id)?,
         area_id: parse("areaId", &input.area_id)?,
+        milestone_id: parse("milestoneId", &input.milestone_id)?,
         parent_id: parse("parentId", &input.parent_id)?,
     })
 }
@@ -129,6 +134,20 @@ fn check_links(tx: &Transaction<'_>, checked: &Checked) -> Result<()> {
     Ok(())
 }
 
+/// A milestone must be one of the project's own, still there, and only on a task (not a step).
+fn check_milestone(tx: &Transaction<'_>, checked: &Checked, is_step: bool) -> Result<()> {
+    let Some(milestone) = &checked.milestone_id else {
+        return Ok(());
+    };
+    let project: Option<String> = tx
+        .query_row("SELECT project_id FROM milestones WHERE id = ?1 AND deleted_at IS NULL", [milestone], |row| row.get(0))
+        .optional()?;
+    if is_step || project.is_none() || project != checked.project_id {
+        return invalid("milestoneId", Reason::Unknown);
+    }
+    Ok(())
+}
+
 fn record(tx: &Transaction<'_>, now: Timestamp, actor: Actor, verb: Verb, id: &str, title: &str) -> Result<()> {
     activity::record(
         tx,
@@ -146,6 +165,7 @@ pub fn create_as(conn: &mut Connection, input: TaskInput, actor: Actor, source: 
     let checked = check(&input)?;
     let tx = conn.transaction()?;
     check_links(&tx, &checked)?;
+    check_milestone(&tx, &checked, checked.parent_id.is_some())?;
     let last: Option<String> = match &checked.parent_id {
         Some(parent) => tx.query_row("SELECT max(order_key) FROM tasks WHERE parent_id = ?1", [parent], |row| row.get(0))?,
         None => tx.query_row("SELECT max(order_key) FROM tasks WHERE parent_id IS NULL", [], |row| row.get(0))?,
@@ -154,8 +174,9 @@ pub fn create_as(conn: &mut Connection, input: TaskInput, actor: Actor, source: 
     let stamp = instant(now);
     tx.execute(
         "INSERT INTO tasks (id, title, notes, priority, do_date, due_date, due_time, estimate_min,
-                            project_id, area_id, parent_id, order_key, source, created_at, updated_at)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?14)",
+                            project_id, area_id, parent_id, order_key, source, created_at, updated_at,
+                            milestone_id)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?14, ?15)",
         params![
             id,
             checked.title,
@@ -171,6 +192,7 @@ pub fn create_as(conn: &mut Connection, input: TaskInput, actor: Actor, source: 
             order::after(last.as_deref()),
             source,
             stamp,
+            checked.milestone_id,
         ],
     )?;
     record(&tx, now, actor, Verb::Created, &id, &checked.title)?;
@@ -185,9 +207,13 @@ pub fn update(conn: &mut Connection, id: &str, input: TaskInput, actor: Actor, n
     checked.parent_id = None;
     let tx = conn.transaction()?;
     check_links(&tx, &checked)?;
+    let is_step: Option<bool> = tx
+        .query_row("SELECT parent_id IS NOT NULL FROM tasks WHERE id = ?1 AND deleted_at IS NULL", [&id], |row| row.get(0))
+        .optional()?;
+    check_milestone(&tx, &checked, is_step.ok_or(Error::NotFound("task"))?)?;
     let changed = tx.execute(
         "UPDATE tasks SET title = ?2, notes = ?3, priority = ?4, do_date = ?5, due_date = ?6, due_time = ?7,
-                estimate_min = ?8, project_id = ?9, area_id = ?10, updated_at = ?11
+                estimate_min = ?8, project_id = ?9, area_id = ?10, updated_at = ?11, milestone_id = ?12
          WHERE id = ?1 AND deleted_at IS NULL",
         params![
             id,
@@ -201,6 +227,7 @@ pub fn update(conn: &mut Connection, id: &str, input: TaskInput, actor: Actor, n
             checked.project_id,
             checked.area_id,
             instant(now),
+            checked.milestone_id,
         ],
     )?;
     if changed == 0 {
@@ -482,7 +509,7 @@ pub fn detail(conn: &Connection, id: &str, today: &str) -> Result<TaskDetail> {
 pub fn input_of(conn: &Connection, id: &str) -> Result<TaskInput> {
     let id = ids::parse("id", id)?;
     conn.query_row(
-        "SELECT title, notes, priority, do_date, due_date, due_time, estimate_min, project_id, area_id
+        "SELECT title, notes, priority, do_date, due_date, due_time, estimate_min, project_id, area_id, milestone_id
          FROM tasks WHERE id = ?1 AND deleted_at IS NULL",
         [&id],
         |row| {
@@ -496,6 +523,7 @@ pub fn input_of(conn: &Connection, id: &str) -> Result<TaskInput> {
                 estimate_min: row.get(6)?,
                 project_id: row.get(7)?,
                 area_id: row.get(8)?,
+                milestone_id: row.get(9)?,
                 parent_id: None,
             })
         },

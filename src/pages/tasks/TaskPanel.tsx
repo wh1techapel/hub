@@ -11,7 +11,7 @@ import { useAct } from "../../components/Toast";
 import { useApi } from "../../data/api";
 import type { TaskDetail } from "../../data/generated/TaskDetail";
 import type { TaskInput } from "../../data/generated/TaskInput";
-import { useAreas, useProjects, useTask, useToday } from "../../data/queries";
+import { useAreas, useProject, useProjects, useTask, useToday } from "../../data/queries";
 import { id } from "../../strings/id";
 import { useNow } from "../../time/clock";
 import { clock, isoDate, minutesOf, relativeDate } from "../../time/format";
@@ -33,6 +33,7 @@ function inputOf(detail: TaskDetail): TaskInput {
     estimateMin: c.estimateMin,
     projectId: c.project?.id ?? null,
     areaId: c.project ? null : (c.area?.id ?? null),
+    milestoneId: c.milestoneId,
     parentId: null,
   };
 }
@@ -75,6 +76,8 @@ function TaskEditor({
   const projects = useProjects();
   const areas = useAreas();
   const [value, setValue] = useState<TaskInput>(() => inputOf(detail));
+  const project = useProject(value.projectId ?? "", value.projectId !== null);
+  const milestones = (value.projectId && project.data?.milestones) || [];
   const [step, setStep] = useState("");
   const [scheduling, setScheduling] = useState(false);
   const todayIso = isoDate(now);
@@ -114,6 +117,7 @@ function TaskEditor({
         estimateMin: null,
         projectId: value.projectId,
         areaId: null,
+        milestoneId: null,
         parentId: detail.card.id,
       }),
     );
@@ -232,6 +236,8 @@ function TaskEditor({
               save({
                 projectId: e.target.value || null,
                 areaId: e.target.value ? null : value.areaId,
+                // A milestone belongs to its project: another project starts without one.
+                milestoneId: null,
               })
             }
           >
@@ -245,6 +251,23 @@ function TaskEditor({
               ))}
           </select>
         </Field>
+        {value.projectId && detail.card.parentId === null && milestones.length > 0 && (
+          <Field label={id.tasks.milestone} htmlFor="task-milestone">
+            <select
+              id="task-milestone"
+              className="input"
+              value={value.milestoneId ?? ""}
+              onChange={(e) => save({ milestoneId: e.target.value || null })}
+            >
+              <option value="">{id.tasks.noMilestone}</option>
+              {milestones.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.title}
+                </option>
+              ))}
+            </select>
+          </Field>
+        )}
         {!value.projectId && (
           <Field label={id.tasks.area} htmlFor="task-area">
             <select id="task-area" className="input" value={value.areaId ?? ""} onChange={(e) => save({ areaId: e.target.value || null })}>

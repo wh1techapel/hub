@@ -24,7 +24,8 @@ Tangkapan layar memakai data contoh.
 - **Hari Ini:** Busur Hari (hari digambar dari jam bangun sampai tidur), apa yang sedang berjalan,
   dan paling banyak tiga Fokus. Malam hari berganti menjadi **Tutup Hari** untuk meninjau hari.
 - **Proyek & Tugas:** Kotak Masuk, tugas dengan tanggal kerja yang terpisah dari tenggat, proyek
-  per Ruang (Sekolah, Belajar Cyber, Pribadi, ...) dengan progres yang dihitung otomatis.
+  per Ruang (Sekolah, Belajar Cyber, Pribadi, ...) dengan progres yang dihitung dari tugasnya, dan
+  tonggak yang mengelompokkan tugas.
 - **Kalender:** tampilan hari, minggu, dan bulan, blok waktu untuk tugas, rutinitas (misalnya
   jadwal pelajaran), dan pengingat dengan notifikasi Windows.
 - **Catat Cepat:** `Ctrl+Alt+H` dari aplikasi mana pun, satu baris seperti "laporan lab besok
@@ -51,19 +52,54 @@ Tangkapan layar memakai data contoh.
 - API lokal (untuk ULTRON dan Claude Code) hanya mendengar di `127.0.0.1`, selalu meminta token,
   dan bisa dimatikan per klien di Pengaturan.
 
-## Memasang
+## Spesifikasi
 
-Syarat: Windows 11 64-bit (Windows 10 belum diuji) dan WebView2 (sudah ada di Windows 11).
+Hub ringan: laptop yang sanggup menjalankan Windows 11 sanggup menjalankan Hub.
+
+| | Minimum | Dianjurkan |
+|---|---|---|
+| Sistem operasi | Windows 11 64-bit | Windows 11 64-bit versi terbaru |
+| Prosesor | 64-bit, 2 core (syarat Windows 11) | 4 core atau lebih |
+| RAM | 4 GB (syarat Windows 11) | 8 GB |
+| Ruang disk | 100 MB (aplikasi sekitar 22 MB, sisanya data dan cadangan) | 500 MB, bila banyak memakai Vault |
+| Lainnya | WebView2 (sudah ada di Windows 11) | Internet hanya untuk Hub Studio |
+
+Yang terukur di laptop pengembang (Core i5-13420H, RAM 24 GB): installer 5,9 MiB, jendela tampil
+dalam 0,53 sampai 0,65 detik, memori 116 sampai 128 MB saat jendela terbuka, dan sekitar 3 MB saat
+Hub diam di tray. Windows 10 belum diuji.
+
+### Hub + ULTRON
+
+ULTRON, asisten suara yang memakai API lokal Hub, adalah aplikasi terpisah yang belum dibuka untuk
+umum. Ia menjalankan model AI di laptop sendiri (model bahasa, pengenal suara, dan suara), jadi jauh
+lebih berat daripada Hub:
+
+| | Minimum | Dianjurkan |
+|---|---|---|
+| Kartu grafis | NVIDIA dengan VRAM 6 GB (misalnya RTX 3050 6 GB, RTX 4050) | NVIDIA dengan VRAM 8 GB atau lebih |
+| RAM | 16 GB | 24 GB atau lebih |
+| Ruang disk | 15 GB di SSD (model AI dan dependensinya) | 25 GB di SSD |
+| Lainnya | Mikrofon, Windows 11 64-bit, Hub | Headset |
+
+ULTRON baru diuji di laptop pengembang (RTX 4050 Laptop 6 GB, RAM 24 GB): model bahasanya memakai
+sekitar 3 GB VRAM. Mode tanpa kartu grafis NVIDIA sedang diuji; sampai hasilnya ada, laptop tanpa
+NVIDIA cukup memakai Hub saja, karena Hub berjalan penuh tanpa ULTRON.
+
+## Memasang
 
 1. Unduh `Hub_<versi>_x64-setup.exe` dari halaman [Releases](../../releases/latest).
 2. Opsional: cocokkan sidik jarinya dengan SHA-256 di catatan rilis.
 
    ```powershell
-   Get-FileHash .\Hub_1.0.1_x64-setup.exe -Algorithm SHA256
+   Get-FileHash .\Hub_<versi>_x64-setup.exe -Algorithm SHA256
    ```
 
-3. Jalankan installer. Installer belum ditandatangani, jadi Windows SmartScreen bisa bertanya
-   dulu: pilih "More info", lalu "Run anyway".
+3. Jalankan installer. Installer belum ditandatangani, jadi Windows SmartScreen menampilkan
+   "Windows protected your PC". Itu peringatan untuk aplikasi yang belum dikenal Windows, bukan
+   tanda virus: pilih "More info", pastikan nama berkasnya `Hub_<versi>_x64-setup.exe`, lalu pilih
+   "Run anyway". Installer tidak meminta hak admin.
+4. Hub terbuka sendiri setelah terpasang. Coba `Ctrl+Alt+H` dari aplikasi mana pun untuk Catat
+   Cepat.
 
 Hub dipasang untuk akunmu saja di `%LOCALAPPDATA%\Programs\Hub`, terpisah dari datanya, jadi
 memperbarui atau mencopot Hub tidak menyentuh datamu. Jalan pertama mendaftarkan Hub untuk mulai
@@ -160,7 +196,7 @@ Bacaan lanjut: [arsitektur](docs/architecture.md), [desain](docs/design.md),
 riwayat pengembangan per checkpoint di [docs/checkpoints.md](docs/checkpoints.md).
 
 ULTRON, asisten suara yang memakai API lokal Hub, adalah aplikasi terpisah dan tidak ada di
-repositori ini. Hub berjalan penuh tanpa ULTRON.
+repositori ini (spesifikasinya di [Hub + ULTRON](#hub--ultron)). Hub berjalan penuh tanpa ULTRON.
 
 ## Batasan
 

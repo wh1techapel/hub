@@ -18,6 +18,7 @@ pub const MIGRATIONS: &[&str] = &[
     include_str!("../migrations/0006_ledger_area.sql"),
     include_str!("../migrations/0007_studio_stack.sql"),
     include_str!("../migrations/0008_claude_sessions.sql"),
+    include_str!("../migrations/0009_milestone_tasks.sql"),
 ];
 
 pub fn latest_version() -> i64 {
@@ -305,6 +306,34 @@ mod tests {
             [],
         )
         .unwrap();
+    }
+
+    #[test]
+    fn the_milestone_tasks_upgrade_keeps_projects_tasks_and_ticks() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("hub.db");
+        old_database(&path, 8);
+        {
+            let conn = Connection::open(&path).unwrap();
+            conn.execute_batch(
+                "INSERT INTO projects (id, name, progress_mode, order_key, created_at, updated_at) VALUES ('p', 'PSAJ', 'milestones', 'a', 't', 't');
+                 INSERT INTO milestones (id, project_id, title, done_at, order_key, created_at, updated_at)
+                   VALUES ('m', 'p', 'PPT pitching', 't', 'a', 't', 't');
+                 INSERT INTO tasks (id, title, project_id, order_key, created_at, updated_at) VALUES ('t', 'Laporan', 'p', 'a', 't', 't');",
+            )
+            .unwrap();
+        }
+        let conn = open(&path).unwrap();
+        assert_eq!(schema_version(&conn).unwrap(), latest_version());
+        let count = |table: &str| -> i64 { conn.query_row(&format!("SELECT count(*) FROM {table}"), [], |row| row.get(0)).unwrap() };
+        assert_eq!((count("projects"), count("milestones"), count("tasks"), count("activity")), (1, 1, 1, 3));
+        let task: (String, Option<String>) = conn.query_row("SELECT title, milestone_id FROM tasks", [], |row| Ok((row.get(0)?, row.get(1)?))).unwrap();
+        assert_eq!(task, ("Laporan".into(), None), "existing tasks start without a milestone");
+        let ticked: Option<String> = conn.query_row("SELECT done_at FROM milestones", [], |row| row.get(0)).unwrap();
+        assert_eq!(ticked.as_deref(), Some("t"), "existing ticks stay");
+        assert!(conn.query_row("SELECT progress_mode FROM projects", [], |row| row.get::<_, String>(0)).is_err(), "the unused column is gone");
+        conn.execute("UPDATE tasks SET milestone_id = 'm'", []).unwrap();
+        assert!(conn.execute("UPDATE tasks SET milestone_id = 'missing'", []).is_err(), "only a real milestone");
     }
 
     #[test]

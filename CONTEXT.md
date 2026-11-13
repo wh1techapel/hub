@@ -152,7 +152,8 @@ PSAJ material (see "Open source release" below).
 | Blok waktu | `block` | An event linked to a task: time set aside on the calendar to work on it. |
 | Kotak Masuk | `inbox` | Tasks with no project, Ruang, or date yet: caught, not yet sorted. |
 | Catat Cepat | `capture` | One line typed anywhere (Ctrl+Alt+H, the palette, the add rows), read by the core into a task, reminder, event, or note. |
-| Proyek | `project` | An outcome with tasks, milestones, files, and history. Progress is derived, not typed in. |
+| Proyek | `project` | An outcome with tasks, milestones, files, and history. Progress is derived from its tasks (done over all), not typed in. |
+| Tonggak | `milestone` | A dated group of a project's tasks. Reached once all its tasks are done; one without tasks is ticked by hand. It never changes how progress is counted. |
 | Ruang | `area` | A life area that groups projects: Sekolah, Cyber, Pribadi, and so on. |
 | Belajar | `learning` | The cybersecurity learning page: tracks, items, sessions. |
 | Jalur | `track` | A learning source: TryHackMe, Hack The Box, a CTF event, Lab Sekolah, Homelab. |

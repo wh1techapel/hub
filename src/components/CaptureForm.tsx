@@ -26,6 +26,10 @@ interface Props {
   initialKind?: CaptureKind;
   /** A task made here belongs to this project (the project page's add row). */
   projectId?: string;
+  /** ...and to this milestone of it (a milestone's own add row). */
+  milestoneId?: string;
+  /** The input's name for screen readers, when the kind alone ("Tugas") is not enough. */
+  label?: string;
   /** The add rows are one quiet line; the capture window and palette are larger. */
   compact?: boolean;
   autoFocus?: boolean;
@@ -70,6 +74,8 @@ export function CaptureForm({
   kinds = ALL,
   initialKind,
   projectId,
+  milestoneId,
+  label,
   compact = false,
   autoFocus = false,
   onSaved,
@@ -130,6 +136,7 @@ export function CaptureForm({
           estimateMin: r.estimateMin,
           projectId,
           areaId: null,
+          milestoneId: milestoneId ?? null,
           parentId: null,
         });
         saved = { kind: "task", id: taskId, title: r.title, date: r.date };
@@ -192,7 +199,7 @@ export function CaptureForm({
         </div>
       )}
       <label className="sr-only" htmlFor={inputId}>
-        {id.capture.kinds[kind]}
+        {label ?? id.capture.kinds[kind]}
       </label>
       <input
         ref={input}

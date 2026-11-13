@@ -347,46 +347,115 @@
   margin-bottom: var(--space-2);
 }
 
-.milestones {
+/* ---------- tasks grouped under milestones ---------- */
+
+.group {
   display: flex;
   flex-direction: column;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.milestones li {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  align-items: center;
   gap: var(--space-2);
-  min-height: var(--hit-min);
-  border-bottom: 1px solid var(--hairline);
 }
 
-.milestones label {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
+.group + .group,
+.addTask + .group {
+  margin-top: var(--space-3);
+}
+
+.milestone {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--hairline);
+}
+
+.groupTitle {
   min-width: 0;
+  margin: 0;
+  font-size: var(--text-read);
+  font-weight: 600;
+  line-height: 22px;
+  color: var(--ink);
+  overflow-wrap: break-word;
+}
+
+.milestoneHead {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--space-3);
+}
+
+.milestoneText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding-top: 5px;
+}
+
+.milestone[data-done="true"] .groupTitle {
+  color: var(--ink-3);
+}
+
+/* The milestone's mark: a diamond in the project's colour, filled once it is reached. */
+.mark {
+  display: grid;
+  place-items: center;
+  width: var(--hit-min);
+  height: var(--hit-min);
+  border-radius: var(--radius-sm);
+}
+
+label.mark {
   cursor: pointer;
 }
 
-.milestones input {
-  flex: none;
-  width: 18px;
-  height: 18px;
-  accent-color: var(--pig-line);
+label.mark:hover .diamond {
+  background: color-mix(in oklch, var(--pig-line) 22%, transparent);
 }
 
-.milestones small {
+label.mark:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.diamond {
+  display: block;
+  width: 11px;
+  height: 11px;
+  border: 1.5px solid var(--pig-line);
+  border-radius: 2px;
+  transform: rotate(45deg);
+  transition: background-color var(--dur-base) var(--ease-standard);
+}
+
+.diamond[data-done="true"],
+label.mark:hover .diamond[data-done="true"] {
+  background: var(--pig-line);
+}
+
+.milestoneMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-3);
+  margin: 0;
   font-size: var(--text-caption);
   color: var(--ink-3);
 }
 
-.milestoneDone span {
-  color: var(--ink-3);
-  text-decoration: line-through;
+.late {
+  font-weight: 550;
+  color: var(--warn);
+}
+
+.groupAdd {
+  padding-left: var(--space-1);
+}
+
+.milestoneNew {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--hairline);
 }
 
 .milestoneAdd {
@@ -487,6 +556,13 @@
   .areaRow,
   .areaAdd {
     grid-template-columns: auto minmax(0, 1fr);
+  }
+}
+
+/* A phone-wide page: the milestone's date goes under its name instead of squeezing it. */
+@media (max-width: 480px) {
+  .milestoneAdd {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

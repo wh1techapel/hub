@@ -37,6 +37,8 @@ pub enum Reason {
     TooMany,
     /// Points at something that does not exist.
     Unknown,
+    /// Worked out by Hub, so it cannot be set (a milestone with tasks is done when they are).
+    Derived,
 }
 
 impl Reason {
@@ -47,6 +49,7 @@ impl Reason {
             Reason::Order => "order",
             Reason::TooMany => "too_many",
             Reason::Unknown => "unknown",
+            Reason::Derived => "derived",
         }
     }
 }

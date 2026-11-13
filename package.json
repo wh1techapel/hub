@@ -1,7 +1,7 @@
 {
   "name": "hub",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "license": "MIT",
   "type": "module",
   "description": "Hub: the owner's local-first personal workspace. The UI renders what the Rust core returns.",

@@ -152,7 +152,7 @@ owner's decision in `CONTEXT.md`, "Navigation") in two groups:
 2. **Kalender**: day and week views with time blocking, month overview, routines, and
    **Pengingat** as a fourth view (`/kalender?view=pengingat`, key P).
 3. **Proyek & Tugas** (`/proyek`): one place. It opens on the projects by Ruang (each with
-   progress and next step; a project's own page has its milestones, files, and history), and holds
+   progress and next step; a project's own page has its tasks grouped under milestones, files, and history), and holds
    the task lists beside them: Kotak Masuk, Mendatang, Semua, Selesai. A task opens in a panel
    beside its list.
 4. **Studio**: ideas built with Gemini and Claude Code.
@@ -227,8 +227,11 @@ ULTRON's `Ctrl+Alt+U`, `Ctrl+Alt+Space`, `Ctrl+Alt+Esc`). Single-key shortcuts i
   reminders are small markers on the time line. An over-full day says so in the header.
 - **Tugas.** Quick add understands Indonesian ("laporan lab besok 19:00 #jaringan !penting").
   Do date and deadline are separate. Subtasks as a checklist. Manual order by drag.
-- **Proyek.** Header with derived progress (milestones or tasks), the next step, then milestones,
-  tasks, files, and the project's own history.
+- **Proyek.** Header with derived progress (done tasks over tasks), the next step, then the tasks:
+  those without a milestone first, then one group per milestone (a diamond in the project's colour,
+  its date, "x dari y tugas", its own add row), like headings in a list. The diamond fills once the
+  milestone's tasks are done; one without tasks is ticked on the diamond. Files and the project's
+  own history beside them.
 - **Belajar.** This week: hours and active days against the weekly goal. Tracks as tabs; items with
   status, domain, difficulty, time spent, link, and an attached write-up. A domain view as
   horizontal bars (network, web, Linux, Windows/AD, crypto, forensics, OSINT, reversing, pwn), and

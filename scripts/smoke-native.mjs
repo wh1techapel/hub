@@ -478,6 +478,30 @@ try {
   check("the sidebar groups its pages", sidebar === "Hari Ini,Kalender,Proyek & Tugas,Studio,Belajar,|,File,Jejak", sidebar);
   console.log(`screenshot: ${await page.screenshot("tasks")}`);
 
+  // Proyek: the project counts every task; each milestone groups its own tasks and counts them, and
+  // only a milestone without tasks has a tick of its own.
+  const lab = (await page.evaluate(core("list_projects"))).find((p) => p.name === "Laporan Lab Jaringan");
+  const labDetail = await page.evaluate(core("get_project", { id: lab.id }));
+  await page.evaluate(`location.hash = '#/proyek/${lab.id}'`);
+  await waitFor(page, `document.querySelectorAll('section[aria-labelledby^="milestone-"]').length === ${labDetail.milestones.length}`, "the project's milestones");
+  const shown = await page.evaluate(`({
+    progress: document.querySelector('[role=progressbar][aria-label="Kemajuan Laporan Lab Jaringan"]')?.getAttribute('aria-valuenow'),
+    groups: [...document.querySelectorAll('section[aria-labelledby^="milestone-"]')].map((s) => ({
+      meta: s.querySelector('p').textContent,
+      tasks: s.querySelectorAll('[data-row]').length,
+      tick: !!s.querySelector('input[type=checkbox]'),
+      done: s.dataset.done,
+    })),
+  })`);
+  check("the project counts its tasks", shown.progress === String(lab.progress.percent) && lab.progress.total === lab.openTasks + lab.progress.done, JSON.stringify(lab.progress));
+  const fits = labDetail.milestones.every((m, i) => {
+    const g = shown.groups[i];
+    const open = labDetail.tasks.filter((t) => t.milestoneId === m.id && t.status !== "done").length;
+    return g.meta.includes(m.tasksTotal ? `${m.tasksDone} dari ${m.tasksTotal} tugas` : "Belum ada tugas") && g.tasks === open && g.tick === (m.tasksTotal === 0) && g.done === String(m.done);
+  });
+  check("each milestone groups and counts its tasks", fits && labDetail.milestones.some((m) => m.done && m.tasksTotal > 0), JSON.stringify(shown.groups));
+  console.log(`screenshot: ${await page.screenshot("project")}`);
+
   // Kalender: every timed item of the week is on the grid.
   await page.evaluate("location.hash = '#/kalender'");
   await waitFor(page, "document.querySelectorAll('[aria-label*=\" sampai \"]').length > 0", "the week grid");

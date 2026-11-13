@@ -276,6 +276,7 @@ async fn create_task(State(state): State<Shared>, Extension(client): Extension<A
                 estimate_min: body.estimate_min,
                 project_id: body.project_id,
                 area_id: body.area_id,
+                milestone_id: None,
                 parent_id: None,
             };
             let (id, change) = tasks::create_as(conn, input, ACTOR, source_for(&body.import_ref), ctx.now)?;
@@ -324,6 +325,10 @@ async fn patch_task(
                 input.estimate_min = estimate;
             }
             if let Some(project) = patch.project_id {
+                // A milestone belongs to its project: a task moved elsewhere lets it go.
+                if project != input.project_id {
+                    input.milestone_id = None;
+                }
                 input.project_id = project;
             }
             if let Some(area) = patch.area_id {

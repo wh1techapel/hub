@@ -12,7 +12,6 @@ import type { LearningKind } from "../data/generated/LearningKind";
 import type { LearningStatus } from "../data/generated/LearningStatus";
 import type { LinkKind } from "../data/generated/LinkKind";
 import type { Pigment } from "../data/generated/Pigment";
-import type { ProgressMode } from "../data/generated/ProgressMode";
 import type { ProjectStatus } from "../data/generated/ProjectStatus";
 import type { RoutineKind } from "../data/generated/RoutineKind";
 import type { SearchKind } from "../data/generated/SearchKind";
@@ -216,6 +215,8 @@ export const id = {
     project: "Proyek",
     area: "Ruang",
     noProject: "Tanpa proyek",
+    milestone: "Tonggak",
+    noMilestone: "Tanpa tonggak",
     noArea: "Tanpa ruang",
     steps: "Langkah",
     addStep: "Tambah langkah",
@@ -270,7 +271,11 @@ export const id = {
     } satisfies Record<ProjectStatus, string>,
     milestones: "Tonggak",
     addMilestone: "Tambah tonggak",
-    milestonesHint: "Kalau ada tonggak, kemajuan dihitung dari tonggak; kalau tidak, dari tugas.",
+    milestonesHint:
+      "Tonggak mengelompokkan tugas. Tonggak selesai sendiri saat semua tugasnya selesai; tonggak tanpa tugas bisa dicentang.",
+    noMilestone: "Tanpa tonggak",
+    milestoneTasks: (done: number, total: number) => (total === 0 ? "Belum ada tugas" : `${done} dari ${total} tugas`),
+    addTaskTo: (title: string) => `Tambah tugas ke ${title}`,
     tasks: "Tugas",
     history: "Riwayat",
     name: "Nama proyek",
@@ -294,10 +299,9 @@ export const id = {
     created: (name: string) => `Proyek dibuat: ${name}`,
     finished: "Selesai dan arsip",
     all: "Semua proyek",
-    progressOf: (mode: ProgressMode, done: number, total: number) =>
-      `${done} dari ${total} ${mode === "milestones" ? "tonggak" : "tugas"}`,
+    progressOf: (done: number, total: number) => `${done} dari ${total} tugas selesai`,
     progressLabel: (name: string) => `Kemajuan ${name}`,
-    noProgress: "Belum ada tonggak atau tugas.",
+    noProgress: "Belum ada tugas.",
     statusLabel: "Status proyek",
     addTask: "Tambah tugas ke proyek ini",
     noTasks: "Belum ada tugas di proyek ini.",

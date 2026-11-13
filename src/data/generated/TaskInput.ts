@@ -5,6 +5,10 @@
  */
 export type TaskInput = { title: string, notes: string, priority: number, doDate: string | null, dueDate: string | null, dueTime: string | null, estimateMin: number | null, projectId: string | null, areaId: string | null, 
 /**
+ * A milestone of the task's own project. Steps have none: they count with their task.
+ */
+milestoneId: string | null, 
+/**
  * Only on creation: the task this one is a step of.
  */
 parentId: string | null, };

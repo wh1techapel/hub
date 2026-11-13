@@ -1,5 +1,21 @@
 # Catatan Rilis Hub
 
+## 1.0.2 (10 November 2026)
+
+Tugas dan tonggak yang lebih mudah dipahami, dan perbaikan dari CI.
+
+- **Tonggak sekarang berisi tugas.** Kemajuan proyek selalu dihitung dari tugasnya ("x dari y
+  tugas selesai"), ada tonggak atau tidak. Sebelumnya kemajuan diam-diam pindah ke tonggak begitu
+  ada satu tonggak. Di halaman proyek, tugas tanpa tonggak tampil paling atas, lalu satu kelompok
+  per tonggak dengan tanggalnya, "x dari y tugas", dan baris tambah tugasnya sendiri. Tonggak
+  tercapai saat semua tugasnya selesai; tonggak tanpa tugas dicentang sendiri. Tugas lama
+  dimasukkan ke tonggak lewat kolom Tonggak di panel tugas.
+- Pembaruan ini mengubah database (migrasi 0009). Hub menyimpan salinan database lama di folder
+  `backups` sebelum mengubahnya. Tugas lama mulai tanpa tonggak; centang tonggak lama tetap.
+- Jembatan `hub-mcp.exe` kini mengenali folder data yang ditulis dengan nama pendek 8.3 (misalnya
+  `RUNNER~1`) dan tidak lagi mengiranya folder yang dialihkan. Ditemukan oleh CI di GitHub.
+- README memuat spesifikasi Hub serta Hub + ULTRON, dan panduan pemasangan yang lebih jelas.
+
 ## 1.0.1 (9 November 2026)
 
 Perbaikan kecil sebelum uji pengguna (F3).

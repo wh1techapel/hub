@@ -1,4 +1,4 @@
-# Keterbatasan Hub 1.0.1
+# Keterbatasan Hub 1.0.2
 
 Keterbatasan yang tersisa, ditulis apa adanya untuk Bab V laporan (keterbatasan dan saran).
 
