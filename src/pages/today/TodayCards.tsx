@@ -6,6 +6,7 @@ import { Play } from "lucide-react";
 
 import { openFile } from "../../components/FileRows";
 import { FileThumb } from "../../components/FileThumb";
+import { FocusButton } from "../../components/FocusButton";
 import { useAct } from "../../components/Toast";
 import { useApi } from "../../data/api";
 import type { FileCard } from "../../data/generated/FileCard";
@@ -37,10 +38,13 @@ export function LearningCardToday({ glance, todayIso }: { glance: LearningGlance
             {current.title}
           </Link>
           <span>{current.trackName}</span>
-          <button type="button" className="btn btn-secondary" data-sound="sessionStart" onClick={() => void act(() => api.startTimer(current.id))}>
-            <Play size={14} aria-hidden="true" />
-            {id.learning.resume}
-          </button>
+          <div className={styles.learningButtons}>
+            <button type="button" className="btn btn-secondary" data-sound="sessionStart" onClick={() => void act(() => api.startTimer(current.id))}>
+              <Play size={14} aria-hidden="true" />
+              {id.learning.resume}
+            </button>
+            <FocusButton itemId={current.id} className="btn btn-quiet" />
+          </div>
         </div>
       ) : (
         <p className={styles.empty}>{id.learning.currentEmpty}</p>

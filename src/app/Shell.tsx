@@ -11,9 +11,10 @@
 
 import { Link, Outlet, useRouter, useRouterState } from "@tanstack/react-router";
 import { ArrowLeft, PenLine, Search } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
 
+import { LenteraMark } from "../components/LenteraMark";
 import { useApi } from "../data/api";
 import { useBackend } from "../data/backend";
 import type { CaptureKind } from "../data/generated/CaptureKind";
@@ -195,16 +196,23 @@ export function Shell() {
     };
   }, [peek]);
 
+  // Ctrl+K: the palette. Ctrl+L: Lentera's bar (the same one Ctrl+Alt+L opens from anywhere).
+  const openLentera = useCallback(() => void api.openLentera().catch(() => undefined), [api]);
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+      if (!(event.ctrlKey || event.metaKey)) return;
+      const key = event.key.toLowerCase();
+      if (key === "k") {
         event.preventDefault();
         setPalette((open) => (open ? null : { startWith: null }));
+      } else if (key === "l" && !event.altKey && !event.shiftKey) {
+        event.preventDefault();
+        openLentera();
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [openLentera]);
 
   // Where the window was asked to open before this page existed, and where it is sent later.
   useEffect(() => {
@@ -239,6 +247,10 @@ export function Shell() {
             <button type="button" className={styles.capture} onClick={() => setPalette({ startWith: "task" })} title={id.nav.capture}>
               <PenLine size={17} strokeWidth={1.7} aria-hidden="true" />
               <span>{id.nav.capture}</span>
+            </button>
+            <button type="button" className={`${styles.item} ${styles.lentera}`} onClick={openLentera} title={`${id.nav.lentera} (Ctrl+L)`}>
+              <LenteraMark />
+              <span>{id.nav.lentera}</span>
             </button>
             <nav className={styles.nav}>
               {pages

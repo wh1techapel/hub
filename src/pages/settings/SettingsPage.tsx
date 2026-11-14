@@ -274,6 +274,8 @@ function SettingsForm({ settings, part }: { settings: Settings; part: SettingsPa
               <p className={styles.hint}>{id.learning.goalHint}</p>
             </div>
           </section>
+
+          <FocusSection settings={settings} save={save} failed={failedField && FOCUS_FIELDS.some(([field]) => field === failedField) ? { field: failedField, text: errorText(error, failedField) ?? "" } : null} />
         </>
       )}
 
@@ -324,6 +326,14 @@ function SettingsForm({ settings, part }: { settings: Settings; part: SettingsPa
               </p>
             </div>
           )}
+          {shell.data && (
+            <div className={styles.field}>
+              <span className={styles.label}>{id.settings.lenteraHotkey}</span>
+              <p className={shell.data.lenteraHotkeyOk ? styles.hint : styles.error}>
+                {shell.data.lenteraHotkeyOk ? id.settings.lenteraHotkeyOk(shell.data.lenteraHotkey) : id.settings.hotkeyBusy(shell.data.lenteraHotkey)}
+              </p>
+            </div>
+          )}
           <div className={styles.field}>
             <div>
               <button type="button" className="btn btn-secondary" disabled={exportData.isPending} onClick={() => exportData.mutate()}>
@@ -359,6 +369,60 @@ function SettingsForm({ settings, part }: { settings: Settings; part: SettingsPa
 }
 
 /** ULTRON's door into Hub: the switch, the port, what is happening, and a new token. */
+/** Sesi Fokus's lengths (Lentera CP02), with what the core allows (settings.rs). */
+const FOCUS_FIELDS: readonly ["focusMinutes" | "breakMinutes" | "longBreakMinutes" | "longBreakEvery", number, number][] = [
+  ["focusMinutes", 5, 90],
+  ["breakMinutes", 1, 30],
+  ["longBreakMinutes", 5, 60],
+  ["longBreakEvery", 2, 8],
+];
+
+function FocusSection({
+  settings,
+  save,
+  failed,
+}: {
+  settings: Settings;
+  save: (patch: SettingsPatch, field: string) => void;
+  failed: { field: string; text: string } | null;
+}) {
+  return (
+    <section className={styles.section} aria-labelledby="focus-title">
+      <h2 className="section-label" id="focus-title">
+        {id.focus.settings.title}
+      </h2>
+      <div className={styles.times}>
+        {FOCUS_FIELDS.map(([field, min, max]) => (
+          <div key={field} className={styles.field}>
+            <label className={styles.label} htmlFor={`focus-${field}`}>
+              {id.focus.settings[field]}
+            </label>
+            <input
+              id={`focus-${field}`}
+              type="number"
+              inputMode="numeric"
+              min={min}
+              max={max}
+              className={styles.input}
+              defaultValue={settings[field]}
+              aria-invalid={failed?.field === field || undefined}
+              aria-describedby="focus-error"
+              onChange={(event) => {
+                const value = Number(event.target.value);
+                if (Number.isInteger(value) && value >= min && value <= max && value !== settings[field]) save({ [field]: value }, field);
+              }}
+            />
+          </div>
+        ))}
+      </div>
+      <p className={styles.error} id="focus-error">
+        {failed?.text ?? ""}
+      </p>
+      <p className={styles.hint}>{id.focus.settings.hint}</p>
+    </section>
+  );
+}
+
 function UltronSection({
   settings,
   save,

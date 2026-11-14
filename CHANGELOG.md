@@ -1,5 +1,27 @@
 # Catatan Rilis Hub
 
+## 1.0.3 (14 November 2026)
+
+Lentera hadir di desktop: asisten ringan untuk pelajar, tanpa GPU.
+
+- **Bar Lentera.** `Ctrl+Alt+L` dari aplikasi mana pun (atau `Ctrl+L`, Tanya Lentera di bilah
+  samping, palet, dan tray) membuka bar Lentera di pojok kanan bawah layar. Tulis satu kalimat,
+  dan Lentera (lewat Google Gemini) mengusulkan tugas, pengingat, jadwal, atau catatan sebagai
+  kartu. Tidak ada yang tersimpan sebelum kamu menekan Simpan; Ubah mengganti isinya, Lewati
+  membuangnya. Tanpa kunci Gemini atau saat offline, kalimatnya tetap bisa disimpan lewat Catat
+  Cepat.
+- **Dari Pesan.** Tempel pesan grup kelas (ekspor WhatsApp atau pesan yang disalin). Hub
+  membersihkannya dulu di komputer (nama pengirim, jam kirim, nomor, mention, dan email dibuang;
+  tanggal kirim disimpan) dan menunjukkannya sebelum dikirim.
+- **Sesi Fokus.** Pomodoro tanpa internet untuk tugas, materi Belajar, atau apa saja: 25 menit
+  fokus, 5 menit istirahat, istirahat panjang setiap 4 blok (bisa diubah di Pengaturan > Hari).
+  Hitung mundurnya tampil di kapsul Lentera, dan setiap blok tercatat di Jejak; blok pada materi
+  Belajar menjadi sesi belajarnya.
+- Yang dikirim ke Google dari bar Lentera hanya kalimatmu, tanggal dan jam, serta nama Proyek dan
+  Ruang; bar menyebutkannya di bawah kolom ketik.
+- Pembaruan ini mengubah database (migrasi 0010). Hub menyimpan salinan database lama di folder
+  `backups` sebelum mengubahnya.
+
 ## 1.0.2 (10 November 2026)
 
 Tugas dan tonggak yang lebih mudah dipahami, dan perbaikan dari CI.

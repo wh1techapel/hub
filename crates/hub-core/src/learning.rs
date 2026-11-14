@@ -438,7 +438,7 @@ pub fn update_item(conn: &mut Connection, id: &str, input: LearningInput, actor:
 
 /// Status with its dates: doing and done start the item, done finishes it, anything else clears
 /// the finish.
-fn apply_status(tx: &Transaction<'_>, id: &str, status: LearningStatus, now: Timestamp) -> Result<()> {
+pub(crate) fn apply_status(tx: &Transaction<'_>, id: &str, status: LearningStatus, now: Timestamp) -> Result<()> {
     let stamp = instant(now);
     tx.execute(
         "UPDATE learning_items SET status = ?2,
@@ -574,7 +574,7 @@ pub fn timer(conn: &Connection) -> Result<Option<Timer>> {
         .optional()?)
 }
 
-fn insert_session(tx: &Connection, item_id: &str, started: Timestamp, minutes: u32, note: &str, actor: Actor, now: Timestamp) -> Result<String> {
+pub(crate) fn insert_session(tx: &Connection, item_id: &str, started: Timestamp, minutes: u32, note: &str, actor: Actor, now: Timestamp) -> Result<String> {
     let id = new_id();
     tx.execute(
         "INSERT INTO learning_sessions (id, item_id, started_at, duration_min, note, source, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
@@ -597,7 +597,7 @@ fn insert_session(tx: &Connection, item_id: &str, started: Timestamp, minutes: u
 }
 
 /// Stop the running timer into a session. Returns what it wrote, if a timer ran.
-fn stop_in(tx: &Transaction<'_>, actor: Actor, now: Timestamp) -> Result<Option<(String, u32)>> {
+pub(crate) fn stop_in(tx: &Transaction<'_>, actor: Actor, now: Timestamp) -> Result<Option<(String, u32)>> {
     let running: Option<(String, String)> =
         tx.query_row("SELECT item_id, started_at FROM learning_timer", [], |row| Ok((row.get(0)?, row.get(1)?))).optional()?;
     let Some((item_id, started_at)) = running else { return Ok(None) };
@@ -610,7 +610,8 @@ fn stop_in(tx: &Transaction<'_>, actor: Actor, now: Timestamp) -> Result<Option<
 }
 
 /// Start timing an item. A timer already running on another item is stopped into its session
-/// first; the item becomes "doing".
+/// first, and so is a Sesi Fokus (one clock at a time, so no minute is counted twice); the item
+/// becomes "doing".
 pub fn start_timer(conn: &mut Connection, item_id: &str, actor: Actor, now: Timestamp) -> Result<Vec<Change>> {
     let item_id = ids::parse("itemId", item_id)?;
     let tx = conn.transaction()?;
@@ -623,12 +624,15 @@ pub fn start_timer(conn: &mut Connection, item_id: &str, actor: Actor, now: Time
         return Ok(Vec::new());
     }
     stop_in(&tx, actor, now)?;
+    let focus = crate::focus::stop_in(&tx, actor, now)?;
     tx.execute("INSERT INTO learning_timer (id, item_id, started_at) VALUES (1, ?1, ?2)", params![item_id, instant(now)])?;
     if status == LearningStatus::Todo {
         apply_status(&tx, &item_id, LearningStatus::Doing, now)?;
     }
     tx.commit()?;
-    Ok(vec![Change::one(Entity::LearningItem, item_id), Change::all(Entity::LearningSession)])
+    let mut changes = vec![Change::one(Entity::LearningItem, item_id), Change::all(Entity::LearningSession)];
+    changes.extend(focus);
+    Ok(changes)
 }
 
 pub fn stop_timer(conn: &mut Connection, actor: Actor, now: Timestamp) -> Result<Option<(u32, Vec<Change>)>> {

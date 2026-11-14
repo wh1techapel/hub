@@ -208,6 +208,18 @@ text_enum!(
         StudioRequest => "studio_request",
         // R5: Claude Code's sessions (never in Jejak; the windows follow them).
         ClaudeSession => "claude_session",
+        // Lentera CP02: Sesi Fokus, the running session and its blocks.
+        FocusSession => "focus_session",
+    }
+);
+
+text_enum!(
+    /// Where a Sesi Fokus is (focus.rs): working, a break, or waiting for the owner after one.
+    FocusPhase {
+        Focus => "focus",
+        ShortBreak => "short_break",
+        LongBreak => "long_break",
+        Waiting => "waiting",
     }
 );
 

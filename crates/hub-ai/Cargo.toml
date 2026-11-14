@@ -10,6 +10,9 @@ publish.workspace = true
 [dependencies]
 serde.workspace = true
 serde_json.workspace = true
+# Lentera (CP03): the dates Gemini proposes are checked as calendar dates, and the "Saat ini" block
+# names the days ahead.
+jiff.workspace = true
 thiserror.workspace = true
 ts-rs.workspace = true
 # HTTPS to generativelanguage.googleapis.com only. Windows' own TLS (SChannel through native-tls)

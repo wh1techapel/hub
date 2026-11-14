@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-return-lentera-focus"
+description = "Enables the return_lentera_focus command without any pre-configured scope."
+commands.allow = ["return_lentera_focus"]
+
+[[permission]]
+identifier = "deny-return-lentera-focus"
+description = "Denies the return_lentera_focus command without any pre-configured scope."
+commands.deny = ["return_lentera_focus"]

@@ -1489,3 +1489,165 @@ that was open only for the run (Hub restarted normally afterwards).
   the members' contributions, the teacher's name, the usability, compatibility, and validation
   results, the price decision, the reflection, and the pitch.
 - No product code changed, so the suites were not run again; lint passes (`docs` is outside it).
+
+# Lentera on the desktop (CP01 to CP06)
+
+Decisions in `CONTEXT.md`, "Lentera on the desktop" (2026-11-10). Lentera, Studio's agent, also
+becomes a light desktop assistant for students: no GPU, text only, Gemini through `hub-ai` with the
+same key, and every change proposed as a confirmation card before it is written. One checkpoint at
+a time, a short report, and the owner's approval before the next.
+
+| Checkpoint | Scope |
+|---|---|
+| CP01 | The capsule and the bar: a transparent window at the bottom right, Ctrl+Alt+L, the tray, the sidebar, Ctrl+L, the palette. No AI, no Pomodoro: the bar saves lines through Catat Cepat's reader. |
+| CP02 | Sesi Fokus: Pomodoro offline, linked to tasks and Belajar, logged in Jejak; the capsule shows the countdown. |
+| CP03 | Lentera's brain: Gemini function calling over Hub's own functions, confirmation cards, minimal data sent, a privacy notice; "Dari Pesan" (a pasted group message becomes tasks with deadlines). |
+| CP04 | Pecah Tugas (a task into steps, a project into milestones) and Susun Minggu (time blocks from deadlines and free calendar time). |
+| CP05 | Kuis Kilat: questions and flashcards from pasted text or a PDF, review after 1, 3, and 7 days. |
+| CP06 | Tanya Lentera about the schedule and concepts (without doing homework), full validation, the PSAJ report and pitch. |
+
+Research behind the features: systematic breaks beat self-regulated ones for fatigue,
+concentration, and motivation (Biwer et al. 2023, Br J Educ Psychol); retrieval practice with
+flashcards has strong support (UiT 2025 nursing campus trial); 46 % of students use AI to study for
+exams and 50 % ask it like a tutor (Inside Higher Ed Student Voice 2025).
+
+## CP01: The capsule and the bar (done, approved by the owner on 2026-11-14)
+
+The owner's answers (2026-11-10): the bar is Catat Cepat until CP03; inside Hub the same desktop
+bar opens; after a save or a click elsewhere it folds into a capsule (or hides when empty);
+Ctrl+Alt+L kept despite IntelliJ's Reformat Code.
+
+- **Window** (`src-tauri/src/lentera.rs`): a third window, frameless, transparent, always on top,
+  off the taskbar, no native shadow, fixed at 480 x 400 logical px at the bottom right of the
+  primary screen's work area (`placement()`, tested for 100, 125, and 150 %, any taskbar side, a
+  primary display at negative coordinates, and a small work area). Click-through outside the
+  page's shape (a 25 ms cursor watch while shown, as ULTRON's island does). The keyboard goes back to
+  the window that had it on Esc, the close button, and a save; not after a click elsewhere.
+- **Page** (`lentera.html`, `src/lentera/`): one pure step function for hidden, capsule, and bar
+  (`state.ts`); one surface whose `clip-path` springs between the bar and its bottom-right pill on
+  `--spring-gentle`, contents cross-fading inside; reduced motion changes at once. The bar holds
+  Lentera's name, the close button, a card area with one honest note, and Catat Cepat's line
+  (`CaptureForm`, which now reports its text so an unsaved line can be kept). A blur counts only
+  when it lasts 150 ms: showing a new window moves focus between it and its WebView and back.
+  Lentera's light (`LenteraMark`) is a still orb of Studio's glow lights.
+- **Entry points**: Ctrl+Alt+L (global, toggles; Pengaturan says when another application holds
+  it), the tray's "Tanya Lentera", the sidebar's Tanya Lentera under Catat cepat, Ctrl+L, and the
+  palette's "Tanya Lentera" (`open_lentera`, async: a window built in a synchronous command never
+  appears on Windows). No clash: Hub used only Ctrl+K and single keys in Kalender; ULTRON uses
+  Ctrl+Alt+U and Ctrl+Alt+Esc.
+- **Capabilities**: `capabilities/lentera.json` (settings, shell, window_ready, read and save a
+  line, its shape, hide, give the keyboard back); the main window may only `open_lentera`.
+- **Found and fixed while checking the real window**: the sync command above; a passing blur on the
+  first show hid the bar; the window did not follow a theme change made while it was open
+  (`useChangeSync`).
+- **Checks**: `cargo test --workspace` 510 passed; clippy clean; Vitest 235 passed (Lentera's
+  states, the window: save, capsule, Esc, close, a click elsewhere with and without a line, a
+  passing blur, the shortcut again, Tab, the shape, the light; the sidebar, Ctrl+L, the palette;
+  Pengaturan's shortcut status); typecheck, lint, and contrast pass. Native smoke 120/120 on the
+  release build: the sidebar opens the bar with the line focused, the window in the work area's
+  corner, the page transparent, Windows reporting it click-through with the cursor off the bar,
+  the real screen unchanged around the bar with Lentera shown and hidden (0 % of sampled pixels)
+  and changed on it (58.5 %), a line saved through the reader for tomorrow, the capsule saying so
+  and leaving, Ctrl+L, Esc giving the keyboard back to the same window, Ctrl+Alt+L opening and
+  closing it, and the dark light. Screenshots of the bar and the capsule in light and dark from that
+  run.
+- **Not checked here**: a display scale or monitor change while Lentera is open (unit tests cover
+  the geometry), Windows' own reduced-motion switch (the CSS is in place), and the spring watched
+  by eye in the real window. Windows' notifications also appear at the bottom right and may cover
+  the bar for a moment.
+
+## CP02: Sesi Fokus (done, approved by the owner on 2026-11-14)
+
+The owner's answers (2026-11-10): Sesi Fokus stands apart from ULTRON's Pomodoro; the capsule shows
+for the whole session and can be tucked away until the next phase; a block on a Belajar item is
+that item's learning session; a block ends in its break by itself and the session waits after the
+break.
+
+- **Core** (`crates/hub-core/src/focus.rs`, migration 0010 `focus_run` and `focus_blocks`): one
+  session at a time, its phase read from stored times and moved on by `settle`; a long break every
+  few blocks; time Hub did not see pauses a block where Hub last looked and ends a break; 30 minutes
+  paused or waiting ends the session. Finished blocks go to `focus_blocks` and Jejak, or become the
+  Belajar item's learning session; Belajar's timer and a session stop each other. Lengths in
+  Pengaturan > Hari (25/5/15 after 4 by default). The export carries both tables.
+- **Native**: the scheduler settles the session and wakes at its next phase end; every change makes
+  the capsule follow (`lentera::sync_session`). The capsule shows without taking the keyboard or
+  closing an open menu (shown by Windows directly, WS_EX_NOACTIVATE), steps aside for a fullscreen
+  application (ULTRON's rule), and comes back after a tuck at the next phase. Sesi Fokus is left
+  out of ULTRON's event stream.
+- **Window**: the capsule's label, a ring that steps once a second, and one action; the bar's card
+  with the action, Selipkan, and Hentikan; "Mulai sesi fokus" when none runs. What changed is said
+  once (never the countdown) with one soft sound. The window grew to 480 x 460.
+- **Entry points**: a task's panel, a Belajar item (its panel and Lanjutkan belajar), Hari Ini's
+  Belajar card, the palette ("Mulai sesi fokus"), and the bar.
+- **Found and fixed in the real window**: a window shown behind Tauri's back was hidden again at
+  Tauri's next style change (the click-through), so the capsule never stayed: the click-through is
+  now set directly, and a quiet window is hidden for Windows too; Tauri's own show activates a
+  window, so the quiet show goes to Windows; Tauri could read Lentera as unfocused while its WebView
+  had the keyboard, so Ctrl+Alt+L also asks Windows; the cursor watch held its lock while asking
+  the window something, which waits on the main thread, while the main thread waited for that lock
+  (Hub stopped answering): the lock is now never held across a window call. A scripted DevTools
+  click cannot hand a window the keyboard, so the smoke opens Lentera with the real shortcut and
+  reads scripted opens from the page.
+- **Checks**: `cargo test --workspace` 527 passed; clippy clean; Vitest 248 passed; typecheck, lint,
+  and contrast pass. Native smoke 131/131 on the release build (a minute lasting a second): the
+  capsule shows by itself without taking the keyboard, counts the block down, takes its break,
+  says it once, waits, pauses and stands still, Selipkan folds it away and the next phase brings it
+  back without moving the keyboard, Hentikan ends the session, Jejak keeps the block and the end.
+- **Not checked here**: a real fullscreen application (the rule has unit tests; ULTRON measured the
+  same rule), a display scale change during a session, and Windows' reduced-motion switch.
+
+## CP03: Lentera's brain (done, approved by the owner on 2026-11-14)
+
+The owner's answers (2026-11-10): Lentera only proposes new things (tasks, reminders, events,
+notes); with the line go the date and time and the names of projects and Ruang, nothing else of
+Hub; Dari Pesan cleans a pasted message on the computer and shows it before it is sent; Enter
+asks Lentera, and Catat Cepat stays for no key and after a failure.
+
+- **Research**: Google's function calling guide for the Interactions API (`tools` entries of type
+  `function`, `function_result` matched by `call_id` and name, one result per call, the stateless
+  continuation with the model's steps sent back as received); its advice of 10 to 20 tools at most,
+  strong types and enums, and checking a call before acting on it; Gemini 3's advice to leave the
+  temperature at its default; the Gemini API terms for unpaid services (Google may use what is sent
+  and people may review it), the reason Dari Pesan takes names and numbers out first.
+- **Brain** (`crates/hub-ai/src/lentera.rs`, `prompts/lentera.toml`): four proposing functions
+  with item lists; every item read into a typed `Proposal` and checked (dates, times, lengths, a
+  task's time as its deadline, reminders ahead of now, names matched to those sent); refused items
+  go back with their reasons, and only then does the reply take a second round. `stream::rounds`
+  now serves Studio and Lentera alike (Studio's rule unchanged).
+- **Dari Pesan** (`crates/hub-ai/src/group_message.rs`): Android and iPhone exports, copied
+  messages, twelve-hour clocks; names, times, numbers, mentions, and emails out, the date kept,
+  media and deleted messages dropped; pure and idempotent, cleaned again before sending.
+- **Native** (`src-tauri/src/lentera_ai.rs`): `ask_lentera` (streamed over a channel, one answer at
+  a time), `stop_lentera`, `clean_lentera_message`, `save_lentera_proposal` (checked again, written
+  through hub-core as the owner's). Lentera's window may call them and `gemini_status`, nothing
+  more. The window grew to 480 x 640 (still click-through around the bar).
+- **Bar** (`src/lentera/talk.ts`, `Conversation.tsx`, `LenteraWindow.tsx`): the conversation and
+  its cards (Simpan, Ubah in place, Lewati and Kembalikan, Simpan semua), Hentikan, failures in
+  Studio's words with Coba lagi and Catat Cepat saja, Dari Pesan's panel, the privacy line and its
+  note, a click elsewhere keeping cards waiting in the capsule, and the capsule after the last
+  card ("3 usulan tersimpan"). UI UX Pro Max guided the card anatomy, the quiet hierarchy, and the
+  announcements. README and Pengaturan > Integrasi AI say what the bar sends.
+- **Checks**: `cargo test --workspace` 552 passed (hub-ai 87: the requests, every function's
+  reading, the mend round against a fake Gemini, each message format and the cleaning twice; the
+  app 27: a confirmed card of each kind written as the owner's, the line and the message checked
+  before sending); clippy clean with warnings as errors; Vitest 260 passed (the bar against the
+  demo backend's pretend Gemini: cards wait and only Simpan writes, Simpan semua, Lewati and
+  Kembalikan, Ubah, a failure handed to Catat Cepat, Dari Pesan cleaned on paste and again before
+  it leaves, the privacy note, Hentikan, cards kept in the capsule, the turns sent with the next
+  question, the conversation's steps); typecheck, lint, and contrast pass. Native smoke on the
+  release build (`npm run tauri build`) against a fake Gemini: every CP03 check passed in two full
+  runs (the bar asks Lentera and says what goes to Google; a refused proposal mended in a second
+  round; only the line, the moment, and the names of projects and Ruang sent, no task titles, no
+  key; nothing written before Simpan; Simpan writes the card as proposed; the last card folds the
+  bar into the capsule and a skipped card writes nothing; Dari Pesan shows the message cleaned
+  before anything is sent and only the cleaned text leaves, fenced; Simpan semua; without Gemini
+  Lentera says why and the line is saved through Catat Cepat). The runs ended 140/142 and 141/142:
+  CP01's transparency shot and CP02's "the tucked capsule comes back without moving the keyboard"
+  failed because the test Hub's own evening toasts (the 21.00 Tutup Hari nudge and an overdue
+  seeded reminder) covered the bottom-right corner and Windows' notification panel
+  (`ControlCenterWindow`) held the foreground; a third run stopped at CP01's injected Ctrl+Alt+L
+  for the same reason. The smoke now names the foreground window's class when it reports it.
+- **Not checked here**: a real Gemini (only the fake one; the owner's key and quota were not
+  used), the smoke's CP01 and CP02 desktop checks in the daytime after these changes, and the
+  bar watched by eye in the real window (the browser preview and the release build's DOM were
+  read instead).

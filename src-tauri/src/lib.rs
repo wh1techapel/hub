@@ -4,13 +4,17 @@
 //! Every rule about data lives in `hub-core`; this crate opens the Hub, relays the closed set of
 //! commands listed in build.rs, fires reminders, and tells every window when data changed. Hub
 //! starts with Windows into the tray (`--tray`), builds a window when the owner opens it, and hides
-//! it on close: quitting is in the tray menu. Ctrl+Alt+H opens Catat Cepat from anywhere. The
-//! local API for ULTRON (`api.rs`, `hub-api`) runs beside the windows on 127.0.0.1.
+//! it on close: quitting is in the tray menu. Ctrl+Alt+H opens Catat Cepat from anywhere, and
+//! Ctrl+Alt+L opens Lentera's bar (`lentera.rs`). The local API for ULTRON (`api.rs`, `hub-api`)
+//! runs beside the windows on 127.0.0.1.
 
 mod api;
 mod belajar;
 mod claude_code;
 mod commands;
+mod focus;
+mod lentera;
+mod lentera_ai;
 mod library;
 mod log;
 mod maintenance;
@@ -34,7 +38,7 @@ use hub_core::model::Actor;
 use hub_core::{areas, learning, reminders, settings, Hub, Paths};
 use tauri::{AppHandle, Manager, RunEvent};
 use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
-use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
+use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, ShortcutState};
 
 use crate::protocol::{Link, Page};
 use crate::scheduler::Scheduler;
@@ -46,6 +50,8 @@ pub struct AppState {
     pub started_hidden: bool,
     pub scheduler: Scheduler,
     pub hotkey_ok: AtomicBool,
+    /// Ctrl+Alt+L could be registered for Lentera.
+    pub lentera_hotkey_ok: AtomicBool,
     /// Every change and fired reminder, for the API's event stream (ULTRON).
     pub events: hub_api::Events,
     pub api: api::Api,
@@ -58,6 +64,9 @@ const TRAY_ARG: &str = "--tray";
 /// The global shortcut for Catat Cepat (owner's choice, CONTEXT.md).
 const CAPTURE_HOTKEY: &str = "ctrl+alt+h";
 pub const CAPTURE_HOTKEY_LABEL: &str = "Ctrl+Alt+H";
+/// The global shortcut for Lentera's bar (owner's choice, 2026-11-10, CONTEXT.md).
+const LENTERA_HOTKEY: &str = "ctrl+alt+l";
+pub const LENTERA_HOTKEY_LABEL: &str = "Ctrl+Alt+L";
 
 /// `HUB_DATA_DIR` when set (tests and smokes), else `%LOCALAPPDATA%\Hub`.
 fn data_root() -> Option<PathBuf> {
@@ -67,7 +76,7 @@ fn data_root() -> Option<PathBuf> {
     std::env::var_os("LOCALAPPDATA").map(|dir| PathBuf::from(dir).join("Hub"))
 }
 
-fn uses_override() -> bool {
+pub(crate) fn uses_override() -> bool {
     std::env::var_os("HUB_DATA_DIR").is_some_and(|dir| !dir.is_empty())
 }
 
@@ -97,6 +106,7 @@ pub fn run() {
         started_hidden,
         scheduler: Scheduler::default(),
         hotkey_ok: AtomicBool::new(false),
+        lentera_hotkey_ok: AtomicBool::new(false),
         events: hub_api::Events::default(),
         api: api::Api::default(),
         studio: studio::Studio::new(uses_override().then_some(root.as_path())),
@@ -120,8 +130,13 @@ pub fn run() {
         .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, Some(vec![TRAY_ARG])))
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
-                .with_handler(|app, _shortcut, event| {
-                    if event.state() == ShortcutState::Pressed {
+                .with_handler(|app, shortcut, event| {
+                    if event.state() != ShortcutState::Pressed {
+                        return;
+                    }
+                    if shortcut.matches(Modifiers::CONTROL | Modifiers::ALT, Code::KeyL) {
+                        lentera::toggle(app);
+                    } else {
                         window::toggle_capture(app);
                     }
                 })
@@ -206,6 +221,23 @@ pub fn run() {
             commands::window_ready,
             commands::set_caption,
             commands::hide_capture,
+            lentera::open_lentera,
+            lentera::set_lentera_shape,
+            lentera::hide_lentera,
+            lentera::return_lentera_focus,
+            lentera::take_lentera_open,
+            lentera::focus_lentera,
+            lentera_ai::ask_lentera,
+            lentera_ai::stop_lentera,
+            lentera_ai::clean_lentera_message,
+            lentera_ai::save_lentera_proposal,
+            focus::get_focus,
+            focus::start_focus,
+            focus::pause_focus,
+            focus::resume_focus,
+            focus::next_focus,
+            focus::stop_focus,
+            focus::tuck_focus,
             commands::take_start_path,
             commands::get_today,
             commands::list_tasks,
@@ -318,6 +350,11 @@ pub fn run() {
                 log::error(state.hub.paths(), "Ctrl+Alt+H could not be registered (another application holds it)");
             }
             state.hotkey_ok.store(hotkey_ok, Ordering::SeqCst);
+            let lentera_ok = handle.global_shortcut().register(LENTERA_HOTKEY).is_ok();
+            if !lentera_ok {
+                log::error(state.hub.paths(), "Ctrl+Alt+L could not be registered (another application holds it)");
+            }
+            state.lentera_hotkey_ok.store(lentera_ok, Ordering::SeqCst);
             // Notifications under Hub's own name, and the hubapp:// link of their buttons. Not for
             // test folders: a smoke run must not repoint the owner's link at a test build.
             if !uses_override() {

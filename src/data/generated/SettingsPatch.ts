@@ -6,4 +6,4 @@ import type { ThemeMode } from "./ThemeMode";
 /**
  * A change to some settings. Unknown fields are refused, not ignored.
  */
-export type SettingsPatch = { ownerName?: string, wakeTime?: string, sleepTime?: string, themeMode?: ThemeMode, ink?: Ink, autostart?: boolean, closeNudge?: boolean, closeNudgeTime?: string, learningGoalDays?: number, apiEnabled?: boolean, apiPort?: number, claudeEnabled?: boolean, geminiModel?: string, devKnows?: string, devLearning?: string, devCost?: DevCost, devDeploy?: string, soundEnabled?: boolean, soundVolume?: number, };
+export type SettingsPatch = { ownerName?: string, wakeTime?: string, sleepTime?: string, themeMode?: ThemeMode, ink?: Ink, autostart?: boolean, closeNudge?: boolean, closeNudgeTime?: string, learningGoalDays?: number, apiEnabled?: boolean, apiPort?: number, claudeEnabled?: boolean, geminiModel?: string, devKnows?: string, devLearning?: string, devCost?: DevCost, devDeploy?: string, soundEnabled?: boolean, soundVolume?: number, focusMinutes?: number, breakMinutes?: number, longBreakMinutes?: number, longBreakEvery?: number, };

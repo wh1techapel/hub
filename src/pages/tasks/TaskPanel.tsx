@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { Field, Segmented } from "../../components/Fields";
 import { FileRows } from "../../components/FileRows";
 import { TaskList } from "../../components/TaskList";
+import { FocusButton } from "../../components/FocusButton";
 import { useAct } from "../../components/Toast";
 import { useApi } from "../../data/api";
 import type { TaskDetail } from "../../data/generated/TaskDetail";
@@ -178,6 +179,7 @@ function TaskEditor({
             {inFocus ? id.tasks.focusRemove : id.tasks.focusAdd}
           </button>
           {focusFull && <span>{id.tasks.focusFull}</span>}
+          <FocusButton taskId={detail.card.id} className="btn btn-quiet" />
         </div>
       )}
 

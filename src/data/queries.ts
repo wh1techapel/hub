@@ -52,6 +52,7 @@ export const keys = {
   studio: ["studio"] as const,
   claudeCode: ["claude-code"] as const,
   claudeSignals: ["claude-signals"] as const,
+  focus: ["focus"] as const,
 };
 
 export function createQueryClient(): QueryClient {
@@ -77,6 +78,12 @@ export function failedForGood(query: { isError: boolean; error: unknown; data: u
 export function useSettings() {
   const api = useApi();
   return useQuery({ queryKey: keys.settings, queryFn: api.getSettings, staleTime: Infinity });
+}
+
+/** The running Sesi Fokus (Lentera CP02), or null. Each window works out the time left itself. */
+export function useFocus() {
+  const api = useApi();
+  return useQuery({ queryKey: keys.focus, queryFn: api.getFocus });
 }
 
 export function useShell() {

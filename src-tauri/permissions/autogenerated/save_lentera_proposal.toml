@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-save-lentera-proposal"
+description = "Enables the save_lentera_proposal command without any pre-configured scope."
+commands.allow = ["save_lentera_proposal"]
+
+[[permission]]
+identifier = "deny-save-lentera-proposal"
+description = "Denies the save_lentera_proposal command without any pre-configured scope."
+commands.deny = ["save_lentera_proposal"]

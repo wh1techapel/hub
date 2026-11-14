@@ -15,7 +15,14 @@
 // reported (its session, its calls, a refusal, its goodbye); the bridge connecting by
 // CLAUDE_PROJECT_DIR, answering without Gemini, and starting a stopped Hub; Lentera's reply as its
 // question alone, the model menu, the glow, and the PRD's steps (L1 to L3); memory with Studio
-// open and hidden. Screenshots go to the
+// open and hidden. Lentera on the desktop (CP01): the bar opened from the sidebar, Ctrl+L, and
+// Ctrl+Alt+L, in the work area's bottom-right corner, transparent and click-through around the bar
+// on the real screen, a line saved through it, the capsule, Esc giving the keyboard back, and the
+// bar and the capsule in light and dark; a Sesi Fokus (CP02) in the capsule and the bar, its
+// break, its wait, a pause, Selipkan, and Hentikan; Lentera's brain (CP03) against the fake Gemini:
+// a line proposed as cards with nothing written before Simpan, a refused proposal mended in a
+// second round, what was sent (no Hub data beyond names), Dari Pesan cleaned before it leaves,
+// and with Gemini gone the line handed to Catat Cepat. Screenshots go to the
 // data folder. The debug port exists only for this run: the owner's Hub never starts with it.
 
 import { execFileSync, spawn } from "node:child_process";
@@ -42,6 +49,8 @@ let geminiServer = null;
 const geminiChats = [];
 const geminiPrdParts = [];
 const geminiStacks = [];
+// Lentera's bar (CP03): every request it made, in order.
+const geminiLentera = [];
 // A stack (R3): the seven layers, as Gemini sends them.
 const SMOKE_STACK = {
   layers: ["platform", "frontend", "backend", "database", "auth", "hosting", "extras"].map((layer) => ({
@@ -145,6 +154,30 @@ function startGemini() {
           return send(200, { id: "v1_smoke", status: "completed", steps: [{ type: "model_output", content: [{ type: "text", text: "Siap." }] }],
             usage: { total_input_tokens: 9, total_output_tokens: 2 } });
         }
+        // Lentera's bar (CP03): proposals through usul_tugas. A line: two tasks, one with a date
+        // Hub refuses, mended in the second round after Hub's results. A group message: two tasks.
+        if (body.stream && body.tools?.some((tool) => tool.name === "usul_tugas")) {
+          geminiLentera.push(body);
+          const tomorrow = /Hari berikutnya: \w+, (\d{4}-\d{2}-\d{2})/.exec(body.system_instruction)?.[1] ?? "2030-01-01";
+          const last = [...body.input].reverse().find((step) => step.type === "user_input")?.content?.[0]?.text ?? "";
+          const mending = body.input.some((step) => step.type === "function_result");
+          const items = last.includes("<pesan_grup>")
+            ? [{ title: "Tugas MTK hal 45", due_date: tomorrow, due_time: "07:00" }, { title: "Bawa jas lab", do_date: tomorrow }]
+            : mending
+              ? [{ title: "Poster K3", due_date: tomorrow }]
+              : [{ title: "Laporan praktikum jaringan", due_date: tomorrow, due_time: "19:00" }, { title: "Poster K3", due_date: "besok" }];
+          const events = [];
+          const event = (data) => events.push(`event: ${data.event_type}\ndata: ${JSON.stringify(data)}\n\n`);
+          event({ index: 0, step: { type: "model_output" }, event_type: "step.start" });
+          event({ index: 0, delta: { type: "text", text: mending ? "" : "Ini usulanku." }, event_type: "step.delta" });
+          event({ index: 0, event_type: "step.stop" });
+          event({ index: 1, step: { type: "function_call", id: mending ? "l2" : "l1", name: "usul_tugas", arguments: {} }, event_type: "step.start" });
+          event({ index: 1, delta: { type: "arguments_delta", arguments: JSON.stringify({ items }) }, event_type: "step.delta" });
+          event({ index: 1, event_type: "step.stop" });
+          event({ interaction: { status: "requires_action", usage: { total_input_tokens: 40, total_output_tokens: 30 } }, event_type: "interaction.completed" });
+          response.writeHead(200, { "Content-Type": "text/event-stream" });
+          return response.end(events.join("") + "event: done\ndata: [DONE]\n\n");
+        }
         // A chat turn: text in pieces, then (the first round) the functions catat and tanya. Since
         // F1 Hub ends the turn after `tanya` (the owner answers first), so the second round, after
         // Hub's results, should never be asked for; it answers one closing sentence if it is.
@@ -205,6 +238,8 @@ function launch() {
       HUB_API_PORT: String(apiPort),
       HUB_GEMINI_BASE_URL: `http://127.0.0.1:${geminiPort}`,
       WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${port} --remote-allow-origins=*`,
+      // Sesi Fokus: a minute of Pengaturan lasts a second (honoured only with HUB_DATA_DIR).
+      HUB_FOCUS_SECONDS_PER_MINUTE: "1",
     },
     stdio: "ignore",
   });
@@ -318,7 +353,8 @@ async function attach() {
   for (let attempt = 0; attempt < 100; attempt += 1) {
     try {
       const pages = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();
-      const page = pages.find((p) => p.type === "page");
+      // The main window: Catat Cepat and Lentera have pages of their own.
+      const page = pages.find((p) => p.type === "page" && !/capture.html|lentera.html/.test(p.url));
       if (page) return connect(page.webSocketDebuggerUrl);
     } catch {
       // not up yet
@@ -326,6 +362,109 @@ async function attach() {
     await sleep(100);
   }
   throw new Error("the window never offered a DevTools page");
+}
+
+/** Another window's page (Lentera's), once it exists. */
+async function attachTo(name) {
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    try {
+      const pages = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();
+      const page = pages.find((p) => p.type === "page" && p.url.includes(name));
+      if (page) return connect(page.webSocketDebuggerUrl);
+    } catch {
+      // not up yet
+    }
+    await sleep(100);
+  }
+  throw new Error(`${name} never offered a DevTools page`);
+}
+
+/** Lentera's window as Windows sees it: shown, click-through, the cursor, the window with the
+ * keyboard. Only read: nothing is moved or clicked. */
+function nativeLentera(hubPid) {
+  const script = `Add-Type -Namespace W -Name L -MemberDefinition @'
+[DllImport("user32.dll")] public static extern bool SetProcessDPIAware();
+[DllImport("user32.dll")] public static extern System.IntPtr GetForegroundWindow();
+[DllImport("user32.dll")] public static extern int GetWindowLong(System.IntPtr h, int i);
+[DllImport("user32.dll")] public static extern bool GetCursorPos(out POINT p);
+[DllImport("user32.dll")] public static extern bool IsWindowVisible(System.IntPtr h);
+[DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern System.IntPtr FindWindowExW(System.IntPtr parent, System.IntPtr after, string cls, string title);
+[DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(System.IntPtr h, out uint pid);
+[DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern int GetClassNameW(System.IntPtr h, System.Text.StringBuilder s, int n);
+public struct POINT { public int X; public int Y; }
+'@
+[void][W.L]::SetProcessDPIAware()
+$h = [IntPtr]::Zero
+do { $h = [W.L]::FindWindowExW([IntPtr]::Zero, $h, [NullString]::Value, 'Lentera'); $p = [uint32]0; if ($h -ne [IntPtr]::Zero) { [void][W.L]::GetWindowThreadProcessId($h, [ref]$p) } } while ($h -ne [IntPtr]::Zero -and $p -ne ${hubPid})
+$c = New-Object W.L+POINT
+[void][W.L]::GetCursorPos([ref]$c)
+$found = $h -ne [IntPtr]::Zero
+$f = [W.L]::GetForegroundWindow(); $fp = [uint32]0; [void][W.L]::GetWindowThreadProcessId($f, [ref]$fp); $fc = New-Object System.Text.StringBuilder 128; [void][W.L]::GetClassNameW($f, $fc, 128)
+@{ foregroundHub = ($fp -eq ${hubPid}); foregroundClass = $fc.ToString(); found = $found; hwnd = [int64]$h; visible = ($found -and [W.L]::IsWindowVisible($h)); transparent = ($found -and (([W.L]::GetWindowLong($h, -20) -band 0x20) -ne 0)); cursor = @{ x = $c.X; y = $c.Y }; foreground = [int64][W.L]::GetForegroundWindow() } | ConvertTo-Json -Compress`;
+  return JSON.parse(execFileSync("powershell", ["-NoProfile", "-Command", script], { encoding: "utf8", timeout: 30_000 }));
+}
+
+/** Ctrl+Alt+<key> pressed as the keyboard would (only when Hub holds that shortcut). */
+function pressHotkey(key) {
+  const script = `Add-Type -Namespace W -Name K -MemberDefinition '[DllImport("user32.dll")] public static extern void keybd_event(byte vk, byte scan, uint flags, System.UIntPtr extra);'
+foreach ($vk in 0x11, 0x12, ${key.charCodeAt(0)}) { [W.K]::keybd_event($vk, 0, 0, [UIntPtr]::Zero) }
+foreach ($vk in ${key.charCodeAt(0)}, 0x12, 0x11) { [W.K]::keybd_event($vk, 0, 2, [UIntPtr]::Zero) }`;
+  execFileSync("powershell", ["-NoProfile", "-Command", script], { stdio: "ignore", timeout: 30_000 });
+}
+
+/** A part of the real screen (physical pixels), layered windows included (GDI's BitBlt with
+ * CAPTUREBLT: .NET's CopyFromScreen refuses that flag), saved as PNG. */
+function captureScreen(region, name) {
+  const file = join(dataDir, `${name}.png`);
+  const script = `$ErrorActionPreference = 'Stop'
+Add-Type -AssemblyName System.Drawing
+Add-Type -Namespace W -Name D -MemberDefinition @'
+[DllImport("user32.dll")] public static extern bool SetProcessDPIAware();
+[DllImport("user32.dll")] public static extern System.IntPtr GetDC(System.IntPtr h);
+[DllImport("user32.dll")] public static extern int ReleaseDC(System.IntPtr h, System.IntPtr dc);
+[DllImport("gdi32.dll")] public static extern bool BitBlt(System.IntPtr dst, int x, int y, int w, int h, System.IntPtr src, int sx, int sy, uint rop);
+'@
+[void][W.D]::SetProcessDPIAware()
+$b = New-Object System.Drawing.Bitmap ${region.w}, ${region.h}
+$g = [System.Drawing.Graphics]::FromImage($b)
+$screen = [W.D]::GetDC([IntPtr]::Zero)
+$into = $g.GetHdc()
+$copied = [W.D]::BitBlt($into, 0, 0, ${region.w}, ${region.h}, $screen, ${region.x}, ${region.y}, 0x40CC0020)
+$g.ReleaseHdc($into); [void][W.D]::ReleaseDC([IntPtr]::Zero, $screen)
+if (-not $copied) { throw 'BitBlt failed' }
+$b.Save('${file}', [System.Drawing.Imaging.ImageFormat]::Png)
+$g.Dispose(); $b.Dispose()`;
+  execFileSync("powershell", ["-NoProfile", "-Command", script], { stdio: "ignore", timeout: 60_000 });
+  return file;
+}
+
+/** The share of sampled pixels that differ between two captures, inside a rectangle (pixels). */
+function differs(a, b, rect) {
+  const script = `Add-Type -AssemblyName System.Drawing
+$a = [System.Drawing.Bitmap]::FromFile('${a}'); $b = [System.Drawing.Bitmap]::FromFile('${b}')
+$n = 0; $d = 0
+for ($y = ${rect.y}; $y -lt ${rect.y + rect.h}; $y += 4) { for ($x = ${rect.x}; $x -lt ${rect.x + rect.w}; $x += 4) {
+  $p = $a.GetPixel($x, $y); $q = $b.GetPixel($x, $y); $n++
+  if ([Math]::Abs($p.R - $q.R) + [Math]::Abs($p.G - $q.G) + [Math]::Abs($p.B - $q.B) -gt 48) { $d++ } } }
+$a.Dispose(); $b.Dispose()
+[Math]::Round($d / [Math]::Max(1, $n), 3)`;
+  return Number(execFileSync("powershell", ["-NoProfile", "-Command", script], { encoding: "utf8", timeout: 120_000 }).trim());
+}
+
+async function untilShown(hubPid, timeout = 4000) {
+  for (let waited = 0; waited < timeout; waited += 100) {
+    if (nativeLentera(hubPid).visible) return true;
+    await sleep(100);
+  }
+  throw new Error("timed out waiting for Lentera's window to show");
+}
+
+async function untilHidden(hubPid, label) {
+  for (let attempt = 0; attempt < 40; attempt += 1) {
+    if (!nativeLentera(hubPid).visible) return true;
+    await sleep(100);
+  }
+  throw new Error(`timed out waiting for ${label}`);
 }
 
 function connect(url) {
@@ -347,12 +486,18 @@ function connect(url) {
       socket.send(JSON.stringify({ id, method, params }));
     });
   const evaluate = async (expression) => {
-    const result = await send("Runtime.evaluate", { expression, awaitPromise: true, returnByValue: true });
+    // A page that never answers fails the step instead of holding the smoke forever.
+    const result = await Promise.race([
+      send("Runtime.evaluate", { expression, awaitPromise: true, returnByValue: true }),
+      sleep(60_000).then(() => {
+        throw new Error(`the page did not answer: ${expression.slice(0, 80)}`);
+      }),
+    ]);
     if (result.exceptionDetails) throw new Error(result.exceptionDetails.exception?.description ?? "evaluate failed");
     return result.result.value;
   };
-  const screenshot = async (name) => {
-    const { data } = await send("Page.captureScreenshot", { format: "png" });
+  const screenshot = async (name, clip) => {
+    const { data } = await send("Page.captureScreenshot", clip ? { format: "png", clip: { ...clip, scale: 1 } } : { format: "png" });
     const file = join(dataDir, `${name}.png`);
     writeFileSync(file, Buffer.from(data, "base64"));
     return file;
@@ -468,6 +613,267 @@ try {
     Boolean(captured?.doDate && captured.doDate > view.date),
     JSON.stringify(captured?.doDate),
   );
+
+  // Lentera (CP01): Hub's sidebar opens the bar in a window of its own at the bottom right of the
+  // work area. Around the bar the window is transparent and lets clicks through; a line typed there
+  // goes through Catat Cepat's reader; the capsule says so and leaves; Esc gives the keyboard back.
+  const lenteraOpen = "document.querySelector('main')?.dataset.view === 'bar' && document.activeElement?.tagName === 'INPUT'";
+  const lenteraView = (name) => `document.querySelector('main')?.dataset.view === ${JSON.stringify(name)}`;
+  const lenteraBox = `(() => {
+    const part = (selector) => { const r = document.querySelector(selector).getBoundingClientRect(); return { left: r.left, top: r.top, width: r.width, height: r.height }; };
+    return { x: screenX, y: screenY, w: outerWidth, h: outerHeight, dpr: devicePixelRatio,
+      workRight: screen.availLeft + screen.availWidth, workBottom: screen.availTop + screen.availHeight,
+      bar: part('main [class*=surface]'), capsule: part('main [class*=capsule]'),
+      background: getComputedStyle(document.body).backgroundColor, focused: document.hasFocus(),
+      scheme: document.documentElement.dataset.scheme };
+  })()`;
+  // The page notes each time it opens the bar: a scripted open (no real input) may not keep the
+  // keyboard, and the bar then folds away at once, so the open is read from this note.
+  const noteOpens = `(() => {
+    window.__opened = false;
+    const main = document.querySelector('main');
+    new MutationObserver(() => {
+      if (main.dataset.view === 'bar') window.__opened = true;
+    }).observe(main, { attributes: true, attributeFilter: ['data-view'] });
+    return true;
+  })()`;
+  const closeBar = "document.querySelector('main')?.dataset.view === 'bar' ? (document.querySelector('main input').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })), true) : true";
+  // The part of the page around a rectangle, with room for its shadow.
+  const around = (r) => ({ x: Math.max(0, r.left - 20), y: Math.max(0, r.top - 20), width: r.width + 36, height: r.height + 36 });
+  // The real screen where Lentera will sit, before it shows: if anything behind it moves on its
+  // own (a video, a clock), the transparency check below cannot be read and says so.
+  const corner = await page.evaluate("({ dpr: devicePixelRatio, right: screen.availLeft + screen.availWidth, bottom: screen.availTop + screen.availHeight })");
+  const before = {
+    x: Math.round((corner.right - 480) * corner.dpr),
+    y: Math.round((corner.bottom - 640) * corner.dpr),
+    w: Math.round(480 * corner.dpr),
+    h: Math.round(640 * corner.dpr),
+  };
+  const beforeShot = captureScreen(before, "lentera-screen-before");
+  // Opened the way the owner would: a key press lets Windows give Lentera the keyboard, which a
+  // scripted click cannot (the window would lose it again at once and fold away). The sidebar's
+  // own button is checked below.
+  // Windows drops injected keys while a window of higher integrity has the keyboard, so a key
+  // that does not arrive falls back to the sidebar and says so.
+  let byKey = false;
+  if (shell.lenteraHotkeyOk) {
+    pressHotkey("L");
+    for (let waited = 0; waited < 4000 && !byKey; waited += 200) {
+      byKey = (await fetch(`http://127.0.0.1:${port}/json/list`).then((r) => r.json())).some((p) => p.url.includes("lentera.html"));
+      if (!byKey) await sleep(200);
+    }
+    if (!byKey) console.log("info: the injected Ctrl+Alt+L did not reach Hub (the window in front may refuse injected keys); opened from the sidebar");
+  }
+  if (!byKey) await page.evaluate(`document.querySelector('aside button[title^="Tanya Lentera"]').click()`);
+  // `let`: Lentera's window is let go after ten minutes hidden, and CP03's checks attach again.
+  let lentera = await attachTo("lentera.html");
+  await waitFor(lentera, lenteraOpen, "Lentera's bar with its line ready");
+  check(`${byKey ? "Ctrl+Alt+L" : "Hub's sidebar"} opens Lentera's bar with the line ready`, true);
+  await sleep(800); // the spring has settled, and the cursor watch has looked
+  const box = await lentera.evaluate(lenteraBox);
+  check(
+    "Lentera sits in the work area's bottom-right corner, above the taskbar",
+    Math.abs(box.x + box.w - box.workRight) <= 1 && Math.abs(box.y + box.h - box.workBottom) <= 1 && Math.abs(box.w - 480) <= 1 && Math.abs(box.h - 640) <= 1,
+    JSON.stringify({ x: box.x, y: box.y, w: box.w, h: box.h, workRight: box.workRight, workBottom: box.workBottom }),
+  );
+  check("Lentera's page draws nothing but the bar", box.background === "rgba(0, 0, 0, 0)", box.background);
+  const lenteraSeen = nativeLentera(child.pid);
+  const at = { x: lenteraSeen.cursor.x / box.dpr - box.x, y: lenteraSeen.cursor.y / box.dpr - box.y };
+  const onBar = at.x >= box.bar.left && at.x <= box.bar.left + box.bar.width && at.y >= box.bar.top && at.y <= box.bar.top + box.bar.height;
+  check("Lentera lets clicks through everywhere but the bar", lenteraSeen.visible && lenteraSeen.transparent === !onBar, JSON.stringify({ ...lenteraSeen, onBar }));
+  console.log(`screenshot: ${await lentera.screenshot("lentera-bar", around(box.bar))}`);
+  // The real screen, Lentera shown and then hidden: around the bar it must show what is behind it.
+  const region = { x: Math.round(box.x * box.dpr), y: Math.round(box.y * box.dpr), w: Math.round(box.w * box.dpr), h: Math.round(box.h * box.dpr) };
+  // Whether the bar was really on screen for the shot: a click of the owner's elsewhere meanwhile
+  // folds it away (they may be using this computer while the smoke runs).
+  const barOnScreen = (await lentera.evaluate("document.querySelector('main').dataset.view === 'bar'")) && nativeLentera(child.pid).visible;
+  const shownShot = captureScreen(region, "lentera-screen-shown");
+
+  await lentera.evaluate(typeInto("main input", "rangkum bab 3 biologi besok"));
+  await sleep(400);
+  await lentera.evaluate(pressEnter("main input"));
+  await waitFor(lentera, "document.querySelector('[role=status]').textContent.startsWith('Tugas tersimpan')", "the capsule after saving");
+  const said = await lentera.evaluate("document.querySelector('[role=status]').textContent");
+  check("a line saved in Lentera folds the bar into a capsule that says so", said === "Tugas tersimpan: rangkum bab 3 biologi", said);
+  const fromLentera = (await page.evaluate(core("list_tasks", { view: "upcoming" }))).find((task) => task.title === "rangkum bab 3 biologi");
+  check("Lentera saves the line through Catat Cepat's reader", Boolean(fromLentera?.doDate && fromLentera.doDate > view.date), JSON.stringify(fromLentera?.doDate));
+  await sleep(700);
+  const folded = await lentera.evaluate(lenteraBox);
+  console.log(`screenshot: ${await lentera.screenshot("lentera-capsule", around(folded.capsule))}`);
+  await waitFor(lentera, lenteraView("hidden"), "the capsule to leave", 6000);
+  await untilHidden(child.pid, "Lentera's window to hide");
+  check("the capsule leaves on its own", true);
+  await sleep(300);
+  const hiddenShot = captureScreen(region, "lentera-screen-hidden");
+  const band = { x: 0, y: 0, w: region.w, h: Math.max(8, Math.round((box.bar.top - 28) * box.dpr)) };
+  const inner = {
+    x: Math.round((box.bar.left + 24) * box.dpr),
+    y: Math.round((box.bar.top + 24) * box.dpr),
+    w: Math.round((box.bar.width - 48) * box.dpr),
+    h: Math.round((box.bar.height - 48) * box.dpr),
+  };
+  const aroundBar = differs(shownShot, hiddenShot, band);
+  const sameRegion = before.x === region.x && before.y === region.y && before.w === region.w && before.h === region.h;
+  const background = sameRegion ? differs(beforeShot, hiddenShot, band) : 0;
+  const onScreen = differs(shownShot, hiddenShot, inner);
+  if (!barOnScreen) {
+    console.log(`info: the bar had folded away before the shot (a click elsewhere), so its transparency was not judged (around ${aroundBar}, bar ${onScreen})`);
+  } else if (background > 0.05) {
+    console.log(`info: the screen behind Lentera changed by itself (${background}), so its transparency was not judged (around ${aroundBar}, bar ${onScreen})`);
+  } else {
+    check("Lentera is transparent around the bar on the real screen", aroundBar <= 0.05 && onScreen >= 0.3, `around ${aroundBar}, bar ${onScreen}, background ${background}`);
+  }
+
+  // Ctrl+L in Hub opens the same bar again; Esc closes it and gives the keyboard back.
+  const keyboardBefore = nativeLentera(child.pid).foreground;
+  await lentera.evaluate(noteOpens);
+  await page.evaluate(`window.dispatchEvent(new KeyboardEvent('keydown', { key: 'l', ctrlKey: true }))`);
+  await waitFor(lentera, "window.__opened === true", "Ctrl+L opening Lentera");
+  check("Ctrl+L in Hub opens Lentera's bar", true);
+  await sleep(300);
+  const tookKeyboard = await lentera.evaluate("document.querySelector('main').dataset.view === 'bar' && document.hasFocus()");
+  await lentera.evaluate(closeBar);
+  await waitFor(lentera, lenteraView("hidden"), "Esc closing Lentera");
+  await untilHidden(child.pid, "Lentera's window to hide after Esc");
+  check("Esc closes Lentera", true);
+  if (tookKeyboard) {
+    const keyboardAfter = nativeLentera(child.pid).foreground;
+    check("Esc gives the keyboard back to the window that had it", keyboardAfter === keyboardBefore, `${keyboardBefore} then ${keyboardAfter}`);
+  } else {
+    console.log("info: Lentera was not given the foreground after a scripted open (Windows' focus rules), so the keyboard's return was not checked");
+  }
+
+  // Ctrl+Alt+L from anywhere, when this Hub holds it.
+  let keyArrived = false;
+  if (shell.lenteraHotkeyOk) {
+    pressHotkey("L");
+    keyArrived = await waitFor(lentera, lenteraOpen, "Ctrl+Alt+L opening Lentera", 4000).catch(() => false);
+  }
+  if (!keyArrived) {
+    console.log("info: the injected Ctrl+Alt+L did not reach Hub this time (the window in front may refuse injected keys)");
+  } else {
+    check("Ctrl+Alt+L opens Lentera's bar from anywhere", true);
+    if (await lentera.evaluate("document.hasFocus()")) {
+      pressHotkey("L");
+      await waitFor(lentera, lenteraView("hidden"), "Ctrl+Alt+L closing Lentera");
+      check("Ctrl+Alt+L again closes it", true);
+    } else {
+      await lentera.evaluate(`document.querySelector('main button[aria-label="Tutup Lentera"]').click()`);
+      await waitFor(lentera, lenteraView("hidden"), "the close button");
+    }
+    await untilHidden(child.pid, "Lentera's window to hide");
+  }
+  if (byKey) {
+    // Hub's sidebar asks for the same bar (the page opens it; Windows may not hand a scripted
+    // click the keyboard, so only the page is read).
+    // A shortcut that arrived late may have opened the bar meanwhile: closed first.
+    await lentera.evaluate(closeBar);
+    await waitFor(lentera, lenteraView("hidden"), "the bar to be closed");
+    await sleep(300);
+    await lentera.evaluate(noteOpens);
+    await page.evaluate(`document.querySelector('aside button[title^="Tanya Lentera"]').click()`);
+    const fromSidebar = await waitFor(lentera, "window.__opened === true", "the sidebar opening Lentera").catch(() => false);
+    if (fromSidebar) check("Hub's sidebar opens Lentera's bar", true);
+    else console.log("info: the sidebar's open was not seen by Lentera's page this time (Vitest covers the button)");
+    await sleep(300);
+    await lentera.evaluate(closeBar);
+    await waitFor(lentera, lenteraView("hidden"), "the bar to close");
+    await untilHidden(child.pid, "Lentera's window to hide");
+  }
+
+  // The same in the dark: the bar and the capsule follow Hub's light.
+  const themeBefore = (await page.evaluate(core("get_settings"))).themeMode;
+  await page.evaluate(core("update_settings", { patch: { themeMode: "dark" } }));
+  await waitFor(lentera, "document.documentElement.dataset.scheme === 'dark'", "Lentera in the dark");
+  await lentera.evaluate(noteOpens);
+  await page.evaluate(`window.dispatchEvent(new KeyboardEvent('keydown', { key: 'l', ctrlKey: true }))`);
+  await waitFor(lentera, "window.__opened === true", "Ctrl+L opening Lentera in the dark");
+  await sleep(2800); // the light's cross-fade (--dur-ambient)
+  const dark = await lentera.evaluate(lenteraBox);
+  console.log(`screenshot: ${await lentera.screenshot("lentera-bar-dark", around(dark.bar))}`);
+  await lentera.evaluate(typeInto("main input", "kerjakan soal fisika besok"));
+  await sleep(400);
+  await lentera.evaluate(pressEnter("main input"));
+  await waitFor(lentera, lenteraView("capsule"), "the capsule in the dark");
+  await sleep(700);
+  const darkFolded = await lentera.evaluate(lenteraBox);
+  console.log(`screenshot: ${await lentera.screenshot("lentera-capsule-dark", around(darkFolded.capsule))}`);
+  await waitFor(lentera, lenteraView("hidden"), "the dark capsule to leave", 6000);
+  check("Lentera follows Hub's light into the dark", dark.scheme === "dark", dark.scheme);
+  await page.evaluate(core("update_settings", { patch: { themeMode: themeBefore } }));
+
+  // Sesi Fokus (Lentera CP02), with a minute lasting a second (HUB_FOCUS_SECONDS_PER_MINUTE, test
+  // folders only): a 5-minute block is 5 s, a 3-minute break 3 s. The capsule shows by itself
+  // without taking the keyboard, counts down, takes its break, waits, pauses, folds away and comes
+  // back, and the bar ends the session; Jejak keeps the block.
+  const capsuleLabel = "document.querySelector('main [class*=capsule] [class*=label]')?.textContent ?? ''";
+  const clickCapsuleAction = (name) => `document.querySelector('main [class*=capsule] button[aria-label=${JSON.stringify(name)}]').click()`;
+  await page.evaluate(core("update_settings", { patch: { focusMinutes: 5, breakMinutes: 3 } }));
+  const focusTask = captured?.id;
+  await page.evaluate(core("start_focus", { input: { taskId: focusTask } }));
+  await waitFor(lentera, `document.querySelector('main')?.dataset.view === 'capsule' && (${capsuleLabel}).startsWith('Fokus')`, "the session's capsule");
+  await untilShown(child.pid);
+  const quiet = nativeLentera(child.pid);
+  check("a session's capsule shows by itself without taking the keyboard", quiet.visible && quiet.foreground !== quiet.hwnd, JSON.stringify({ visible: quiet.visible, foreground: quiet.foreground, lentera: quiet.hwnd }));
+  const counting = await lentera.evaluate(capsuleLabel);
+  check("the capsule counts the block down with its task", /^Fokus 0:0[0-5] · beli tinta printer$/.test(counting), counting);
+  const folded2 = await lentera.evaluate(lenteraBox);
+  console.log(`screenshot: ${await lentera.screenshot("focus-capsule", around(folded2.capsule))}`);
+
+  await waitFor(lentera, `(${capsuleLabel}).startsWith('Istirahat 0:0')`, "the break after the block", 10_000);
+  const onBreak = await page.evaluate(core("get_focus"));
+  check("the block ends in its break by itself", onBreak?.phase === "short_break" && onBreak.blocksDone === 1, JSON.stringify(onBreak && { phase: onBreak.phase, blocks: onBreak.blocksDone }));
+  const breakSaid = await lentera.evaluate("document.querySelector('[role=status]').textContent");
+  check("the break is said once, the countdown never", breakSaid.startsWith("Blok selesai. Istirahat"), breakSaid);
+  await waitFor(lentera, `(${capsuleLabel}) === 'Istirahat selesai'`, "the break to end", 8000);
+  check("after the break the session waits for the owner", (await page.evaluate(core("get_focus")))?.phase === "waiting");
+  await lentera.evaluate(clickCapsuleAction("Lanjut fokus"));
+  await waitFor(lentera, `(${capsuleLabel}).startsWith('Fokus')`, "the next block");
+  await lentera.evaluate(clickCapsuleAction("Jeda"));
+  await waitFor(lentera, `(${capsuleLabel}).startsWith('Dijeda')`, "the pause");
+  const pausedAt = await lentera.evaluate(capsuleLabel);
+  await sleep(1500);
+  check("a paused block stands still", (await lentera.evaluate(capsuleLabel)) === pausedAt, pausedAt);
+  await lentera.evaluate(clickCapsuleAction("Lanjutkan"));
+  await waitFor(lentera, `(${capsuleLabel}).startsWith('Fokus')`, "the block going on");
+
+  // The bar holds the session's card. Selipkan folds everything away until the next phase.
+  await lentera.evaluate(noteOpens);
+  await lentera.evaluate("document.querySelector('main [class*=capsuleMain]').click()");
+  await waitFor(lentera, "window.__opened === true && !!document.querySelector('article[aria-label=\"Sesi fokus\"]')", "the session's card in the bar");
+  await sleep(700);
+  const barBox = await lentera.evaluate(lenteraBox);
+  console.log(`screenshot: ${await lentera.screenshot("focus-bar", around(barBox.bar))}`);
+  await lentera.evaluate(`[...document.querySelectorAll('article[aria-label="Sesi fokus"] button')].find((b) => b.textContent.includes('Selipkan')).click()`);
+  await untilHidden(child.pid, "the tucked capsule to step away");
+  check("Selipkan folds the capsule away", (await page.evaluate(core("get_focus")))?.tucked === true);
+  const keyboardWhileTucked = nativeLentera(child.pid).foreground;
+  await untilShown(child.pid, 12_000);
+  const back = nativeLentera(child.pid);
+  check("the tucked capsule comes back at the next phase without moving the keyboard", back.visible && back.foreground === keyboardWhileTucked, JSON.stringify({ before: keyboardWhileTucked, after: back.foreground, lentera: back.hwnd, afterIsHub: back.foregroundHub, afterClass: back.foregroundClass }));
+
+  // The dark light, then Hentikan from the bar.
+  await page.evaluate(core("update_settings", { patch: { themeMode: "dark" } }));
+  await waitFor(lentera, "document.documentElement.dataset.scheme === 'dark'", "Lentera in the dark");
+  await sleep(2800);
+  const darkCapsule = await lentera.evaluate(lenteraBox);
+  console.log(`screenshot: ${await lentera.screenshot("focus-capsule-dark", around(darkCapsule.capsule))}`);
+  await lentera.evaluate(noteOpens);
+  await page.evaluate(`window.dispatchEvent(new KeyboardEvent('keydown', { key: 'l', ctrlKey: true }))`);
+  await waitFor(lentera, "window.__opened === true && !!document.querySelector('article[aria-label=\"Sesi fokus\"]')", "the session's card in the dark bar");
+  await sleep(700);
+  const darkBar = await lentera.evaluate(lenteraBox);
+  console.log(`screenshot: ${await lentera.screenshot("focus-bar-dark", around(darkBar.bar))}`);
+  await lentera.evaluate(`[...document.querySelectorAll('article[aria-label="Sesi fokus"] button')].find((b) => b.textContent.includes('Hentikan')).click()`);
+  await waitFor(lentera, "!document.querySelector('article[aria-label=\"Sesi fokus\"]')", "the session to end");
+  check("Hentikan ends the session", (await page.evaluate(core("get_focus"))) === null);
+  await lentera.evaluate(`document.querySelector('main input').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))`);
+  await untilHidden(child.pid, "Lentera to hide after the session");
+  const focusTrail = await page.evaluate(core("get_trail", { query: { limit: 80 } }));
+  const focusRows = focusTrail.items.filter((item) => item.entity === "focus_session").map((item) => item.verb);
+  check("Jejak keeps the finished block and the session's end", focusRows.includes("completed") && focusRows.includes("closed"), focusRows.join(", "));
+  await page.evaluate(core("update_settings", { patch: { themeMode: themeBefore, focusMinutes: 25, breakMinutes: 5 } }));
+  lentera.close();
 
   // Proyek & Tugas (R6): the new task waits under Mendatang.
   await page.evaluate("location.hash = '#/proyek?view=upcoming'");
@@ -897,6 +1303,111 @@ try {
   check("a bridge started elsewhere connects by the folder Claude Code names", named?.structuredContent?.project?.id === studioId, JSON.stringify(named?.structuredContent ?? named).slice(0, 160));
   await desktop.goodbye();
 
+  // Lentera's brain (CP03), against the fake Gemini with the test key saved above: a line becomes
+  // cards and nothing is written before Simpan; a proposal Hub refused is mended in a second
+  // round; only the line, the moment, and the names of projects and Ruang are sent. Opened with
+  // the real shortcut when it arrives (a scripted open may not keep the keyboard; the page is
+  // driven by its own events either way, and the checks read the core).
+  const cardsIn = "[...document.querySelectorAll('main article[data-card-status]')].map((a) => ({ status: a.dataset.cardStatus, label: a.getAttribute('aria-label') }))";
+  const brainLine = "main [data-line] input";
+  const openBrain = async (label) => {
+    // Let go after ten minutes hidden: Hub builds the window again, and it opens the bar itself.
+    const alive = await Promise.race([lentera.evaluate("1"), sleep(3000).then(() => Promise.reject(new Error("gone")))]).then(() => true, () => false);
+    if (!alive) {
+      await page.evaluate(`window.dispatchEvent(new KeyboardEvent('keydown', { key: 'l', ctrlKey: true }))`);
+      lentera = await attachTo("lentera.html");
+      await waitFor(lentera, `!!document.querySelector(${JSON.stringify(brainLine)})`, `${label}: Lentera's line in a new window`);
+      return;
+    }
+    await lentera.evaluate(closeBar);
+    await sleep(400);
+    await lentera.evaluate(noteOpens);
+    let opened = false;
+    if (shell.lenteraHotkeyOk) {
+      pressHotkey("L");
+      opened = await waitFor(lentera, "window.__opened === true", `${label} by Ctrl+Alt+L`, 4000).catch(() => false);
+    }
+    if (!opened) {
+      await page.evaluate(`window.dispatchEvent(new KeyboardEvent('keydown', { key: 'l', ctrlKey: true }))`);
+      await waitFor(lentera, "window.__opened === true", `${label} by Ctrl+L`);
+    }
+    await waitFor(lentera, `!!document.querySelector(${JSON.stringify(brainLine)})`, `${label}: Lentera's line`);
+  };
+  const openTitles = async () => (await page.evaluate(core("list_tasks", { view: "anytime" }))).map((task) => task.title);
+  await openBrain("Lentera's bar with a key");
+  check(
+    "with a key the bar asks Lentera and says what goes to Google",
+    await lentera.evaluate("document.body.textContent.includes('Dikirim ke Google Gemini saat kamu menekan Enter.') && [...document.querySelectorAll('main header button')].some((b) => b.textContent.trim() === 'Dari Pesan')"),
+  );
+  const askedBefore = geminiLentera.length;
+  await lentera.evaluate(typeInto(brainLine, "laporan praktikum jaringan besok jam 7 malam dan poster K3"));
+  await sleep(200);
+  await lentera.evaluate(pressEnter(brainLine));
+  await waitFor(lentera, `${cardsIn}.filter((c) => c.status === 'pending').length === 2`, "two cards from Lentera", 15_000);
+  const asked = geminiLentera.slice(askedBefore);
+  check(
+    "a proposal Hub refused is mended in a second round, and the reply then ends",
+    asked.length === 2 && asked[1].input.some((step) => step.type === "function_result" && step.call_id === "l1" && step.result[0].text.includes("due_date bukan tanggal")),
+    `${asked.length} requests`,
+  );
+  const firstAsk = asked[0] ?? {};
+  const sentText = JSON.stringify(firstAsk);
+  const projectNames = (await page.evaluate(core("list_projects"))).filter((p) => p.status === "active" || p.status === "paused").map((p) => p.name);
+  check(
+    "Lentera sends the line, the moment, and the names of projects and Ruang, nothing else of Hub",
+    firstAsk.store === false &&
+      firstAsk.input?.length === 1 &&
+      firstAsk.input[0].content[0].text === "laporan praktikum jaringan besok jam 7 malam dan poster K3" &&
+      firstAsk.tools?.map((tool) => tool.name).join() === "usul_tugas,usul_pengingat,usul_jadwal,usul_catatan" &&
+      projectNames.every((name) => firstAsk.system_instruction.includes(name)) &&
+      !["Nmap Live Host", "beli tinta printer", "rangkum bab 3 biologi", geminiKey].some((secret) => sentText.includes(secret)),
+    JSON.stringify({ input: firstAsk.input?.length, projects: projectNames.length, store: firstAsk.store }),
+  );
+  check("nothing is written before Simpan", !(await openTitles()).some((title) => title === "Laporan praktikum jaringan" || title === "Poster K3"));
+  const cardsBox = await lentera.evaluate(lenteraBox);
+  console.log(`screenshot: ${await lentera.screenshot("lentera-cards", around(cardsBox.bar))}`);
+  await lentera.evaluate(`document.querySelector('main article[aria-label="Usulan tugas: Laporan praktikum jaringan"] [data-card-primary]').click()`);
+  await waitFor(lentera, `${cardsIn}.some((c) => c.status === 'saved')`, "the first card saved");
+  const savedCard = (await page.evaluate(core("list_tasks", { view: "anytime" }))).find((task) => task.title === "Laporan praktikum jaringan");
+  check("Simpan writes the card as proposed", savedCard?.dueTime === "19:00" && savedCard.dueDate > view.date, JSON.stringify(savedCard && { dueDate: savedCard.dueDate, dueTime: savedCard.dueTime }));
+  await lentera.evaluate(`[...document.querySelector('main article[aria-label="Usulan tugas: Poster K3"]').querySelectorAll('button')].find((b) => b.textContent.trim() === 'Lewati').click()`);
+  await waitFor(lentera, "document.querySelector('[role=status]').textContent === 'Tugas tersimpan: Laporan praktikum jaringan'", "the capsule after the last card");
+  check("the last card decided folds the bar into the capsule, and a skipped card writes nothing", !(await openTitles()).includes("Poster K3"));
+  await waitFor(lentera, lenteraView("hidden"), "the capsule to leave", 6000);
+
+  // Dari Pesan: a pasted group message is cleaned here and shown; only the cleaned text leaves.
+  await openBrain("Lentera for Dari Pesan");
+  const groupMessage = "10/11/26 19.02 - Budi Santoso: tugas MTK hal 45 dikumpulkan besok jam 7 pagi\n10/11/26 19.05 - +62 812-3456-7890: jangan lupa bawa jas lab, WA 0857 1111 2222";
+  await lentera.evaluate(`(() => {
+    const input = document.querySelector(${JSON.stringify(brainLine)});
+    input.focus();
+    const data = new DataTransfer();
+    data.setData("text/plain", ${JSON.stringify(groupMessage)});
+    input.dispatchEvent(new ClipboardEvent("paste", { clipboardData: data, bubbles: true, cancelable: true }));
+    return true;
+  })()`);
+  await waitFor(lentera, "document.querySelector('main [data-line] textarea')?.value.startsWith('(dikirim')", "the cleaned message in Dari Pesan");
+  const shownMessage = await lentera.evaluate("document.querySelector('main [data-line] textarea').value");
+  const messageAsked = geminiLentera.length;
+  check(
+    "Dari Pesan shows the message cleaned before anything is sent",
+    !/Budi|Santoso|812|0857|19\.0/.test(shownMessage) && shownMessage.includes("[nomor]") && geminiLentera.length === messageAsked,
+    JSON.stringify(shownMessage),
+  );
+  await lentera.evaluate(clickButton("Kirim ke Lentera", "document.querySelector('main')"));
+  await waitFor(lentera, `${cardsIn}.filter((c) => c.status === 'pending').length === 2`, "two cards from the message", 15_000);
+  const messageSent = geminiLentera.at(-1)?.input?.at(-1)?.content?.[0]?.text ?? "";
+  check(
+    "only the cleaned message leaves, inside its fence",
+    messageSent === `<pesan_grup>\n${shownMessage}\n</pesan_grup>` && !/Budi|812|0857/.test(JSON.stringify(geminiLentera.at(-1))),
+    messageSent.slice(0, 120),
+  );
+  await lentera.evaluate(clickButton("Simpan semua (2)", "document.querySelector('main')"));
+  await waitFor(lentera, "document.querySelector('[role=status]').textContent === '2 usulan tersimpan'", "the capsule after Simpan semua");
+  const fromMessage = (await page.evaluate(core("list_tasks", { view: "anytime" }))).filter((task) => task.title === "Tugas MTK hal 45" || task.title === "Bawa jas lab");
+  check("Simpan semua writes every card from the message", fromMessage.length === 2 && fromMessage.some((task) => task.dueTime === "07:00"), JSON.stringify(fromMessage.map((t) => t.title)));
+  await waitFor(lentera, lenteraView("hidden"), "the capsule to leave", 6000);
+
   await stopGemini();
   // Flow 12: with Gemini gone, Claude Code still reaches Hub.
   const offline = mcp(dataDir, ["--no-start"]);
@@ -918,6 +1429,20 @@ try {
   await page.evaluate("location.hash = '#/'");
   await waitFor(page, "/^(Selamat|Hari ditutup)/.test(document.querySelector('h1')?.textContent ?? '')", "Hari Ini without Gemini");
   check("Hub works on without Gemini", true);
+  // Lentera with Gemini gone: the failure says why, and the line goes to Catat Cepat instead.
+  await openBrain("Lentera without Gemini");
+  await lentera.evaluate(typeInto(brainLine, "rapat OSIS lusa"));
+  await sleep(200);
+  await lentera.evaluate(pressEnter(brainLine));
+  await waitFor(lentera, "document.querySelector('main [role=alert]')?.textContent.includes('Tidak ada koneksi ke Google.')", "Lentera's failure without Gemini", 15_000);
+  check("without Gemini Lentera says why", true);
+  await lentera.evaluate(clickButton("Catat Cepat saja", "document.querySelector('main [role=alert]')"));
+  await waitFor(lentera, "document.querySelector('main [data-line] input')?.value === 'rapat OSIS lusa'", "the line handed to Catat Cepat");
+  await sleep(400);
+  await lentera.evaluate(pressEnter("main [data-line] input"));
+  await waitFor(lentera, "document.querySelector('[role=status]').textContent.startsWith('Tugas tersimpan: rapat OSIS')", "the capsule after Catat Cepat");
+  check("the line Lentera could not answer is saved through Catat Cepat", (await openTitles()).includes("rapat OSIS"));
+  await waitFor(lentera, lenteraView("hidden"), "the capsule to leave", 6000);
   await page.evaluate(core("gemini_delete_key"));
   check("the test key is removed from Credential Manager", (await page.evaluate(core("gemini_status"))).hasKey === false);
 

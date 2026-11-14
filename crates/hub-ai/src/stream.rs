@@ -294,12 +294,37 @@ pub async fn reply(
     on_text: &mut (dyn FnMut(&str) + Send),
     on_call: &mut (dyn FnMut(&FunctionCall) -> Value + Send),
 ) -> Result<Reply, GeminiError> {
+    let mut build = |continuation: &[Value], with_tools: bool| chat_request(model, context, continuation, with_tools);
+    // Only a reply that waits for the results goes on; one that already finished is done. A round
+    // that asked the owner questions ends the turn too: the answers are the next message. Going on
+    // let Gemini answer its own questions (the real run of 2026-11-09: six questions, then five
+    // "decisions" from its own recommendations and a proposal to write the PRD, all before the
+    // owner had answered anything).
+    let go_on = |streamed: &Streamed, _outcomes: &[Value]| {
+        streamed.status == "requires_action" && !streamed.calls.iter().any(|call| crate::calls::ends_turn(&call.name))
+    };
+    rounds(gemini, key, &mut build, &go_on, cancel, on_text, on_call).await
+}
+
+/// The rounds of one reply, whatever it is for (Studio's chat, Lentera's bar): `build` makes each
+/// request from the steps and results so far (and whether functions may be offered), every
+/// function call goes to `on_call`, and `go_on` decides after a round with calls whether Gemini
+/// hears the results and writes on.
+pub async fn rounds(
+    gemini: &Gemini,
+    key: &ApiKey,
+    build: &mut (dyn FnMut(&[Value], bool) -> Value + Send),
+    go_on: &(dyn Fn(&Streamed, &[Value]) -> bool + Send + Sync),
+    cancel: &mut Cancel,
+    on_text: &mut (dyn FnMut(&str) + Send),
+    on_call: &mut (dyn FnMut(&FunctionCall) -> Value + Send),
+) -> Result<Reply, GeminiError> {
     let mut out = Reply::default();
     let mut continuation: Vec<Value> = Vec::new();
     let mut with_tools = true;
     let mut round = 0;
     while round < ROUNDS_MAX {
-        let body = chat_request(model, context, &continuation, with_tools);
+        let body = build(&continuation, with_tools);
         // Paragraphs of later rounds start on their own line.
         let mut first_text = !out.text.is_empty();
         let mut forward = |piece: &str| {
@@ -330,17 +355,15 @@ pub async fn reply(
         if streamed.calls.is_empty() {
             break;
         }
+        // Exactly one result for each call, matched by its id and name (Google refuses others).
+        let outcomes: Vec<Value> = streamed.calls.iter().map(&mut *on_call).collect();
         let results: Vec<Value> = streamed
             .calls
             .iter()
-            .map(|call| json!({ "type": "function_result", "name": call.name, "call_id": call.id, "result": [{ "type": "text", "text": on_call(call).to_string() }] }))
+            .zip(&outcomes)
+            .map(|(call, outcome)| json!({ "type": "function_result", "name": call.name, "call_id": call.id, "result": [{ "type": "text", "text": outcome.to_string() }] }))
             .collect();
-        // Only a reply that waits for the results goes on; one that already finished is done.
-        // A round that asked the owner questions ends the turn too: the answers are the next
-        // message. Going on let Gemini answer its own questions (the real run of 2026-11-09:
-        // six questions, then five "decisions" from its own recommendations and a proposal to
-        // write the PRD, all before the owner had answered anything).
-        if streamed.status != "requires_action" || streamed.calls.iter().any(|call| crate::calls::ends_turn(&call.name)) {
+        if !go_on(&streamed, &outcomes) {
             break;
         }
         continuation.extend(streamed.steps);

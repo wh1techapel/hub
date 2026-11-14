@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-resume-focus"
+description = "Enables the resume_focus command without any pre-configured scope."
+commands.allow = ["resume_focus"]
+
+[[permission]]
+identifier = "deny-resume-focus"
+description = "Denies the resume_focus command without any pre-configured scope."
+commands.deny = ["resume_focus"]

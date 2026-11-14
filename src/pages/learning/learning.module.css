@@ -335,6 +335,13 @@
 
 /* ---------- picking up again ---------- */
 
+/* Lanjutkan and, since CP02, a Sesi Fokus on the item. */
+.currentButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
 .current {
   display: flex;
   flex-direction: column;

@@ -1,0 +1,34 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "lentera",
+  "description": "What Lentera's capsule and bar may do: read a line and save it, run a Sesi Fokus (CP02), ask Lentera and save a proposal the owner confirmed (CP03: whether a key is saved, never the key), clean a pasted group message, say where it takes the mouse, give the keyboard back, and hide itself. Nothing else.",
+  "windows": [
+    "lentera"
+  ],
+  "permissions": [
+    "core:event:allow-listen",
+    "core:event:allow-unlisten",
+    "allow-get-settings",
+    "allow-get-shell",
+    "allow-window-ready",
+    "allow-read-capture",
+    "allow-save-capture",
+    "allow-set-lentera-shape",
+    "allow-hide-lentera",
+    "allow-return-lentera-focus",
+    "allow-take-lentera-open",
+    "allow-focus-lentera",
+    "allow-get-focus",
+    "allow-start-focus",
+    "allow-pause-focus",
+    "allow-resume-focus",
+    "allow-next-focus",
+    "allow-stop-focus",
+    "allow-tuck-focus",
+    "allow-gemini-status",
+    "allow-ask-lentera",
+    "allow-stop-lentera",
+    "allow-clean-lentera-message",
+    "allow-save-lentera-proposal"
+  ]
+}

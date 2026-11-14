@@ -157,6 +157,32 @@ describe("navigation", () => {
     await waitFor(() => expect(backend.calls.some((call) => call.startsWith("delete_file"))).toBe(true));
   });
 
+  it("Lentera opens from the sidebar, Ctrl+L, and the palette: the same bar Ctrl+Alt+L opens", async () => {
+    const user = userEvent.setup();
+    const { backend } = renderApp();
+    await screen.findByRole("heading", { level: 1 });
+    const opens = () => backend.calls.filter((call) => call === "open_lentera").length;
+    const sidebar = screen.getByRole("complementary", { name: "Navigasi" });
+    await user.click(within(sidebar).getByRole("button", { name: "Tanya Lentera" }));
+    expect(opens()).toBe(1);
+    await user.keyboard("{Control>}l{/Control}");
+    expect(opens()).toBe(2);
+    // Ctrl+Shift+L and Ctrl+Alt+L are not Hub's Ctrl+L (Ctrl+Alt+L is the global shortcut).
+    await user.keyboard("{Control>}{Shift>}l{/Shift}{/Control}");
+    expect(opens()).toBe(2);
+    await user.keyboard("{Control>}k{/Control}");
+    await user.type(await screen.findByRole("combobox"), "lentera");
+    await user.click(screen.getByRole("option", { name: /Tanya Lentera/ }));
+    expect(opens()).toBe(3);
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+
+    // CP02: a Sesi Fokus for nothing in particular, from the palette.
+    await user.keyboard("{Control>}k{/Control}");
+    await user.type(await screen.findByRole("combobox"), "pomodoro");
+    await user.click(screen.getByRole("option", { name: /Mulai sesi fokus/ }));
+    await waitFor(() => expect(backend.calls).toContain('start_focus {"input":{}}'));
+  });
+
   it("the palette finds tasks, files, and learning items by any word", async () => {
     const user = userEvent.setup();
     renderApp();

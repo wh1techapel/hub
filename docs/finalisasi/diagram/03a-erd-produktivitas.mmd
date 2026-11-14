@@ -1,8 +1,9 @@
 erDiagram
   AREAS ||--o{ PROJECTS : mengelompokkan
-  PROJECTS ||--o{ MILESTONES : punya
   PROJECTS ||--o{ TASKS : berisi
-  TASKS ||--o{ TASKS : langkah
+  PROJECTS ||--o{ MILESTONES : punya
+  TASKS ||--o{ TASKS : ""
+  MILESTONES |o--o{ TASKS : menampung
   TASKS ||--o{ EVENTS : "blok waktu"
   TASKS ||--o{ REMINDERS : diingatkan
   ROUTINES ||--o{ ROUTINE_EXCEPTIONS : pengecualian

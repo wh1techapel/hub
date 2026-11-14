@@ -10,7 +10,7 @@ flowchart TB
     ai[hub-ai<br/>klien Gemini]
     cred[(Windows Credential<br/>Manager: kunci Gemini)]
     mcp[hub-mcp.exe<br/>jembatan MCP stdio]
-    ultron[ULTRON<br/>asisten suara lokal<br/>Python + Ollama]
+    lentera[Bar Lentera<br/>jendela desktop<br/>Ctrl+Alt+L]
     claude[Claude Code<br/>CLI atau aplikasi desktop]
   end
   gemini[Google Gemini API]
@@ -19,8 +19,9 @@ flowchart TB
   shell --> core --> db
   shell ---|menjalankan| api
   api --> core
-  ultron -->|HTTP + token ULTRON| api
+  user --> lentera
+  lentera <-->|perintah Tauri| shell
   claude -->|MCP| mcp -->|HTTP + token Claude Code| api
   shell --> ai
   ai --> cred
-  ai -->|HTTPS, hanya Hub Studio| gemini
+  ai -->|HTTPS, hanya Hub Studio dan bar Lentera| gemini

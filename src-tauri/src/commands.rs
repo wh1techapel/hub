@@ -38,8 +38,15 @@ pub const CHANGED_EVENT: &str = "hub://changed";
 
 pub fn announce(app: &AppHandle, change: &Change) {
     // Claude Code's sessions are Hub's own business: ULTRON's stream carries the owner's data.
-    if change.entity != Entity::ClaudeSession {
+    // Sesi Fokus is Hub's own Pomodoro, kept apart from ULTRON's (owner's decision, 2026-11-10).
+    if change.entity != Entity::ClaudeSession && change.entity != Entity::FocusSession {
         crate::state(app).events.publish(hub_api::ApiEvent::from(change));
+    }
+    // A session started, moved on, tucked, or ended: the scheduler looks again, and Lentera's
+    // capsule follows.
+    if change.entity == Entity::FocusSession {
+        crate::state(app).scheduler.poke();
+        crate::lentera::sync_session(app);
     }
     if let Err(error) = app.emit(CHANGED_EVENT, change) {
         eprintln!("[hub] change not announced: {error}");
@@ -158,18 +165,32 @@ pub struct Shell {
     /// Ctrl+Alt+H could be registered (another application may hold it).
     hotkey_ok: bool,
     hotkey: &'static str,
+    /// Ctrl+Alt+L, Lentera's, likewise.
+    lentera_hotkey_ok: bool,
+    lentera_hotkey: &'static str,
 }
 
 #[tauri::command]
 pub fn get_shell(state: Hub<'_>) -> Shell {
-    Shell { hotkey_ok: state.hotkey_ok.load(std::sync::atomic::Ordering::SeqCst), hotkey: crate::CAPTURE_HOTKEY_LABEL }
+    use std::sync::atomic::Ordering::SeqCst;
+    Shell {
+        hotkey_ok: state.hotkey_ok.load(SeqCst),
+        hotkey: crate::CAPTURE_HOTKEY_LABEL,
+        lentera_hotkey_ok: state.lentera_hotkey_ok.load(SeqCst),
+        lentera_hotkey: crate::LENTERA_HOTKEY_LABEL,
+    }
 }
 
 /// The page has drawn its first frame in the right light: show the window now, so it never
-/// flashes white at night.
+/// flashes white at night. Lentera's window built for its capsule (a Sesi Fokus) shows without
+/// taking the keyboard.
 #[tauri::command]
 pub fn window_ready(window: WebviewWindow) {
-    window::reveal(&window);
+    if window.label() == crate::lentera::LENTERA && !crate::lentera::bar_pending() {
+        window::show_quietly(&window);
+    } else {
+        window::reveal(&window);
+    }
 }
 
 #[derive(Deserialize)]
@@ -470,7 +491,7 @@ pub fn cancel_reminder(app: AppHandle, state: Hub<'_>, id: String) -> Result<()>
 
 // ---------- quick capture ----------
 
-fn active_projects(conn: &Connection) -> hub_core::Result<Vec<ProjectRef>> {
+pub(crate) fn active_projects(conn: &Connection) -> hub_core::Result<Vec<ProjectRef>> {
     let mut statement = conn.prepare(
         "SELECT id, name, pigment FROM projects WHERE deleted_at IS NULL AND status IN ('active', 'paused') ORDER BY order_key",
     )?;

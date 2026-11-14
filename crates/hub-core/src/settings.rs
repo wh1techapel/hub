@@ -60,6 +60,13 @@ pub struct Settings {
     /// volume is Hub's own, 0 to 100, under Windows' volume.
     pub sound_enabled: bool,
     pub sound_volume: u8,
+    /// Lentera CP02, Sesi Fokus: a focus block, a short break, a long break (in minutes), and how
+    /// many blocks come before the long one. The classic 25/5/15 after 4 (Biwer et al. 2023 tested
+    /// 24/6 against breaks the students chose themselves: CONTEXT.md).
+    pub focus_minutes: u8,
+    pub break_minutes: u8,
+    pub long_break_minutes: u8,
+    pub long_break_every: u8,
 }
 
 impl Default for Settings {
@@ -85,6 +92,10 @@ impl Default for Settings {
             dev_deploy: String::new(),
             sound_enabled: true,
             sound_volume: DEFAULT_SOUND_VOLUME,
+            focus_minutes: 25,
+            break_minutes: 5,
+            long_break_minutes: 15,
+            long_break_every: 4,
         }
     }
 }
@@ -132,7 +143,21 @@ pub struct SettingsPatch {
     pub sound_enabled: Option<bool>,
     #[ts(optional)]
     pub sound_volume: Option<u8>,
+    #[ts(optional)]
+    pub focus_minutes: Option<u8>,
+    #[ts(optional)]
+    pub break_minutes: Option<u8>,
+    #[ts(optional)]
+    pub long_break_minutes: Option<u8>,
+    #[ts(optional)]
+    pub long_break_every: Option<u8>,
 }
+
+/// What Pengaturan allows for Sesi Fokus (inclusive).
+pub const FOCUS_MINUTES: (u8, u8) = (5, 90);
+pub const BREAK_MINUTES: (u8, u8) = (1, 30);
+pub const LONG_BREAK_MINUTES: (u8, u8) = (5, 60);
+pub const LONG_BREAK_EVERY: (u8, u8) = (2, 8);
 
 /// Quiet: the sounds sit well under what Windows itself plays (P2).
 pub const DEFAULT_SOUND_VOLUME: u8 = 30;
@@ -183,6 +208,10 @@ pub fn load(conn: &Connection) -> Result<Settings> {
             "dev_deploy" => set_from(&mut settings.dev_deploy, value),
             "sound_enabled" => set_from(&mut settings.sound_enabled, value),
             "sound_volume" => set_from(&mut settings.sound_volume, value),
+            "focus_minutes" => set_from(&mut settings.focus_minutes, value),
+            "break_minutes" => set_from(&mut settings.break_minutes, value),
+            "long_break_minutes" => set_from(&mut settings.long_break_minutes, value),
+            "long_break_every" => set_from(&mut settings.long_break_every, value),
             _ => {}
         }
     }
@@ -301,6 +330,19 @@ pub fn update(
         }
         next.sound_volume = volume;
     }
+    for (field, value, (low, high), slot) in [
+        ("focusMinutes", patch.focus_minutes, FOCUS_MINUTES, &mut next.focus_minutes),
+        ("breakMinutes", patch.break_minutes, BREAK_MINUTES, &mut next.break_minutes),
+        ("longBreakMinutes", patch.long_break_minutes, LONG_BREAK_MINUTES, &mut next.long_break_minutes),
+        ("longBreakEvery", patch.long_break_every, LONG_BREAK_EVERY, &mut next.long_break_every),
+    ] {
+        if let Some(value) = value {
+            if !(low..=high).contains(&value) {
+                return invalid(field, Reason::Format);
+            }
+            *slot = value;
+        }
+    }
 
     let changed = changed_values(&current, &next)?;
     if changed.is_empty() {
@@ -355,6 +397,10 @@ fn changed_values(
         ("dev_deploy", serde_json::to_value(&current.dev_deploy)?, serde_json::to_value(&next.dev_deploy)?),
         ("sound_enabled", serde_json::to_value(current.sound_enabled)?, serde_json::to_value(next.sound_enabled)?),
         ("sound_volume", serde_json::to_value(current.sound_volume)?, serde_json::to_value(next.sound_volume)?),
+        ("focus_minutes", serde_json::to_value(current.focus_minutes)?, serde_json::to_value(next.focus_minutes)?),
+        ("break_minutes", serde_json::to_value(current.break_minutes)?, serde_json::to_value(next.break_minutes)?),
+        ("long_break_minutes", serde_json::to_value(current.long_break_minutes)?, serde_json::to_value(next.long_break_minutes)?),
+        ("long_break_every", serde_json::to_value(current.long_break_every)?, serde_json::to_value(next.long_break_every)?),
     ];
     Ok(pairs
         .into_iter()

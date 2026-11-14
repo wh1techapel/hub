@@ -1,0 +1,13 @@
+flowchart TB
+  a([Pengguna menekan Ctrl+Alt+L<br/>dan menulis satu kalimat]) --> k{Ada kunci Gemini?}
+  p([Pengguna menempel pesan grup<br/>lewat Dari Pesan]) --> c[Pesan dibersihkan di komputer:<br/>nama, jam, nomor, email dihapus;<br/>hasilnya ditampilkan] --> k
+  k -->|tidak| cc[Disimpan lewat Catat Cepat,<br/>tanpa internet]
+  k -->|ya| s[hub-ai mengirim kalimat, tanggal dan jam,<br/>nama proyek dan Ruang ke Gemini]
+  s --> g[Gemini memanggil fungsi usulan:<br/>tugas, pengingat, jadwal, catatan]
+  g --> v{Hub memeriksa<br/>setiap usulan}
+  v -->|ada yang salah| g
+  v -->|valid| kartu[Kartu usulan di bar Lentera]
+  kartu --> u{Pengguna memilih}
+  u -->|Simpan| w[hub-core menulis data<br/>sebagai milik pengguna, tercatat di Jejak]
+  u -->|Ubah| kartu
+  u -->|Lewati| x[Tidak ada yang ditulis]

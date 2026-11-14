@@ -37,6 +37,19 @@ describe("Belajar", () => {
     expect(await screen.findByText(/Sesi 1 m tersimpan\./)).toBeInTheDocument();
   });
 
+  it("a Sesi Fokus on the item stops Belajar's own timer: one clock at a time", async () => {
+    const user = userEvent.setup();
+    const { backend } = renderApp({ path: "/belajar" });
+    const current = await screen.findByRole("region", { name: "Lanjutkan belajar" });
+    await user.click(within(current).getByRole("button", { name: "Fokus 25 m" }));
+    await waitFor(() => expect(backend.calls.some((call) => call.startsWith("start_focus") && call.includes('"itemId"'))).toBe(true));
+    expect((await backend.call<{ itemId: string | null } | null>("get_focus"))?.itemId).not.toBeNull();
+    // Belajar's own timer started: the session ends.
+    await user.click(await screen.findByRole("button", { name: "Lanjutkan: OWASP Top 10 - 2021" }));
+    expect(await screen.findByText(/Sedang belajar · TryHackMe/)).toBeInTheDocument();
+    expect(await backend.call("get_focus")).toBeNull();
+  });
+
   it("adds an item to the open track and edits it beside the list", async () => {
     const user = userEvent.setup();
     const { backend } = renderApp({ path: "/belajar" });

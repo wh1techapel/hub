@@ -40,6 +40,8 @@ pub const TABLES: &[&str] = &[
     "learning_items",
     "learning_sessions",
     "learning_timer",
+    "focus_run",
+    "focus_blocks",
     "journal",
     "day_closures",
     "tags",

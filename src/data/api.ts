@@ -12,6 +12,9 @@ import type { AreaInput } from "./generated/AreaInput";
 import type { CalendarDay } from "./generated/CalendarDay";
 import type { CaptureKind } from "./generated/CaptureKind";
 import type { CheckReport } from "./generated/CheckReport";
+import type { Cleaned } from "./generated/Cleaned";
+import type { DeskMode } from "./generated/DeskMode";
+import type { Proposal } from "./generated/Proposal";
 import type { CloseInput } from "./generated/CloseInput";
 import type { Collection } from "./generated/Collection";
 import type { CollectionInput } from "./generated/CollectionInput";
@@ -23,6 +26,8 @@ import type { FileCard } from "./generated/FileCard";
 import type { FileCounts } from "./generated/FileCounts";
 import type { FileEdit } from "./generated/FileEdit";
 import type { FileQuery } from "./generated/FileQuery";
+import type { FocusStart } from "./generated/FocusStart";
+import type { FocusView } from "./generated/FocusView";
 import type { Info } from "./generated/Info";
 import type { ModelInfo } from "./generated/ModelInfo";
 import type { LearningCard } from "./generated/LearningCard";
@@ -165,6 +170,20 @@ export type ReplyEvent =
   | { kind: "parts"; parts: unknown }
   | { kind: "finished"; state: MessageState; errorKind: string | null };
 
+/** What Lentera's bar hears while Lentera answers (src-tauri/src/lentera_ai.rs `DeskEvent`). */
+export type DeskEvent =
+  | { kind: "started"; sent: string }
+  | { kind: "delta"; text: string }
+  | { kind: "proposals"; proposals: Proposal[] }
+  | { kind: "finished"; memory: string; stopped: boolean };
+
+/** One turn of the bar's conversation, sent with the next question (lentera_ai.rs `HistoryTurn`). */
+export interface HistoryTurn {
+  from: "owner" | "lentera";
+  text: string;
+  message: boolean;
+}
+
 /** What the page hears while the PRD is written (src-tauri/src/studio.rs `PrdEvent`). */
 export type PrdEvent =
   | { kind: "step"; part: number; total: number; repair: boolean }
@@ -198,6 +217,18 @@ export interface Appended {
 export interface Shell {
   hotkeyOk: boolean;
   hotkey: string;
+  /** Ctrl+Alt+L, Lentera's bar (lentera.rs). */
+  lenteraHotkeyOk: boolean;
+  lenteraHotkey: string;
+}
+
+/** Where Lentera's capsule or bar takes the mouse, in px from its window's top left (lentera.rs). */
+export interface LenteraShape {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  radius: number;
 }
 
 export function api(b: Backend) {
@@ -297,6 +328,31 @@ export function api(b: Backend) {
     windowReady: () => b.call<undefined>("window_ready"),
     setCaption: (background: Rgb, text: Rgb) => b.call<undefined>("set_caption", { caption: { background, text } }),
     hideCapture: () => b.call<undefined>("hide_capture"),
+    // Lentera (CP01): opened from the main window; the rest belongs to its own window.
+    openLentera: () => b.call<undefined>("open_lentera"),
+    setLenteraShape: (shape: LenteraShape) => b.call<undefined>("set_lentera_shape", { shape }),
+    /** `giveBack`: the keyboard goes back to the window that had it before Lentera. */
+    hideLentera: (giveBack: boolean) => b.call<undefined>("hide_lentera", { giveBack }),
+    returnLenteraFocus: () => b.call<undefined>("return_lentera_focus"),
+    /** Lentera's window: whether it was built because the owner called it (open the bar), once. */
+    takeLenteraOpen: () => b.call<boolean>("take_lentera_open"),
+    /** The bar opened from a capsule shown without the keyboard: Lentera may take it now. */
+    focusLentera: () => b.call<undefined>("focus_lentera"),
+    // Lentera's brain (CP03): ask, stop, clean a group message, save a card the owner confirmed.
+    askLentera: (text: string, history: HistoryTurn[], mode: DeskMode, onEvent: (event: DeskEvent) => void) =>
+      b.stream<undefined>("ask_lentera", { text, history, mode }, (event) => onEvent(event as DeskEvent)),
+    stopLentera: () => b.call<undefined>("stop_lentera"),
+    cleanLenteraMessage: (text: string) => b.call<Cleaned>("clean_lentera_message", { text }),
+    saveLenteraProposal: (proposal: Proposal) => b.call<Saved>("save_lentera_proposal", { proposal }),
+    // Sesi Fokus (Lentera CP02)
+    getFocus: () => b.call<FocusView | null>("get_focus"),
+    startFocus: (input: FocusStart) => b.call<FocusView>("start_focus", { input }),
+    pauseFocus: () => b.call<undefined>("pause_focus"),
+    resumeFocus: () => b.call<undefined>("resume_focus"),
+    /** Lanjut fokus after a break, or Lewati istirahat during one. */
+    nextFocus: () => b.call<undefined>("next_focus"),
+    stopFocus: () => b.call<undefined>("stop_focus"),
+    tuckFocus: (tucked: boolean) => b.call<undefined>("tuck_focus", { tucked }),
     takeStartPath: () => b.call<string | null>("take_start_path"),
     // today
     getToday: () => b.call<TodayView>("get_today"),

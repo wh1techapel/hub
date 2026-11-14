@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-take-lentera-open"
+description = "Enables the take_lentera_open command without any pre-configured scope."
+commands.allow = ["take_lentera_open"]
+
+[[permission]]
+identifier = "deny-take-lentera-open"
+description = "Denies the take_lentera_open command without any pre-configured scope."
+commands.deny = ["take_lentera_open"]

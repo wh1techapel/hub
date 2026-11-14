@@ -1,0 +1,23 @@
+/* Lentera's light (LenteraMark.tsx). The phase's lights from Studio's glow, made dense enough to
+   read on paper: the third light as the bright core, the second and the accent around it, the first
+   as the body, and a soft halo of the first. Still: it never moves on its own. */
+.mark {
+  --mark: 14px;
+  flex: none;
+  display: inline-block;
+  width: var(--mark);
+  height: var(--mark);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 30%, oklch(from var(--glow-c) 0.97 calc(c * 0.5) h / 1), transparent 46%),
+    radial-gradient(circle at 72% 70%, oklch(from var(--accent) l c h / 0.85), transparent 70%),
+    radial-gradient(circle at 26% 76%, oklch(from var(--glow-b) 0.72 calc(c * 1.6) h / 1), transparent 70%),
+    oklch(from var(--glow-a) 0.74 calc(c * 1.6) h / 1);
+  box-shadow:
+    0 0 0 1px oklch(from var(--glow-a) 0.5 c h / 0.25),
+    0 0 12px 1px oklch(from var(--glow-a) l calc(c * 1.4) h / 0.85);
+}
+
+.large {
+  --mark: 18px;
+}

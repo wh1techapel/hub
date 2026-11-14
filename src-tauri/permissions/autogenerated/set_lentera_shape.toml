@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-set-lentera-shape"
+description = "Enables the set_lentera_shape command without any pre-configured scope."
+commands.allow = ["set_lentera_shape"]
+
+[[permission]]
+identifier = "deny-set-lentera-shape"
+description = "Denies the set_lentera_shape command without any pre-configured scope."
+commands.deny = ["set_lentera_shape"]

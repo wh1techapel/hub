@@ -12,7 +12,7 @@ and writes the owner's personal data through a local API.
 | Topic | Decision |
 |---|---|
 | Location | New repository `PROJEK/Hub`. VIO-DASHBOARD (`../VIO-DASHBOARD`) is left untouched and is only a source of ideas. |
-| Source of truth | Hub owns tasks, reminders, notes, and files. In CP5 ULTRON reads and writes through Hub's API, and ULTRON's existing tasks, reminders, notes, and kept files are migrated into Hub. Timers and Pomodoro stay in ULTRON. |
+| Source of truth | Hub owns tasks, reminders, notes, and files. In CP5 ULTRON reads and writes through Hub's API, and ULTRON's existing tasks, reminders, notes, and kept files are migrated into Hub. Timers and Pomodoro stay in ULTRON (updated 2026-11-10: Hub also has its own Sesi Fokus for students without ULTRON, kept apart from ULTRON's Pomodoro; see "Lentera on the desktop"). |
 | Visual direction | **Daylight Studio**: the light follows the owner's day (morning, day, dusk, night), warm paper and ink, serif display type, the Day Arc as the signature element, an accent ink the owner picks. ULTRON's crimson appears only where ULTRON acted. |
 | Files | Kept as a reference to the original file (no copy), followed when moved. Any file can also get a copy in Hub's Vault. |
 | UI language | Indonesian. Technical names (Dashboard, CTF, Nmap, room names) stay as they are. Strings live in one place so English can be added later. |
@@ -107,6 +107,34 @@ Plan: `docs/checkpoints.md`, "Lentera (L1 to L4)".
 | Writing the PRD | Its loading is smooth: the three parts as steps (done, running, waiting), elapsed time, and the document fading in when it is done. |
 | Order | L1 (Lentera, replies that ask), L2 (model picker), L3 (glow and the PRD's loading), L4 (validation). One at a time, a report, a commit, and the owner's approval before the next. |
 
+## Lentera on the desktop decisions (2026-11-10, answers to explicit questions: don't re-ask)
+
+Plan: `docs/checkpoints.md`, "Lentera on the desktop (CP01 to CP06)". Design: `docs/design.md`,
+"Lentera on the desktop". Windows: `docs/architecture.md`, "Lentera on the desktop (CP01)".
+
+| Topic | Decision |
+|---|---|
+| What it is | Lentera also becomes a light desktop assistant for students, like ULTRON but light: no GPU, text only (no voice), AI through Gemini with the existing `hub-ai` client and the same key in Credential Manager, and every change proposed as a confirmation card before it is written (from CP03). |
+| Where | The capsule and the bar sit at the bottom right of the primary screen's work area, above the taskbar beside the clock, so they never meet ULTRON's island at the top centre. |
+| When it shows | Hidden by default. The capsule shows only when Lentera is called or, from CP02, when something needs the owner; never permanently. |
+| Shortcut | `Ctrl+Alt+L`, global, kept although IntelliJ-family IDEs use it for Reformat Code (the owner does not mind). Inside Hub also `Ctrl+L`, the sidebar's Tanya Lentera, and the palette's "Tanya Lentera"; the tray has "Tanya Lentera". |
+| Inside Hub | The same desktop bar opens at the bottom right; there is no second Lentera inside Hub's window. Esc gives the keyboard back to Hub. |
+| The bar before CP03 | A line goes through Catat Cepat's reader (offline, the same chips) and Enter saves it, with a plain note that Lentera's answers come later. No fake answers. |
+| After a save, or a click elsewhere | After a save the bar folds into a capsule ("Tugas tersimpan: …") for about 2 s and leaves, and the keyboard goes back at once. A click elsewhere hides an empty bar; with an unsaved line the bar folds into a capsule that keeps it (click to go on, or Buang draf). |
+| Catat Cepat | `Ctrl+Alt+H` and its window stay as they are. |
+| Sesi Fokus and ULTRON (CP02) | Hub's Sesi Fokus stands on its own, for students without ULTRON. ULTRON's Pomodoro stays as it is; nothing is synced and Hub's API stream leaves Sesi Fokus out. Syncing the two can be a checkpoint of its own later. |
+| The capsule during a session (CP02) | Visible for the whole session, at the bottom right, click-through around it. One action tucks it away (Selipkan) until the next phase change. It steps aside while a fullscreen application is in front, like ULTRON's island. |
+| Belajar (CP02) | A finished focus block on a Belajar item is that item's learning session (it counts for the week's active days). Belajar's own timer and a session never run together: starting one stops the other into its session. |
+| Phase changes (CP02) | A focus block ends in its break by itself (systematic breaks, Biwer et al. 2023); after the break the session waits for the owner ("Lanjut fokus"). A soft sound and the capsule, no Windows notification. |
+| Lengths (CP02) | 25 minutes of focus, 5 of break, 15 for the long break after every 4 blocks, editable in Pengaturan > Hari (5 to 90, 1 to 30, 5 to 60, 2 to 8). Biwer et al. tested 24/6; the classic 25/5 was kept. |
+| Time not seen (CP02) | Time Hub did not see (the computer asleep, Hub closed) never counts: a block pauses where Hub last saw it, a break counts as over. A session left paused or waiting for 30 minutes ends by itself. |
+| What Lentera may do (CP03) | Propose new things only: tasks (do date, deadline), reminders, events, and notes, each as a card. It reads nothing of Hub, so no Hub data goes with it; changing or completing existing tasks waits for CP06 (Tanya Lentera). |
+| What is sent to Google (CP03) | The owner's line (or the cleaned group message), the last few turns of this bar's conversation, today's date and the time, and the names of the active projects and the Ruang. Never tasks, notes, the calendar, or files. The bar says so under its line ("Apa yang dikirim?"); Pengaturan > Integrasi AI says it too. This extends Studio's exception (Hub Studio decisions): data leaves only when the owner presses Enter or Kirim. |
+| Dari Pesan (CP03) | A pasted group message is cleaned on the computer first (senders' names, times of sending, phone numbers, mentions, and emails taken out; the date it was sent kept, so "besok" means the day after it was sent) and shown; only after the owner presses Kirim does it go. Names written inside a message may remain, and the panel says so. |
+| Enter and no Gemini (CP03) | Enter sends the line to Lentera. Without a key the bar is Catat Cepat's, as in CP01, and says so; after a failure (offline, quota, Google's trouble) the owner may hand the line to Catat Cepat ("Catat Cepat saja"), which sends nothing. |
+| Who wrote it (CP03) | A card saved is the owner's (they confirmed it): Jejak says "kamu". Tables outside Studio refuse Gemini as a writer, and that stays. |
+| Order | CP01 the capsule and the bar; CP02 Sesi Fokus (Pomodoro offline, linked to tasks and Belajar, in Jejak, the countdown in the capsule); CP03 Lentera's brain (Gemini function calling over Hub's own functions, confirmation cards, minimal data sent, a privacy notice, and "Dari Pesan"); CP04 Pecah Tugas and Susun Minggu; CP05 Kuis Kilat (questions and flashcards, review after 1, 3, and 7 days); CP06 Tanya Lentera about the schedule and concepts (without doing homework), full validation, and the PSAJ report and pitch. One at a time, a report, and the owner's approval before the next. |
+
 ## PSAJ finalization decisions (2026-11-09, answers to explicit questions: don't re-ask)
 
 Audit and plan: `docs/finalisasi/` (PRODUCT_AUDIT, FEATURE_STATUS, FINALIZATION_PLAN, F1 to F5).
@@ -152,6 +180,14 @@ PSAJ material (see "Open source release" below).
 | Blok waktu | `block` | An event linked to a task: time set aside on the calendar to work on it. |
 | Kotak Masuk | `inbox` | Tasks with no project, Ruang, or date yet: caught, not yet sorted. |
 | Catat Cepat | `capture` | One line typed anywhere (Ctrl+Alt+H, the palette, the add rows), read by the core into a task, reminder, event, or note. |
+| Lentera | `lentera` | Studio's agent, and since 2026-11-10 also the desktop assistant of Ctrl+Alt+L. |
+| Kapsul | `capsule` | Lentera's small pill at the bottom right: what was saved, a kept draft, and from CP02 the focus countdown. |
+| Bar Lentera | `bar` | The capsule grown into a line and a card area for Lentera's replies. |
+| Kartu usulan | `proposal` | Something Lentera proposes in the bar (CP03): a task, reminder, event, or note, saved only by its Simpan; Ubah changes it in place, Lewati sets it aside. |
+| Dari Pesan | `group_message` | A pasted group message (a WhatsApp class group), cleaned on the computer and shown before Lentera reads it for tasks and deadlines (CP03). |
+| Sesi Fokus | `focus_session` | Hub's Pomodoro (CP02): focus blocks and breaks for a task, a Belajar item, or nothing in particular, in Lentera's capsule. Not the day's Fokus (three tasks). |
+| Blok fokus | `focus block` | One stretch of focus in a session (25 minutes by default), kept in `focus_blocks` and Jejak. |
+| Selipkan | `tuck` | Fold the session's capsule away until the next phase. |
 | Proyek | `project` | An outcome with tasks, milestones, files, and history. Progress is derived from its tasks (done over all), not typed in. |
 | Tonggak | `milestone` | A dated group of a project's tasks. Reached once all its tasks are done; one without tasks is ticked by hand. It never changes how progress is counted. |
 | Ruang | `area` | A life area that groups projects: Sekolah, Cyber, Pribadi, and so on. |
@@ -192,3 +228,26 @@ PSAJ material (see "Open source release" below).
 - The Browser pane may stop drawing frames while it is hidden: CSS transitions then stay at their
   start, and screenshots can show an old frame. Read state through the DOM, and take a second
   screenshot before trusting one.
+- A window built inside a synchronous Tauri command never appears on Windows (the command holds
+  the main thread the build waits for): a command that builds one is `#[tauri::command(async)]`
+  (`open_lentera`).
+- Build the release with `npm run tauri build` (or `npx tauri build --no-bundle`), never a bare
+  `cargo build --release`: without Tauri's `custom-protocol` feature the window loads the dev
+  server's address and stays empty.
+- To capture the real screen in a script, call GDI's `BitBlt` with `CAPTUREBLT` (0x40CC0020): .NET's
+  `CopyFromScreen` refuses that flag, fails, and leaves a blank image.
+- Never show a Tauri window behind Tauri's back (a raw `ShowWindow`): tao still thinks it hidden
+  and hides it again at its next style change (`set_ignore_cursor_events`, for one). To show one
+  without taking the keyboard, make it unfocusable through Tauri first (`window::show_quietly`).
+- A click scripted over DevTools is not input to Windows: a window it opens may not keep the
+  keyboard (Lentera then folds away as after a click elsewhere). The native smoke opens Lentera
+  with the real shortcut (`keybd_event`), which Windows trusts.
+- A thread that asks a Tauri window anything (visible, position) waits on the main thread: never
+  hold a lock the main thread's commands also take while doing so (Lentera's cursor watch did, and
+  Hub stopped answering).
+- Run the native smoke in the daytime: in the evening the test Hub's own toasts (the 21.00 Tutup
+  Hari nudge, an overdue seeded reminder) sit in the bottom-right corner over Lentera, and Windows'
+  notification panel (`ControlCenterWindow`) can hold the foreground, so CP01's transparency shot
+  and CP02's keyboard checks fail for reasons outside Hub (seen on 2026-11-10 after 21.00).
+- Windows' file system ignores case: `Conversation.tsx` and `conversation.ts` in one folder are one
+  module to TypeScript (Lentera's pure conversation steps live in `src/lentera/talk.ts` for that).

@@ -51,6 +51,7 @@ export const id = {
     settings: "Pengaturan",
     collapse: "Ciutkan navigasi",
     capture: "Catat cepat",
+    lentera: "Tanya Lentera",
     waiting: (n: number) => (n === 1 ? "1 hal menunggu kamu" : `${n} hal menunggu kamu`),
   },
   palette: {
@@ -68,6 +69,8 @@ export const id = {
     newReminder: "Pengingat baru",
     newRoutine: "Rutinitas baru",
     review: "Tutup Hari",
+    lentera: "Tanya Lentera",
+    focus: "Mulai sesi fokus",
     back: "Kembali ke perintah",
   },
   greeting: {
@@ -410,6 +413,141 @@ export const id = {
       unknownTag: (tag: string) => `#${tag} tidak ditemukan`,
       inbox: "Ke Kotak Masuk",
       location: "Di",
+    },
+  },
+  // Lentera on the desktop (CP01): the capsule and the bar of Ctrl+Alt+L. Since CP03 the line goes
+  // to Lentera (Gemini), which proposes cards the owner saves; without a key, or after a failure
+  // when the owner chooses it, the line is saved the way Catat Cepat saves it, and the bar says so.
+  lentera: {
+    name: "Lentera",
+    ask: "Tanya Lentera",
+    close: "Tutup Lentera",
+    replies: "Balasan Lentera",
+    input: "Tulis untuk Lentera",
+    placeholder: "Misalnya: laporan lab dikumpulkan Kamis jam 7 pagi",
+    notYet: "Lentera belum terhubung ke Gemini, jadi yang kamu tulis di sini dicatat seperti Catat Cepat. Simpan API key di Pengaturan > Integrasi AI supaya Lentera bisa menjawab.",
+    captureMode: "Catat Cepat dipakai untuk baris ini. Tidak ada yang dikirim ke Google.",
+    backToLentera: "Kembali ke Lentera",
+    open: "Buka Lentera",
+    draft: (text: string) => `Draf: ${text}`,
+    discard: "Buang draf",
+    // A conversation left with cards waiting, or an answer still coming.
+    waiting: (n: number) => (n === 1 ? "1 usulan menunggu" : `${n} usulan menunggu`),
+    thinkingShort: "Lentera menyusun…",
+    discardAll: "Buang percakapan",
+    savedMany: (n: number) => `${n} usulan tersimpan`,
+    // CP03: the conversation and its cards.
+    you: "Kamu",
+    thinking: "Lentera sedang menyusun usulan…",
+    stop: "Hentikan",
+    stopped: "Dihentikan.",
+    retry: "Coba lagi",
+    useCapture: "Catat Cepat saja",
+    proposalsLabel: (n: number) => (n === 1 ? "1 usulan dari Lentera" : `${n} usulan dari Lentera`),
+    answered: (n: number) => (n === 0 ? "Lentera menjawab." : n === 1 ? "Lentera mengusulkan 1 hal." : `Lentera mengusulkan ${n} hal.`),
+    nothingProposed: "Lentera tidak mengusulkan apa pun.",
+    message: (lines: number) => (lines === 1 ? "Pesan grup, 1 baris" : `Pesan grup, ${lines} baris`),
+    kinds: {
+      task: "Tugas",
+      reminder: "Pengingat",
+      event: "Jadwal",
+      note: "Catatan",
+    } as Record<string, string>,
+    card: (kind: string, title: string) => `Usulan ${kind.toLowerCase()}: ${title}`,
+    save: "Simpan",
+    saving: "Menyimpan…",
+    edit: "Ubah",
+    skip: "Lewati",
+    restore: "Kembalikan",
+    cancel: "Batal",
+    saveAll: (n: number) => `Simpan semua (${n})`,
+    savedLine: "Tersimpan",
+    skippedLine: "Dilewati",
+    saveFailed: "Belum tersimpan. Periksa isinya, lalu coba lagi.",
+    fields: {
+      title: "Judul",
+      text: "Isi",
+      notes: "Catatan",
+      doDate: "Dikerjakan",
+      dueDate: "Tenggat",
+      dueTime: "Jam tenggat",
+      date: "Tanggal",
+      time: "Jam",
+      start: "Mulai",
+      end: "Selesai",
+      location: "Tempat",
+      removeProject: (name: string) => `Lepaskan dari ${name}`,
+    },
+    // Dari Pesan: a pasted group message, cleaned here before anything is sent.
+    fromMessage: "Dari Pesan",
+    fromMessageHint: "Tempel pesan grup (misalnya dari WhatsApp kelas). Nama pengirim, jam kirim, nomor, dan email dihapus di komputermu dulu.",
+    messageLabel: "Pesan grup",
+    messagePlaceholder: "Tempel pesan grup di sini",
+    send: "Kirim ke Lentera",
+    cleaned: (parts: string[]) => (parts.length ? `Dihapus di komputermu: ${parts.join(", ")}.` : "Tidak ada nama, nomor, atau email yang ditemukan."),
+    cleanedParts: {
+      senders: (n: number) => `${n} nama pengirim`,
+      phones: (n: number) => `${n} nomor`,
+      emails: (n: number) => `${n} email`,
+      mentions: (n: number) => `${n} sebutan @`,
+      times: (n: number) => `${n} jam kirim`,
+      dropped: (n: number) => `${n} baris media atau pesan terhapus`,
+    },
+    checkBeforeSend: "Nama yang ditulis di dalam isi pesan mungkin masih ada. Periksa teksnya sebelum mengirim.",
+    cleanedAgain: "Hub membersihkan teksnya lagi. Periksa, lalu tekan Kirim sekali lagi.",
+    tooLong: "Terlalu panjang untuk sekali kirim (paling banyak 8.000 karakter). Tempel bagian yang penting saja.",
+    emptyMessage: "Belum ada pesan untuk dikirim.",
+    // The privacy notice (owner's decision, 2026-11-10: the least that makes the answer right).
+    sentToGoogle: "Dikirim ke Google Gemini saat kamu menekan Enter.",
+    whatIsSent: "Apa yang dikirim?",
+    whatIsSentBody:
+      "Yang dikirim ke Google: kalimatmu (atau pesan grup yang sudah dibersihkan), beberapa giliran terakhir percakapan di bar ini, tanggal dan jam sekarang, serta nama Proyek aktif dan Ruang. Tugas, catatan, jadwal, dan file tidak dikirim. Tidak ada yang tersimpan sampai kamu menekan Simpan. Di tier gratis, Google boleh memakainya untuk melatih produknya dan orang bisa membacanya, jadi jangan tulis rahasia atau data pribadi orang lain.",
+    failed: {
+      no_key: "Belum ada API key Gemini. Simpan di Pengaturan > Integrasi AI.",
+      empty: "Belum ada yang bisa dikirim.",
+      too_long: "Terlalu panjang untuk sekali kirim.",
+    } as Record<string, string>,
+  },
+  // Sesi Fokus (Lentera CP02): Hub's own Pomodoro, in the capsule, the bar, and Hub's pages. A
+  // countdown is never read aloud by the second: only what changed is said (docs/design.md).
+  focus: {
+    name: "Sesi fokus",
+    start: "Mulai sesi fokus",
+    startFor: (minutes: number) => `Fokus ${minutes} m`,
+    startHint: (focus: number, rest: number) => `${focus} menit fokus, lalu istirahat ${rest} menit.`,
+    phase: {
+      focus: "Fokus",
+      short_break: "Istirahat",
+      long_break: "Istirahat panjang",
+      waiting: "Istirahat selesai",
+    } as Record<string, string>,
+    paused: "Dijeda",
+    pause: "Jeda",
+    resume: "Lanjutkan",
+    skip: "Lewati istirahat",
+    next: "Lanjut fokus",
+    tuck: "Selipkan",
+    tuckHint: "Kapsul kembali saat fase berganti.",
+    stop: "Hentikan",
+    block: (done: number, every: number) => `Blok ${(done % every) + 1} dari ${every}`,
+    blocksDone: (n: number) => (n === 0 ? "Belum ada blok selesai" : `${n} blok selesai`),
+    waitingHint: "Lanjut fokus saat kamu siap. Sesi berakhir sendiri setelah 30 menit.",
+    said: {
+      started: (minutes: number) => `Sesi fokus dimulai, ${minutes} menit.`,
+      break: (minutes: number) => `Blok selesai. Istirahat ${minutes} menit.`,
+      longBreak: (minutes: number) => `Blok selesai. Istirahat panjang ${minutes} menit.`,
+      over: "Istirahat selesai. Lanjut fokus saat kamu siap.",
+      paused: "Sesi fokus dijeda.",
+      resumed: "Sesi fokus dilanjutkan.",
+      ended: "Sesi fokus selesai.",
+    },
+    settings: {
+      title: "Sesi Fokus",
+      hint: "Istirahat mulai sendiri setelah setiap blok fokus. Setelah istirahat, Lentera menunggu kamu.",
+      focusMinutes: "Lama fokus (menit)",
+      breakMinutes: "Istirahat pendek (menit)",
+      longBreakMinutes: "Istirahat panjang (menit)",
+      longBreakEvery: "Istirahat panjang setiap (blok)",
     },
   },
   trail: {
@@ -1438,6 +1576,8 @@ export const id = {
     hotkey: "Catat Cepat dari mana saja",
     hotkeyBusy: (key: string) => `${key} sedang dipakai aplikasi lain, jadi belum aktif.`,
     hotkeyOk: (key: string) => `Tekan ${key} di aplikasi apa pun.`,
+    lenteraHotkey: "Lentera dari mana saja",
+    lenteraHotkeyOk: (key: string) => `Tekan ${key} di aplikasi apa pun. Di dalam Hub juga Ctrl+L.`,
     learning: "Belajar",
     ultron: "ULTRON",
     api: "Izinkan ULTRON membaca dan menulis",
@@ -1483,7 +1623,7 @@ export const id = {
     },
     gemini: {
       title: "Google Gemini",
-      intro: "Lentera, agent di Studio, memakai Google Gemini untuk berdiskusi, menyusun PRD, dan roadmap.",
+      intro: "Lentera memakai Google Gemini: di Studio untuk berdiskusi, menyusun PRD, dan roadmap; di bar Lentera (Ctrl+Alt+L) untuk mengusulkan tugas, pengingat, jadwal, dan catatan.",
       key: "API key Gemini",
       keyHint: "Buat di Google AI Studio. Disimpan di Windows Credential Manager, tidak di database Hub.",
       keySaved: "Tersimpan di Windows Credential Manager.",
@@ -1518,7 +1658,7 @@ export const id = {
       } as Record<string, (model: string) => string>,
       waitSeconds: (seconds: number) => `Google meminta menunggu ${seconds} detik.`,
       privacy:
-        "Yang dikirim ke Google hanya percakapan dan dokumen Studio, dan hanya saat kamu mengirim atau menekan tombol susun. Di tier gratis, Google boleh memakainya untuk melatih produknya dan orang bisa membacanya. Jangan masukkan rahasia atau data pribadi orang lain.",
+        "Yang dikirim ke Google hanya percakapan dan dokumen Studio, serta yang kamu kirim di bar Lentera (kalimatmu atau pesan grup yang sudah dibersihkan, tanggal dan jam, nama Proyek dan Ruang), dan hanya saat kamu mengirim atau menekan tombol susun. Di tier gratis, Google boleh memakainya untuk melatih produknya dan orang bisa membacanya. Jangan masukkan rahasia atau data pribadi orang lain.",
     },
     claude: {
       title: "Claude Code",
@@ -1586,6 +1726,10 @@ export const id = {
       sleepTime: { format: "Jam tidak dikenali.", order: "Jam tidur minimal 6 jam setelah jam bangun." },
       closeNudgeTime: { format: "Jam tidak dikenali." },
       learningGoalDays: { format: "Pilih 1 sampai 7 hari." },
+      focusMinutes: { format: "Pilih 5 sampai 90 menit." },
+      breakMinutes: { format: "Pilih 1 sampai 30 menit." },
+      longBreakMinutes: { format: "Pilih 5 sampai 60 menit." },
+      longBreakEvery: { format: "Pilih 2 sampai 8 blok." },
       apiPort: { format: "Port harus angka 1024 sampai 65535." },
       key: { length: "Key terlalu pendek atau terlalu panjang. Salin ulang dari Google AI Studio.", format: "Key tidak boleh berisi spasi atau huruf khusus." },
       geminiModel: { format: "Nama model tidak dikenali." },
@@ -1627,6 +1771,11 @@ export function trailSentence(item: ActivityItem): string {
   const noun = thing[item.entity] ?? "";
   const tidy = (text: string) => text.replace(/\s{2,}/g, " ");
   // Sentences that read better than the general ones.
+  if (item.entity === "focus_session") {
+    const what = item.summary ? ` ${name}` : "";
+    if (item.verb === "completed") return `${who} menyelesaikan satu blok fokus${what}.`;
+    return item.actor === "hub" ? `Hub mengakhiri sesi fokus${what} yang lama menunggu.` : `${who} mengakhiri sesi fokus${what}.`;
+  }
   if (item.entity === "learning_session") {
     return item.verb === "deleted" ? `${who} menghapus satu sesi ${name}.` : `${who} belajar ${name}.`;
   }

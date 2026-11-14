@@ -41,6 +41,8 @@ pub struct Studio {
     pub keys: Box<dyn KeyStore>,
     /// The reply streaming now in each project, so Hentikan can reach it.
     pub(crate) replies: Mutex<HashMap<String, watch::Sender<bool>>>,
+    /// Lentera's answer in the bar (CP03), so Hentikan can reach it.
+    pub(crate) lentera: crate::lentera_ai::Running,
 }
 
 impl Studio {
@@ -57,7 +59,7 @@ impl Studio {
             Some(root) => format!("Hub-test/{}/gemini", root.display()),
             None => KEY_TARGET.to_string(),
         };
-        Studio { gemini, keys: key_store(&target), replies: Mutex::default() }
+        Studio { gemini, keys: key_store(&target), replies: Mutex::default(), lentera: Mutex::default() }
     }
 }
 

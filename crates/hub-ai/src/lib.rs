@@ -8,13 +8,18 @@
 //! - [`check`]: "Uji koneksi", which tells the owner which of the usual problems it is, without
 //!   changing anything.
 //!
+//! - [`lentera`] and [`group_message`]: Lentera's bar on the desktop (CP03), its four proposing
+//!   functions, and Dari Pesan's cleaning of a pasted group message before anything is sent.
+//!
 //! There is no official Rust SDK; Google documents the REST API for every language.
 
 pub mod calls;
 pub mod check;
 pub mod client;
 pub mod error;
+pub mod group_message;
 pub mod key;
+pub mod lentera;
 pub mod prd;
 pub mod prompt;
 pub mod roadmap;

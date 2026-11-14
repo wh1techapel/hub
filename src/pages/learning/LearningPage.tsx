@@ -7,6 +7,7 @@ import { useNavigate, useSearch } from "@tanstack/react-router";
 import { ExternalLink, Pause, Play, Plus, Settings2, Trophy, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+import { FocusButton } from "../../components/FocusButton";
 import { useAct, useToast } from "../../components/Toast";
 import { useApi } from "../../data/api";
 import type { LearningCard } from "../../data/generated/LearningCard";
@@ -217,10 +218,13 @@ function CurrentItem({ item, onOpen }: { item: LearningCard; onOpen: () => void 
       <span className={styles.currentMeta}>
         {item.trackName} · {item.minutes > 0 ? span(item.minutes) : id.learning.noTime}
       </span>
-      <button type="button" className="btn btn-primary" data-sound="sessionStart" onClick={() => void act(() => api.startTimer(item.id))}>
-        <Play size={15} aria-hidden="true" />
-        {id.learning.resume}
-      </button>
+      <div className={styles.currentButtons}>
+        <button type="button" className="btn btn-primary" data-sound="sessionStart" onClick={() => void act(() => api.startTimer(item.id))}>
+          <Play size={15} aria-hidden="true" />
+          {id.learning.resume}
+        </button>
+        <FocusButton itemId={item.id} />
+      </div>
     </section>
   );
 }

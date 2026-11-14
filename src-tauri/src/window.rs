@@ -1,7 +1,9 @@
-//! Hub's two windows: the main window, and the small Catat Cepat window of Ctrl+Alt+H.
+//! Hub's windows: the main window, the small Catat Cepat window of Ctrl+Alt+H, and Lentera's
+//! capsule and bar of Ctrl+Alt+L (lentera.rs).
 //!
-//! Both are built hidden and shown by their page once it is drawn in the right light. Closing the
-//! main window hides it; the capture window hides when it loses focus or is done. Measured in CP2
+//! All are built hidden and shown by their page once it is drawn in the right light. Closing the
+//! main window hides it; the capture window hides when it loses focus or is done; Lentera's page
+//! decides when it folds into its capsule or hides. Measured in CP2
 //! (docs/architecture.md, "Resources"): a window holds about 100 MB in WebView2's processes
 //! whether shown or hidden, Hub alone in the tray about 4 MB, so a window hidden for
 //! `RELEASE_AFTER` is destroyed and built again on demand. Everything it shows lives in the
@@ -86,7 +88,7 @@ pub fn take_pending_path() -> Option<String> {
     pending_path().lock().ok().and_then(|mut pending| pending.take())
 }
 
-fn builder<'a>(app: &'a AppHandle, label: &'a str, page: &str) -> WebviewWindowBuilder<'a, tauri::Wry, AppHandle> {
+pub(crate) fn builder<'a>(app: &'a AppHandle, label: &'a str, page: &str) -> WebviewWindowBuilder<'a, tauri::Wry, AppHandle> {
     let data = state(app).hub.paths().root.join("webview");
     WebviewWindowBuilder::new(app, label, WebviewUrl::App(page.into()))
         .visible(false)
@@ -105,7 +107,7 @@ fn build_main(app: &AppHandle) -> tauri::Result<()> {
     Ok(())
 }
 
-fn fallback_reveal(window: WebviewWindow) {
+pub(crate) fn fallback_reveal(window: WebviewWindow) {
     let label = window.label().to_string();
     let at = generation(&label);
     thread::spawn(move || {
@@ -148,11 +150,65 @@ pub fn reveal(window: &WebviewWindow) {
     bump(window.label());
     let _ = window.show();
     let _ = window.set_focus();
+    if window.label() == crate::lentera::LENTERA {
+        crate::lentera::shown(window);
+    }
+}
+
+/// Show a window without taking the keyboard from whatever has it: Lentera's capsule appearing
+/// for a Sesi Fokus must never pull the owner out of what they are typing, nor close a menu they
+/// have open. Tauri cannot show a window without activating it, so this goes to Windows directly:
+/// shown without activation, and not activated by a click either (WS_EX_NOACTIVATE), so the
+/// capsule's buttons work without taking the keyboard. Tauri still thinks the window hidden, so
+/// nothing may change its window flags while it is shown this way (the click-through of
+/// lentera.rs is set directly too); `reveal` (the bar) shows it through Tauri again, which also
+/// drops WS_EX_NOACTIVATE.
+pub fn show_quietly(window: &WebviewWindow) {
+    bump(window.label());
+    #[cfg(windows)]
+    {
+        use windows_sys::Win32::UI::WindowsAndMessaging::{
+            GetWindowLongPtrW, SetWindowLongPtrW, SetWindowPos, ShowWindow, GWL_EXSTYLE, HWND_TOPMOST, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE,
+            SW_SHOWNOACTIVATE, WS_EX_NOACTIVATE,
+        };
+        if let Ok(hwnd) = window.hwnd() {
+            let hwnd = hwnd.0 as windows_sys::Win32::Foundation::HWND;
+            // SAFETY: a live window handle from Tauri; these calls read and set its styles and
+            // show it, and take ownership of nothing.
+            unsafe {
+                let ex = GetWindowLongPtrW(hwnd, GWL_EXSTYLE);
+                SetWindowLongPtrW(hwnd, GWL_EXSTYLE, ex | WS_EX_NOACTIVATE as isize);
+                ShowWindow(hwnd, SW_SHOWNOACTIVATE);
+                SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+            }
+        }
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = window.show();
+    }
+    if window.label() == crate::lentera::LENTERA {
+        crate::lentera::shown(window);
+    }
+}
+
+/// Hidden for Tauri and for Windows alike: a window shown by `show_quietly` is visible only as far
+/// as Windows knows, and Tauri, thinking it hidden already, would do nothing.
+pub fn conceal(window: &WebviewWindow) {
+    let _ = window.hide();
+    #[cfg(windows)]
+    if let Ok(hwnd) = window.hwnd() {
+        use windows_sys::Win32::UI::WindowsAndMessaging::{ShowWindow, SW_HIDE};
+        // SAFETY: a live window handle from Tauri; hiding it takes ownership of nothing.
+        unsafe {
+            ShowWindow(hwnd.0 as _, SW_HIDE);
+        }
+    }
 }
 
 /// Hide a window, and let it go if it stays hidden.
 pub fn hide(window: &WebviewWindow) {
-    let _ = window.hide();
+    conceal(window);
     schedule_release(window.app_handle().clone(), window.label().to_string());
 }
 
@@ -173,10 +229,11 @@ fn schedule_release(app: AppHandle, label: String) {
 }
 
 /// Closing the main window hides it (Hub keeps running in the tray). The capture window hides
-/// when the owner clicks elsewhere.
+/// when the owner clicks elsewhere. Lentera keeps its corner when the display scale changes.
 pub fn on_event(window: &Window, event: &WindowEvent) {
+    let label = window.label();
     match event {
-        WindowEvent::CloseRequested { api, .. } if window.label() == MAIN || window.label() == CAPTURE => {
+        WindowEvent::CloseRequested { api, .. } if label == MAIN || label == CAPTURE || label == crate::lentera::LENTERA => {
             api.prevent_close();
             let _ = window.hide();
             schedule_release(window.app_handle().clone(), window.label().to_string());
@@ -184,6 +241,12 @@ pub fn on_event(window: &Window, event: &WindowEvent) {
         WindowEvent::Focused(false) if window.label() == CAPTURE && window.is_visible().unwrap_or(false) => {
             let _ = window.hide();
             schedule_release(window.app_handle().clone(), window.label().to_string());
+        }
+        WindowEvent::Focused(false) if label == crate::lentera::LENTERA => crate::lentera::forget(),
+        WindowEvent::ScaleFactorChanged { .. } if label == crate::lentera::LENTERA => {
+            if let Some(lentera) = window.app_handle().get_webview_window(label) {
+                crate::lentera::place(&lentera);
+            }
         }
         WindowEvent::DragDrop(drag) => crate::library::on_drag(window, drag),
         _ => {}

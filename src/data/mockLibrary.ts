@@ -62,6 +62,8 @@ export interface LibraryDeps {
   searchCore: (words: string[]) => SearchHit[];
   /** Tasks done between two instants, and projects that moved. */
   doneBetween: (from: string, to: string) => { tasks: number; projects: number };
+  /** Belajar's timer starting ends a Sesi Fokus (one clock at a time). */
+  stopFocus: () => void;
   goalDays: () => number;
 }
 
@@ -835,6 +837,7 @@ export function libraryMock(deps: LibraryDeps, demo: boolean) {
       const rec = item(itemId as string);
       if (timer?.itemId === rec.id) return;
       stop();
+      deps.stopFocus();
       timer = { itemId: rec.id, startedAt: iso(new Date()) };
       if (rec.status === "todo") setStatus(rec, "doing");
       deps.done("learning_session");
@@ -966,6 +969,23 @@ export function libraryMock(deps: LibraryDeps, demo: boolean) {
       deps.emitDrag({ phase: "enter", x, y, dropId: null, count: names.length, names: names.slice(0, 3) });
       deps.emitDrag({ phase: "over", x, y, dropId: null, count: 0, names: [] });
       deps.emitDrag({ phase: "drop", x, y, dropId, count: names.length, names: names.slice(0, 3) });
+    },
+    /** Sesi Fokus (CP02): an item's title, a block kept as its learning session, Belajar's timer stopped. */
+    itemTitle: (id: string) => items.find((i) => i.id === id && !i.deleted)?.title ?? null,
+    focusBlock(itemId: string, startedAt: string, minutes: number) {
+      const rec = items.find((i) => i.id === itemId && !i.deleted);
+      if (!rec) return;
+      sessions.push({ id: deps.newId(), itemId, startedAt, durationMin: minutes, note: "" });
+      record("owner", "created", "learning_session", itemId, rec.title);
+      deps.done("learning_session");
+    },
+    focusStarts(itemId: string) {
+      if (stop() !== null) deps.done("learning_session");
+      const rec = items.find((i) => i.id === itemId && !i.deleted);
+      if (rec?.status === "todo") setStatus(rec, "doing");
+    },
+    stopTimer() {
+      if (stop() !== null) deps.done("learning_session");
     },
     recentFiles: (limit: number) => list({ limit }),
     projectFiles: (projectId: string) => list({ projectId }),

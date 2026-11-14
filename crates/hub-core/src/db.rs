@@ -19,6 +19,7 @@ pub const MIGRATIONS: &[&str] = &[
     include_str!("../migrations/0007_studio_stack.sql"),
     include_str!("../migrations/0008_claude_sessions.sql"),
     include_str!("../migrations/0009_milestone_tasks.sql"),
+    include_str!("../migrations/0010_focus_sessions.sql"),
 ];
 
 pub fn latest_version() -> i64 {
@@ -334,6 +335,26 @@ mod tests {
         assert!(conn.query_row("SELECT progress_mode FROM projects", [], |row| row.get::<_, String>(0)).is_err(), "the unused column is gone");
         conn.execute("UPDATE tasks SET milestone_id = 'm'", []).unwrap();
         assert!(conn.execute("UPDATE tasks SET milestone_id = 'missing'", []).is_err(), "only a real milestone");
+    }
+
+    #[test]
+    fn the_focus_sessions_upgrade_adds_its_tables_and_loses_no_row() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("hub.db");
+        old_database(&path, 9);
+        {
+            let conn = Connection::open(&path).unwrap();
+            conn.execute_batch("INSERT INTO tasks (id, title, order_key, created_at, updated_at) VALUES ('t', 'Laporan', 'a', 't', 't');").unwrap();
+        }
+        let conn = open(&path).unwrap();
+        assert_eq!(schema_version(&conn).unwrap(), latest_version());
+        let count = |table: &str| -> i64 { conn.query_row(&format!("SELECT count(*) FROM {table}"), [], |row| row.get(0)).unwrap() };
+        assert_eq!((count("tasks"), count("activity"), count("focus_run"), count("focus_blocks")), (1, 3, 0, 0));
+        let run = "INSERT INTO focus_run (id, task_id, phase, phase_started_at, phase_seconds, seen_at, started_at, focus_seconds, break_seconds, long_break_seconds, long_break_every)
+                   VALUES (?1, 't', ?2, 't', 1500, 't', 't', 1500, 300, 900, 4)";
+        assert!(conn.execute(run, rusqlite::params![1, "nap"]).is_err(), "only the four phases");
+        assert!(conn.execute(run, rusqlite::params![2, "focus"]).is_err(), "one session at a time");
+        conn.execute(run, rusqlite::params![1, "focus"]).unwrap();
     }
 
     #[test]

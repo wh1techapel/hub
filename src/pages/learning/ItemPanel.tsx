@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import { Field, Segmented, timeValue } from "../../components/Fields";
 import { FileRows } from "../../components/FileRows";
+import { FocusButton } from "../../components/FocusButton";
 import { useAct } from "../../components/Toast";
 import { useApi } from "../../data/api";
 import type { LearningDetail } from "../../data/api";
@@ -131,6 +132,7 @@ function ItemEditor({ detail, onClose }: { detail: LearningDetail; onClose: () =
             {id.learning.resume}
           </button>
         )}
+        {value.status !== "done" && <FocusButton itemId={card.id} />}
         {card.url && (
           <button type="button" className="btn btn-secondary" onClick={() => void act(() => api.openLink("learning_item", card.id))}>
             <ExternalLink size={15} aria-hidden="true" />

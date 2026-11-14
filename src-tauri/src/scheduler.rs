@@ -1,4 +1,5 @@
-//! The reminder clock: fires what came due, and nudges Tutup Hari once in the evening.
+//! The reminder clock: fires what came due, nudges Tutup Hari once in the evening, and moves a
+//! Sesi Fokus on at the end of each block and break (Lentera CP02).
 //!
 //! One thread waits until the next reminder, the nudge time, or at most 30 seconds, whichever is
 //! first, then compares against the wall clock. Waking every 30 seconds keeps it right after
@@ -11,7 +12,7 @@ use std::time::Duration;
 
 use hub_core::context::Ctx;
 use hub_core::model::{Change, Entity};
-use hub_core::{dayclose, reminders};
+use hub_core::{dayclose, focus, reminders};
 use jiff::{Span, Timestamp};
 use tauri::AppHandle;
 
@@ -79,8 +80,15 @@ fn tick(app: &AppHandle, state: &AppState) -> hub_core::Result<Duration> {
         Ok((reminders::next_due(conn)?, nudge_at))
     })?;
 
+    // Sesi Fokus (Lentera CP02): a block or a break that ended moves on, and the time Hub saw is
+    // noted (a gap since is time Hub did not see). The windows hear of it through the change.
+    let settled = state.hub.write(|conn| focus::settle(conn, now))?;
+    for change in &settled.changes {
+        commands::announce(app, change);
+    }
+
     let mut wait = MAX_WAIT;
-    for at in [next_due, nudge_at].into_iter().flatten() {
+    for at in [next_due, nudge_at, settled.next_at].into_iter().flatten() {
         let seconds = (at.as_second() - now.as_second()).max(0) as u64;
         wait = wait.min(Duration::from_secs(seconds));
     }

@@ -36,7 +36,11 @@ interface Props {
   /** Called after a save, with what was made. */
   onSaved?: (saved: Saved) => void;
   onCancel?: () => void;
+  /** Every change of the line (Lentera keeps an unsaved line as a draft in its capsule). */
+  onTextChange?: (text: string) => void;
   placeholder?: string;
+  /** The line to start with (Lentera hands over a line it could not answer, CP03). */
+  initialText?: string;
 }
 
 function timeText(value: string | null): string | null {
@@ -80,7 +84,9 @@ export function CaptureForm({
   autoFocus = false,
   onSaved,
   onCancel,
+  onTextChange,
   placeholder,
+  initialText = "",
 }: Props) {
   const sound = useSound();
   const api = useApi();
@@ -89,7 +95,11 @@ export function CaptureForm({
   const previewId = useId();
   const input = useRef<HTMLInputElement>(null);
   const [kind, setKind] = useState<CaptureKind>(initialKind ?? kinds[0] ?? "task");
-  const [text, setText] = useState("");
+  const [text, setLine] = useState(initialText);
+  const setText = (next: string) => {
+    setLine(next);
+    onTextChange?.(next);
+  };
   const [reading, setReading] = useState<Reading | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);

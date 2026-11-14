@@ -86,6 +86,23 @@ export type Command =
   | "window_ready"
   | "set_caption"
   | "hide_capture"
+  | "open_lentera"
+  | "set_lentera_shape"
+  | "hide_lentera"
+  | "return_lentera_focus"
+  | "take_lentera_open"
+  | "focus_lentera"
+  | "ask_lentera"
+  | "stop_lentera"
+  | "clean_lentera_message"
+  | "save_lentera_proposal"
+  | "get_focus"
+  | "start_focus"
+  | "pause_focus"
+  | "resume_focus"
+  | "next_focus"
+  | "stop_focus"
+  | "tuck_focus"
   | "take_start_path"
   | "get_today"
   | "list_tasks"
@@ -188,7 +205,7 @@ export type Command =
   | "open_link";
 
 /** Events the native side sends to the windows. */
-export type HubEvent = "hub://changed" | "hub://navigate" | "hub://capture-shown" | "hub://drag";
+export type HubEvent = "hub://changed" | "hub://navigate" | "hub://capture-shown" | "hub://drag" | "hub://lentera-open" | "hub://lentera-close";
 
 export interface Backend {
   call: <T>(command: Command, args?: Record<string, unknown>) => Promise<T>;

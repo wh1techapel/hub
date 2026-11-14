@@ -1,7 +1,8 @@
 # Membangun Ulang Hub
 
 Langkah untuk menghasilkan installer yang sama dari kode sumber, beserta versi alat yang dipakai
-saat rilis 1.0.0 dan 1.0.1 dibangun (9 November 2026) dan 1.0.2 (10 November 2026, alat yang sama).
+saat rilis 1.0.0 dan 1.0.1 dibangun (9 November 2026); 1.0.2 (10 November 2026) dan 1.0.3
+(14 November 2026) memakai alat yang sama.
 
 ## Lingkungan
 
@@ -40,10 +41,12 @@ node scripts\smoke-native.mjs
 
 ## Sidik jari rilis
 
-Dari commit F2 (1.0.0), F3 (1.0.1), dan "Hub 1.0.2" di cabang `main` (lihat `git log`).
+Dari commit F2 (1.0.0), F3 (1.0.1), "Hub 1.0.2", dan "Hub 1.0.3" di cabang `main` (lihat `git log`).
 
 | Rilis | Berkas | Ukuran | SHA-256 |
 |---|---|---|---|
+| 1.0.3 | `Hub_1.0.3_x64-setup.exe` | 6.362.091 bita | `ab45a58c827fc88396bf63afa1b525da788464f806f02fadc21dd7a11f462d59` |
+| 1.0.3 | `hub-mcp.exe` | 3.292.672 bita | `63bcd42d52fce14bb03a1eff2d8a89683084fa12d2c1305e8461990872bc4180` |
 | 1.0.2 | `Hub_1.0.2_x64-setup.exe` | 6.222.905 bita | `6244e4565d00395ffcc5d288d5a4f6bd505b01c8a1d97a7a87523b827176f6f5` |
 | 1.0.2 | `hub-mcp.exe` | 3.292.672 bita | `7cbf126e0e76356aaa4b6728a91fbf3c3e7705680d2b2831db12274e6a3cf241` |
 | 1.0.1 | `Hub_1.0.1_x64-setup.exe` | 6.211.296 bita | `8adf243a3382305f8a00faf3ac02f9d1d88ddaaa010244c3f8cbb62b98226557` |

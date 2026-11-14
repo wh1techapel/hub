@@ -53,4 +53,10 @@ devKnows: string, devLearning: string, devCost: DevCost, devDeploy: string,
  * P2: Hub's small sounds (made in the app, never files), on from the start and quiet. The
  * volume is Hub's own, 0 to 100, under Windows' volume.
  */
-soundEnabled: boolean, soundVolume: number, };
+soundEnabled: boolean, soundVolume: number, 
+/**
+ * Lentera CP02, Sesi Fokus: a focus block, a short break, a long break (in minutes), and how
+ * many blocks come before the long one. The classic 25/5/15 after 4 (Biwer et al. 2023 tested
+ * 24/6 against breaks the students chose themselves: CONTEXT.md).
+ */
+focusMinutes: number, breakMinutes: number, longBreakMinutes: number, longBreakEvery: number, };

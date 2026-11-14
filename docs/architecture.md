@@ -39,8 +39,9 @@ Hub.exe (Tauri, Rust): starts with Windows into the tray
 ├── api           local HTTP API on 127.0.0.1 for ULTRON (crates/hub-api), the same core services.
 ├── studio        Hub Studio: Gemini over HTTPS (crates/hub-ai), the key in Credential Manager.
 │                 The only outbound traffic Hub makes, and only when the owner acts in Studio.
-├── tray, single instance, autostart, global hotkey (quick capture)
-└── windows       main (created when opened), Catat Cepat (small, created on first use)
+├── tray, single instance, autostart, global hotkeys (quick capture, Lentera)
+└── windows       main (created when opened), Catat Cepat (small, created on first use),
+                  Lentera's capsule and bar (transparent, created on first use)
         │
         └── WebView2: React UI. Renders state, sends intents. Holds no truth.
 
@@ -87,6 +88,7 @@ Hub/
 │                            (checkpoints, rules, approval with the Proyek and folder, statuses,
 │                            reports, requests, the implementation prompt), bin/hub-seed.rs
 ├── src-tauri/               the app: lib.rs (startup), commands.rs, window.rs, tray.rs,
+│                            lentera.rs (Lentera's window: its place, click-through, keyboard),
 │                            scheduler.rs, notify.rs (toasts), protocol.rs and registry.rs
 │                            (hubapp:// links), maintenance.rs (daily backup, hourly file check),
 │                            library.rs (drops and file commands), shell.rs (open, reveal, the
@@ -95,7 +97,7 @@ Hub/
 │                            roadmap.rs (the roadmap, the folder dialog, checkpoints at work),
 │                            claude_code.rs (Pasang, Lepas, Uji jembatan), skills/ (the
 │                            skill /hub-connect Pasang writes),
-│                            log.rs; capabilities/main.json and capture.json
+│                            log.rs; capabilities/main.json, capture.json, and lentera.json
 ├── src/                     React UI
 │   ├── app/                 App, router, Shell (sidebar, top line), CommandPalette (with search),
 │   │                        DropPools, nav
@@ -105,6 +107,7 @@ Hub/
 │   ├── components/          shared UI: TaskList (ink check, keyboard, drag), CaptureForm,
 │   │                        Dialog, Fields, Toast, FileThumb, FileRows
 │   ├── capture/             the Catat Cepat window (capture.html)
+│   ├── lentera/             Lentera's capsule and bar (lentera.html): states, window, styles
 │   ├── data/                backend interface, Tauri and mock backends, queries, generated/
 │   ├── light/               phase rules and the light engine
 │   ├── time/                the shared minute clock, Indonesian formats
@@ -113,11 +116,14 @@ Hub/
 └── scripts/                 smoke-native.mjs (real window over DevTools), measure.ps1
 ```
 
-The webview may call exactly the commands listed in `src-tauri/build.rs` (171 since Studio S5), allowed one
-by one per window. The main window (`capabilities/main.json`) gets all of them except
-`hide_capture`; the Catat Cepat window (`capabilities/capture.json`) gets only `get_settings`,
-`get_shell`, `window_ready`, `read_capture`, `save_capture`, and `hide_capture`. No plugin API
-(file system, shell, autostart) is exposed to either; autostart is switched by `update_settings` in
+The webview may call exactly the commands listed in `src-tauri/build.rs` (190 since Lentera CP02),
+allowed one by one per window. The main window (`capabilities/main.json`) gets all of them except
+`hide_capture` and Lentera's own three (`set_lentera_shape`, `hide_lentera`,
+`return_lentera_focus`, `take_lentera_open`, `focus_lentera`); it may `open_lentera` and run a Sesi Fokus (`get_focus`, `start_focus`, `pause_focus`, `resume_focus`, `next_focus`, `stop_focus`, `tuck_focus`). The Catat Cepat window (`capabilities/capture.json`)
+gets only `get_settings`, `get_shell`, `window_ready`, `read_capture`, `save_capture`, and
+`hide_capture`. Lentera's window (`capabilities/lentera.json`) gets `get_settings`, `get_shell`,
+`window_ready`, `read_capture`, `save_capture`, its own five, and the Sesi Fokus commands. No plugin API (file system,
+shell, autostart, window) is exposed to any of them; autostart is switched by `update_settings` in
 Rust. Write commands return no new state to trust: the UI refetches after the `changed` event.
 
 ## Data
@@ -169,6 +175,7 @@ overrides it for tests and smokes. Note: inside the Claude sandbox `%LOCALAPPDAT
 | `ctf_events` | name, dates, team, rank, participants, URL. |
 | `learning_sessions` | item, start, duration, note. |
 | `learning_timer` | the one running timer (item, start), so it survives a restart. |
+| `focus_run`, `focus_blocks` | Sesi Fokus (migration 0010, Lentera CP02): the one running session (task or item, phase, when the phase began as if never paused, its length, a pause, when Hub last looked, the lengths kept from its start, tucked) and every focus block kept (start, seconds, planned, finished or stopped, task, item, the learning session it became). |
 | `journal` | date, text, kind (`note`, `done`, `reflection`), the task a note explains, source. Notes and done activities from ULTRON land here. |
 | `tags`, `taggings` | free tags on tasks, files, learning items. |
 | `activity` | time, actor, verb, entity type and id, a short text snapshot, JSON details. Append only. |
@@ -269,6 +276,121 @@ lusa, jumat, 25/10, next friday), times (19.00, jam 7 malam, 7pm), deadlines (te
 sebelum), priority (!, !!, !!!), estimates, #project, and "di <tempat>" for events. The UI shows
 the reading as chips while typing and never guesses on its own; Enter saves what the chips show. A
 line that starts with "ingatkan" or "remind me" switches the kind to Pengingat.
+
+## Lentera on the desktop (CP01)
+
+Lentera's capsule and bar (design: `docs/design.md`, "Lentera on the desktop") live in a third
+window, `lentera` (`src-tauri/src/lentera.rs`, page `lentera.html` and `src/lentera/`). It opens
+from Ctrl+Alt+L (global, registered beside Ctrl+Alt+H; Pengaturan says if another application holds
+it), the tray's "Tanya Lentera", and inside Hub from the sidebar, Ctrl+L, and the palette
+(`open_lentera`). Pressed again while the bar has the keyboard, Ctrl+Alt+L closes it.
+
+- **The window** is built like ULTRON's island: frameless, transparent, always on top, off the
+  taskbar, no native shadow (an undecorated window with one gets a 1 px frame), fixed at 480 x 640
+  logical px (400 in CP01; CP02's session card made the bar taller, 460; CP03's conversation and
+  cards, 640, scrolling inside the bar beyond that). The capsule and the bar are drawn inside and change shape with one spring; the
+  window never resizes, because Windows cannot resize a window in step with what its WebView draws
+  (ULTRON measured the jump). Tauri issue #8308 (a transparent window drawn opaque) was a Tauri 2
+  alpha bug, fixed long ago; ULTRON's island has used a transparent Tauri 2 window on this laptop
+  since 2026-10, and the native smoke compares the real screen with Lentera shown and hidden to
+  prove the area around the bar shows what is behind it.
+- **Its place**: the window's bottom-right corner on the primary monitor's work area (above the
+  taskbar, beside the clock, wherever the taskbar is), in that monitor's physical pixels, so the
+  display scale is respected. It is placed every time it opens and again when its scale changes.
+  ULTRON's island is top centre, so they never meet. `placement()` is a pure function with tests
+  for 100, 125, and 150 %, taskbars on any side, a primary display left of another, and a work
+  area smaller than the window.
+- **Only the shape takes the mouse.** The page reports its shape (`set_lentera_shape`: the bar at
+  once when it grows, the capsule once the spring has settled into it), checked and kept inside the
+  window. While Lentera is shown, a thread reads the cursor every 25 ms and makes the window
+  click-through (WS_EX_TRANSPARENT and WS_EX_LAYERED, as Tauri's `set_ignore_cursor_events` does, set
+  directly since CP02) wherever the shape is not; it stops when the window
+  hides. When the cursor cannot be read, the window takes clicks.
+- **The keyboard.** Opening Lentera remembers the window that had the keyboard
+  (`GetForegroundWindow`). Esc, the close button, and a save give it back (`SetForegroundWindow`,
+  while Lentera still has the foreground, so Windows allows it); a click elsewhere does not, and
+  Lentera forgets the window as soon as it loses the keyboard, so a later Esc never pulls the owner
+  back somewhere old. The taskbar is never remembered (Lentera opened from the tray menu): Windows
+  then picks the next window itself.
+- **What the page decides**: the states (`src/lentera/state.ts`, one pure step function: hidden,
+  capsule, bar) and when to hide (`hide_lentera`). Hidden, the window is let go after 10 minutes
+  like the others; an unsaved line kept in it lives as long as the window does.
+- Until Lentera can answer (CP03) the bar saves lines through the same `read_capture` and
+  `save_capture` as Catat Cepat. No data leaves the computer in CP01. Since CP03 it does so only
+  without a Gemini key, or when the owner hands a line Lentera could not answer to Catat Cepat.
+
+### Sesi Fokus (CP02)
+
+- **The rules** are hub-core's `focus.rs`: one session at a time, its phase read from stored times
+  (no ticking), moved on by `settle`. A block ends in its break, a break ends in waiting, every
+  few blocks the break is long. Time Hub did not see pauses a block where Hub last looked
+  (`seen_at`, written at every look) and ends a break; a session paused or waiting for 30 minutes
+  ends by itself. A finished block is kept in `focus_blocks` and Jejak; on a Belajar item it is
+  that item's learning session instead (written once), and Belajar's timer and a session stop each
+  other. The rules are tested with a made-up clock (`focus::tests`: breaks, the long break, pauses,
+  a lid closed mid-block, a break slept through, the idle end, stopping early, Belajar).
+- **The clock** is the scheduler (`scheduler.rs`): every look settles the session, and the next
+  wake is the earliest of a reminder, the nudge, and the session's next phase end. A change is
+  announced like any other, except that ULTRON's stream leaves it out (owner's decision).
+- **The capsule follows the session** (`lentera::sync_session`, on every Sesi Fokus change): while
+  a session runs and is not tucked away, Lentera's window shows without taking the keyboard
+  (`window::show_quietly`: shown by Windows directly without activation and with WS_EX_NOACTIVATE,
+  so a click on the capsule's button never takes the keyboard or closes the owner's open menu;
+  Tauri cannot show a window without activating it). Tauri then still thinks the window hidden
+  and would hide it again at any change of its own flags, so the click-through is set directly
+  too (WS_EX_TRANSPARENT and WS_EX_LAYERED, re-checked every 25 ms), and opening the bar
+  (`focus_lentera`) shows it through Tauri again. It is built quietly if it was let go (the
+  page then shows the capsule instead of opening the bar: `take_lentera_open`). Once a second a
+  presence check hides it while a fullscreen application is in front of the primary screen
+  (Windows reports busy, Direct3D fullscreen, or presentation mode, and the window in front covers
+  the whole screen without being maximised: ULTRON's rule) and shows it again after. The page
+  hides the window itself when it has nothing left to show.
+- **Lengths** come from Pengaturan; `HUB_FOCUS_SECONDS_PER_MINUTE` (honoured only with
+  `HUB_DATA_DIR`) makes a minute a second for the native smoke.
+
+### Lentera's brain (CP03)
+
+The bar's line goes to Gemini through the same client, key, model, and Interactions API as
+Studio (`store: false`, streamed, the temperature left at Google's default as Google asks for
+Gemini 3, thinking `low` so the bar answers in seconds). Decisions in `CONTEXT.md`, "Lentera on
+the desktop".
+
+- **Four functions, all proposals** (`crates/hub-ai/src/lentera.rs`, words in
+  `prompts/lentera.toml`): `usul_tugas`, `usul_pengingat`, `usul_jadwal`, `usul_catatan`, each with
+  a list of items. Google advises 10 to 20 tools at most and checking every call before acting; Hub
+  declares four and acts on none. Every item is read into a typed `Proposal` (dates
+  `YYYY-MM-DD` that exist and are not years away, times `HH:MM`, lengths, a time on a task as its
+  deadline as in Catat Cepat, a reminder only ahead of now, project and Ruang names matched to the
+  ones sent, unknown names dropped with a note). What fails is refused item by item with a reason;
+  the reply goes on to a second round only then, so Gemini can mend it (one request when all pass:
+  the free quota counts requests). At most 12 cards a reply, 10 a call; three rounds.
+- **What is sent** (`DeskContext`): the system instruction with "Saat ini" (today, the time, the
+  next 14 days by name, so "Jumat" needs no arithmetic) and the names of the active projects and
+  the Ruang, fenced as data; the last six turns of the bar's conversation (kept by the page in
+  memory, each clipped to 2000 characters; a turn from Lentera is its text and a line per proposal);
+  the owner's line (1000 characters at most) or the cleaned message. Ids stay home. The
+  `ask_lentera` command reads the key, builds this, streams the answer to the page over a Tauri
+  channel (`Started` with what was sent, `Delta`, `Proposals`, `Finished`), and keeps one answer at
+  a time (`stop_lentera` is Hentikan). Logs carry the failure's kind, never the text.
+- **Dari Pesan** (`crates/hub-ai/src/group_message.rs`): WhatsApp's export on Android and iPhone,
+  copied messages from the desktop and web, and twelve-hour clocks are read; senders' names, times,
+  phone numbers (nine digits or more starting with `+`, `0`, or `62`), mentions, and emails go; the
+  date sent stays as "(dikirim Selasa, 2026-11-10)"; media and deleted messages are dropped.
+  Cleaning is pure and idempotent: the page shows the cleaned text (`clean_lentera_message`), and
+  `ask_lentera` cleans what it is handed again before sending, so nothing leaves that the owner did
+  not see. 8000 characters at most after cleaning.
+- **Simpan** (`save_lentera_proposal`): the proposal as the page hands it back (maybe changed on
+  its card) is checked again against the current projects and Ruang, then written through
+  hub-core (`tasks::create`, `reminders::create_at`, `events::create`, `journal::create`) as the
+  owner's, in one write each, announced like any change. Simpan semua is the same, card by card.
+- **The page** (`src/lentera/talk.ts`, one pure step function for the conversation and its cards;
+  `Conversation.tsx` draws it; `LenteraWindow.tsx` calls the core): the conversation lives in the
+  window's memory only and is dropped when the bar opens again with nothing waiting. A click
+  elsewhere keeps an answer coming or cards waiting in the capsule, as it keeps a draft.
+- **Tests**: hub-ai checks the requests, the reading of every function, the mend round against a
+  fake Gemini, and the cleaning of each format; src-tauri writes every kind into a test database
+  and checks Jejak; Vitest drives the bar against the demo backend's pretend Gemini
+  (`src/data/mockLentera.ts`); the native smoke drives the release build against a fake Gemini.
 
 ## ULTRON integration (CP5)
 
@@ -407,8 +529,11 @@ ULTRON's `docs/hub.md` has the detail; in short:
 - No secrets in the database: the Gemini key is in Windows Credential Manager (`Hub/gemini`; tests and
   smokes use `Hub-test/<data folder>/gemini`), never in SQLite, the export, backups, the log, or the
   page. Nothing leaves the machine except Studio's conversation and documents, sent to Google's
-  Gemini API only when the owner sends a message or presses a generate button (owner's decision,
-  CONTEXT.md). A fake Gemini (`HUB_GEMINI_BASE_URL`) is honoured only with `HUB_DATA_DIR` and only on
+  Gemini API only when the owner sends a message or presses a generate button, and what the owner
+  sends in Lentera's bar (CP03: the line or the cleaned group message, the last few turns, the date
+  and time, the names of projects and Ruang) when they press Enter or Kirim (owner's decisions,
+  CONTEXT.md). Text from Gemini is rendered as text; its function calls only propose, and only the
+  owner's Simpan writes. A fake Gemini (`HUB_GEMINI_BASE_URL`) is honoured only with `HUB_DATA_DIR` and only on
   loopback.
 
 ## Resources

@@ -142,6 +142,10 @@ coloured blobs. No emoji as icons.
    pointer swells; on drop, each file chip travels to where it went.
 5. **ULTRON thread.** When ULTRON changes something on screen, a thin crimson line traces the item
    once (600 ms) and leaves the small ULTRON mark behind.
+6. **Lentera's light.** A small still orb made of the lights of Studio's glow (`--glow-a` to
+   `--glow-c` and the accent), so it follows the day like the glow does: Lentera's mark in its
+   capsule, its bar, and Hub's sidebar (`src/components/LenteraMark.tsx`). It sits beside the word
+   Lentera, never alone, and never pulses on its own.
 
 ## Information architecture
 
@@ -207,9 +211,76 @@ task among all open ones), `/tugas?view=reminders` to Kalender's Pengingat.
 
 Everywhere: **Ctrl+K** command palette (go to, search, create, act). **Ctrl+Alt+H** global quick
 capture (a small floating window, works while Hub is hidden; the hotkey is checked against
-ULTRON's `Ctrl+Alt+U`, `Ctrl+Alt+Space`, `Ctrl+Alt+Esc`). Single-key shortcuts inside views
-(`T` today, `N` new, arrows) as in Notion Calendar. Every page has a route so ULTRON can open it
-("buka proyek Hub").
+ULTRON's `Ctrl+Alt+U`, `Ctrl+Alt+Space`, `Ctrl+Alt+Esc`). **Ctrl+Alt+L** global Lentera bar (the
+same check; IntelliJ-family IDEs use it for Reformat Code, the owner kept it, 2026-11-10), and
+inside Hub **Ctrl+L**, the sidebar's Tanya Lentera, and the palette's "Tanya Lentera" open the same
+bar. Pengaturan says when another application holds either global shortcut. Single-key shortcuts
+inside views (`T` today, `N` new, arrows) as in Notion Calendar. Every page has a route so ULTRON
+can open it ("buka proyek Hub").
+
+### Lentera on the desktop (CP01)
+
+Lentera, Studio's agent, also lives on the desktop as a light assistant (CONTEXT.md, "Lentera on
+the desktop"). It has three states and shows only when called or, from CP02, when something needs
+the owner; it never sits on screen by itself.
+
+- **Hidden** is the default.
+- **The capsule** is a 40 px pill at the bottom right of the work area, 16 px from the screen's
+  edge and above the taskbar beside the clock (ULTRON's island is top centre, so they never meet):
+  Lentera's light (in CP02 inside a thin progress ring), one label, and at most one action. In CP01
+  it says what was just saved ("Tugas tersimpan: …", then leaves after 2.4 s), or keeps a line the
+  owner left unsaved ("Draf: …", with Buang draf). Clicking it opens the bar.
+- **The bar** grows out of the capsule, 432 px wide: Lentera's name and close button, a card area
+  for Lentera's replies, and the line. Until Lentera can answer (CP03) the card area holds one plain
+  note, and the line is Catat Cepat's (the same reader and chips, offline): Enter saves it and the
+  bar folds into the capsule while the keyboard goes back to where the owner was. Esc clears the
+  line, then closes and gives the keyboard back; a click elsewhere hides an empty bar or folds a
+  line into the capsule.
+- **A Sesi Fokus (CP02)** lives in the capsule for the whole session, shown without taking the
+  keyboard: Lentera's light inside a thin ring (2.5 px, the accent while working, ink-3 in a break,
+  a whole ring while waiting), one label ("Fokus 18:42 · Laporan lab", "Dijeda 12:30",
+  "Istirahat 4:05", "Istirahat selesai"), and one action (Jeda, Lanjutkan, Lewati istirahat, or
+  Lanjut fokus). The bar shows the session as a card: the phase and block ("Fokus · Blok 2 dari
+  4"), the task, the time left in Fraunces, and every control (the action, Selipkan, Hentikan).
+  With no session the card area offers "Mulai sesi fokus". A finished block, a break's end, and
+  the session's end each make one soft sound (Catat Cepat's paper voice); the countdown never does.
+  Hub's pages start a session from a task's panel, a Belajar item, Hari Ini's Belajar card, and the
+  palette ("Fokus 25 m").
+- **Lentera's brain (CP03)**. With a Gemini key the line is Lentera's ("Misalnya: laporan lab
+  dikumpulkan Kamis jam 7 pagi"); Enter sends it. The card area becomes a short conversation, quiet
+  by design: the owner's line as a small right-aligned note in ink-2 on paper-2, Lentera's answer
+  as plain text in ink (one or two sentences, no Markdown), and only a proposal is a card, since a
+  proposal is the one thing that asks for a decision. A card: its kind in small caps with its icon
+  (Tugas, Pengingat, Jadwal, Catatan), the title in 14 px semibold, the chips Catat Cepat would show
+  (Tenggat besok 19.00, the project), the notes if any, then Simpan (the only filled button), Ubah,
+  and Lewati. Ubah opens the card's own labelled fields in place (title, dates and times, place);
+  Esc leaves the fields, not the bar. Saved, a card folds into one line with an accent check
+  ("Tersimpan"); skipped, into one line with Kembalikan. Two or more waiting: "Simpan semua (n)"
+  above them (cards open in their fields are left out). When the last card is decided and
+  something was saved, the bar folds into the capsule ("Tugas tersimpan: …", or "3 usulan
+  tersimpan") as after a Catat Cepat save. A new card rises 4 px once as it arrives; nothing else
+  moves. While Lentera answers: "Lentera sedang menyusun usulan…" and Hentikan. A failure says why
+  in Studio's words on warn-soft, with Coba lagi and "Catat Cepat saja" (the same line handed to
+  Catat Cepat's reader, which sends nothing). Without a key the bar is Catat Cepat's, as in CP01,
+  and says how to connect Gemini.
+- **Dari Pesan** sits in the bar's head beside the close button (pressed while open). It replaces
+  the line with a labelled text area ("Pesan grup") and a hint; a paste is cleaned on the computer at
+  once and the area shows the cleaned text, with one line of what was taken out ("Dihapus di
+  komputermu: 3 nama pengirim, 2 nomor, 6 jam kirim.") and a reminder that names written inside a
+  message may remain. Pasting several lines into the line opens it too. Kirim ke Lentera (or
+  Ctrl+Enter) sends; text typed afterwards is cleaned again first and shown again if that changed
+  it. The owner's turn then reads "Pesan grup, 12 baris".
+- **The privacy line** sits under the line in caption size: "Dikirim ke Google Gemini saat kamu
+  menekan Enter." and "Apa yang dikirim?", which opens a short note in the card area (what goes,
+  what never goes, nothing written before Simpan, the free tier's terms).
+- **Accessibility (CP03)**: the conversation is a list labelled "Balasan Lentera", not a live
+  region, so a streamed answer is never read piece by piece; one polite line says when it ended
+  ("Lentera mengusulkan 2 hal.") or why it failed. Each card is an article named by its kind and
+  title; after a Simpan or Lewati the keyboard goes to the next card's Simpan, or back to the line.
+- Surface: `--surface` on a solid rounded shape (22 px, the capsule a full pill), a hairline edge
+  and a soft shadow drawn around the shape (`filter: drop-shadow`, since a box shadow would be
+  clipped with it). Text is ink and ink-2 on surface or paper-2, as everywhere in Hub. The window
+  around it is transparent and lets clicks through, so it never covers the owner's work.
 
 ## Pages
 
@@ -283,6 +354,19 @@ Micro animation (P2b, `src/motion/motion.ts`), each starting at once and resting
   pressed button at 97 %.
 - With Windows' reduced motion nothing slides or is copied; choices change in place.
 
+Lentera's capsule and bar (CP01, `src/lentera/lentera.module.css`), in the spirit of ULTRON's island
+(`../Ultron/docs/island-2.md`): **one surface, one spring.** The surface is always laid out as the
+bar; a `clip-path` shows the whole of it or only its bottom-right pill, and moving between them
+animates the clip on `--spring-gentle` (520 ms), so nothing inside reflows. The contents cross-fade
+inside the shape: out in 100 ms with the exit easing, in for 160 ms once the shape is about three
+quarters there. Opening grows the bar out of a pill; closing fades the shape in 120 ms before the
+window hides. Two things move at most (the shape and a fade). A Sesi Fokus's ring and countdown
+move once a second in a step, never with a transition: a transparent window redrawn every frame
+costs a core (ULTRON measured it), and a second's step on a 25-minute ring cannot be seen. The
+window never resizes: Windows
+cannot resize a window in step with what its WebView draws, which is why ULTRON's island keeps a
+fixed window too. Under reduced motion the shape and its contents change at once.
+
 ## Sound
 
 P2 (2026-11-09, the owner's choices: micro and hero sounds, a character per place and activity, on
@@ -332,6 +416,13 @@ Kerjakan hari ini atau pilih tanggal baru?" Never "Kamu gagal", never exclamatio
 - Drag always has a keyboard or menu alternative (move to date, attach to project).
 - Hit targets at least 32 px in the dense desktop UI, 40 px for primary actions.
 - Respect Windows' reduced motion and text scaling.
+- Lentera's window (CP01): every control has a name (the capsule reads "<its label>. Buka
+  Lentera"), Tab comes round inside the bar or the capsule, Esc closes from anywhere in it and
+  gives the keyboard back to the window that had it. What changed is said once in one
+  `role="status"` line. Rules for timers from CP02 on: a countdown is never inside a live region
+  (it would be read every second); only its start, a break, and its end are said, in that status
+  line, and the countdown stays readable on demand in the capsule's name. Time uses tabular
+  figures so the capsule never changes width as it counts.
 
 ## Not this
 

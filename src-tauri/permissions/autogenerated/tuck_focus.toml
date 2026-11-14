@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-tuck-focus"
+description = "Enables the tuck_focus command without any pre-configured scope."
+commands.allow = ["tuck_focus"]
+
+[[permission]]
+identifier = "deny-tuck-focus"
+description = "Denies the tuck_focus command without any pre-configured scope."
+commands.deny = ["tuck_focus"]

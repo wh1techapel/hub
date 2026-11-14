@@ -1,0 +1,768 @@
+/* Lentera's capsule and bar (CP01). The window is a transparent rectangle (480 x 400, lentera.rs);
+   the surface sits in its bottom-right corner, 16 px from the screen's edge and the taskbar.
+
+   One surface, one spring: the surface is always laid out as the bar, and a clip-path shows either
+   the whole bar or only its bottom-right pill, the capsule. Moving between them animates the clip
+   with ULTRON's spring (--spring-gentle), which costs paint, not layout: nothing inside reflows.
+   The contents cross-fade inside it (out quickly, in once the shape is mostly there). Under reduced
+   motion the shape and its contents change at once. */
+
+:global(body.lentera-window) {
+  /* The window is transparent: only the surface is drawn. */
+  background: transparent;
+}
+
+/* The browser preview (npm run dev, lentera.html) has no desktop under it. */
+:global(body.lentera-window[data-preview]) {
+  background: var(--paper-2);
+}
+
+.stage {
+  position: fixed;
+  inset: 0;
+}
+
+.lamp {
+  /* An edge and a soft shadow that follow the clip (a box-shadow would be clipped with it). */
+  --edge: var(--hairline-strong);
+  --shade: oklch(0.2 0.02 265 / 0.2);
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  width: min(432px, calc(100vw - 32px));
+  filter: drop-shadow(0 0 0.6px var(--edge)) drop-shadow(0 10px 22px var(--shade));
+  transition: opacity 160ms var(--ease-standard);
+}
+
+:global([data-scheme="dark"]) .lamp {
+  --shade: rgb(0 0 0 / 0.55);
+}
+
+.surface {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 40px);
+  background: var(--surface);
+  border-radius: 22px;
+  clip-path: inset(0 0 0 0 round 22px);
+  transition: clip-path var(--spring-gentle-duration) var(--spring-gentle);
+}
+
+/* The capsule: the surface's bottom-right pill, as wide as what it says. */
+[data-view="capsule"] .surface,
+[data-view="hidden"] .surface {
+  clip-path: inset(calc(100% - 40px) 0 0 calc(100% - var(--capsule-w, 132px)) round 20px);
+}
+
+[data-view="hidden"] .lamp {
+  opacity: 0;
+  transition: opacity 120ms var(--ease-exit);
+}
+
+/* ---------- the bar ---------- */
+
+.bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: 0;
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  transition: opacity 160ms var(--ease-standard) 180ms;
+}
+
+[data-view="capsule"] .bar,
+[data-view="hidden"] .bar {
+  opacity: 0;
+  transition: opacity 100ms var(--ease-exit);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+  user-select: none;
+}
+
+.title {
+  flex: 1;
+  margin: 0;
+  font-family: var(--font-display);
+  font-variation-settings: var(--display-axes), "opsz" 24;
+  font-size: var(--text-title);
+  font-weight: 450;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.close,
+.action {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--ink-2);
+  transition: background-color var(--dur-quick) var(--ease-standard), color var(--dur-quick) var(--ease-standard);
+}
+
+.close:hover,
+.action:hover {
+  background: var(--hairline);
+  color: var(--ink);
+}
+
+/* Lentera's replies (CP03) arrive here. Until then, one honest line. */
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.note {
+  margin: 0;
+  padding: 10px var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--paper-2);
+  color: var(--ink-2);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+}
+
+/* ---------- the capsule ---------- */
+
+.capsule {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  width: max-content;
+  max-width: 320px;
+  height: 40px;
+  padding: 0 4px;
+  opacity: 0;
+  transition: opacity 100ms var(--ease-exit);
+}
+
+[data-view="capsule"] .capsule {
+  opacity: 1;
+  transition: opacity 160ms var(--ease-standard) 200ms;
+}
+
+.capsuleMain {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  height: 36px;
+  padding: 0 var(--space-3) 0 4px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--ink);
+  font-size: var(--text-small);
+  font-weight: 550;
+  text-align: left;
+}
+
+.capsuleMain:hover {
+  background: var(--hairline);
+}
+
+/* The light, and around it a Sesi Fokus's thin ring (CP02). The ring moves once a second, in a
+   step, never with a transition: a transparent window redrawn every frame costs a lot (ULTRON
+   measured it), and a second's step on a 25-minute ring cannot be seen. */
+.ring {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+}
+
+.ring > * {
+  grid-area: 1 / 1;
+}
+
+.ringSvg {
+  width: 28px;
+  height: 28px;
+  overflow: visible;
+}
+
+.ringTrack,
+.ringFill {
+  fill: none;
+  stroke-width: 2.5;
+}
+
+.ringTrack {
+  stroke: var(--hairline-strong);
+}
+
+.ringFill {
+  stroke: var(--accent);
+  stroke-linecap: round;
+}
+
+/* A break rests in the ink's quieter voice; waiting is a whole, still ring. */
+.ringFill[data-phase="short_break"],
+.ringFill[data-phase="long_break"] {
+  stroke: var(--ink-3);
+}
+
+.ringFill[data-phase="waiting"] {
+  stroke: var(--ink-2);
+}
+
+/* ---------- Sesi Fokus in the bar (CP02) ---------- */
+
+.startFocus {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: var(--hit-primary);
+  padding: 10px var(--space-3);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--ink);
+  text-align: left;
+  transition: border-color var(--dur-quick) var(--ease-standard);
+}
+
+.startFocus:hover {
+  border-color: var(--accent);
+}
+
+.startFocus svg {
+  flex: none;
+  color: var(--accent);
+}
+
+.startFocus span {
+  display: flex;
+  flex-direction: column;
+}
+
+.startFocus strong {
+  font-size: var(--text-body);
+  font-weight: 600;
+}
+
+.startFocus small {
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  color: var(--ink-2);
+}
+
+.focusCard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: var(--space-3);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-md);
+}
+
+.focusHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.focusWhat {
+  flex: 1;
+  min-width: 0;
+}
+
+.focusPhase,
+.focusTitle,
+.focusHint {
+  margin: 0;
+}
+
+.focusPhase {
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.focusTitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-body);
+  font-weight: 550;
+}
+
+.focusTime {
+  margin: 0;
+  font-family: var(--font-display);
+  font-variation-settings: var(--display-axes), "opsz" 36;
+  font-size: var(--text-display-m);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.focusHint {
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+  color: var(--ink-2);
+}
+
+.focusButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.focusButtons :global(.btn) {
+  gap: 6px;
+}
+
+.label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- Lentera's brain in the bar (CP03) ----------
+
+   Quiet by design: the owner's line is a short right-aligned note in ink-2, Lentera's answer is
+   plain text in ink, and only a proposal is a card (one hairline, no shadow), because a proposal is
+   the one thing that asks for a decision. Simpan is the only filled button on a card. Nothing
+   moves except a new card rising 4 px as it arrives. */
+
+.headButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--hit-min);
+  padding: 0 var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--ink-2);
+  font-size: var(--text-small);
+  font-weight: 550;
+  transition: background-color var(--dur-quick) var(--ease-standard), color var(--dur-quick) var(--ease-standard);
+}
+
+.headButton:hover {
+  background: var(--hairline);
+  color: var(--ink);
+}
+
+.headButton[aria-pressed="true"] {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+.hint {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+}
+
+.log {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.exchange {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.mine {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-end;
+  max-width: 85%;
+  margin: 0;
+  padding: 6px var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--paper-2);
+  color: var(--ink-2);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+  overflow-wrap: anywhere;
+}
+
+.answer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.reply {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.quiet {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+}
+
+.thinking {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: var(--hit-min);
+}
+
+.thinking :global(.btn) {
+  gap: 6px;
+}
+
+.thinkingText {
+  color: var(--ink-2);
+  font-size: var(--text-small);
+}
+
+.failure {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: 10px var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--warn-soft);
+}
+
+.failure p {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+}
+
+.proposals {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.saveAll {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.saveAll :global(.btn) {
+  gap: 6px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px var(--space-3) var(--space-3);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  animation: card-rise var(--dur-base) var(--ease-standard);
+}
+
+.card[data-card-status="saving"] {
+  border-color: var(--accent-line);
+}
+
+@keyframes card-rise {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.cardKind {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.cardTitle {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.cardNotes {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+  overflow-wrap: anywhere;
+}
+
+.cardError {
+  margin: 0;
+  color: var(--danger);
+  font-size: var(--text-small);
+  font-weight: 550;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-xs);
+  background: var(--paper-2);
+  color: var(--ink-2);
+  font-size: var(--text-caption);
+  font-weight: 550;
+  white-space: nowrap;
+}
+
+.chipProject {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+.cardActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: 4px;
+}
+
+.cardActions :global(.btn-primary) {
+  min-height: var(--hit-min);
+}
+
+.cardLine {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--hit-primary);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--paper-2);
+  color: var(--ink-2);
+  font-size: var(--text-small);
+}
+
+.cardLineText {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardLineText strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.savedMark {
+  flex: none;
+  color: var(--accent);
+}
+
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.editFields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.editField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.editField[data-wide] {
+  grid-column: 1 / -1;
+}
+
+.editField label {
+  color: var(--ink-2);
+  font-size: var(--text-caption);
+  font-weight: 550;
+}
+
+.editField :global(.input) {
+  min-height: var(--hit-min);
+  padding: 4px var(--space-2);
+  font-size: var(--text-small);
+}
+
+.line {
+  display: flex;
+}
+
+.lineInput {
+  width: 100%;
+  height: 48px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--text-read);
+}
+
+.lineInput::placeholder {
+  color: var(--ink-3);
+}
+
+.lineInput:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+  border-color: transparent;
+}
+
+.messagePanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.messageLabel {
+  color: var(--ink);
+  font-size: var(--text-small);
+  font-weight: 600;
+}
+
+textarea.messageArea {
+  min-height: 112px;
+  max-height: 168px;
+  resize: none;
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+}
+
+.cleanedStatus {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cleanedStatus p {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+}
+
+.cleanedStatus .warn {
+  color: var(--ink);
+  font-weight: 550;
+}
+
+.privacy {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+}
+
+.linkButton {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--accent-line);
+  text-underline-offset: 2px;
+}
+
+.linkButton:hover {
+  text-decoration-color: var(--accent);
+}
+
+.privacyBody {
+  margin: 0;
+  padding: 10px var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--paper-2);
+  color: var(--ink-2);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+}
+
+.captureMode {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    animation: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lamp,
+  .surface,
+  .bar,
+  .capsule,
+  [data-view] .lamp,
+  [data-view] .bar,
+  [data-view] .capsule {
+    transition: none;
+  }
+}

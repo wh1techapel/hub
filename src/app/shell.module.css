@@ -241,6 +241,11 @@
   box-shadow: var(--shadow-lift);
 }
 
+/* Tanya Lentera (CP01): Lentera's light in place of an icon, as wide as the 18 px icons below. */
+.lentera > i {
+  margin: 0 2px;
+}
+
 /* ---------- reminders waiting ---------- */
 
 .alerts {

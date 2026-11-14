@@ -30,6 +30,11 @@ Tangkapan layar memakai data contoh.
   jadwal pelajaran), dan pengingat dengan notifikasi Windows.
 - **Catat Cepat:** `Ctrl+Alt+H` dari aplikasi mana pun, satu baris seperti "laporan lab besok
   19.00 #jaringan !!" dibaca menjadi tugas, pengingat, jadwal, atau catatan.
+- **Lentera dan Sesi Fokus:** `Ctrl+Alt+L` membuka bar Lentera di pojok kanan bawah layar. Tulis
+  satu kalimat, atau tempel pesan grup lewat *Dari Pesan*, dan Lentera (lewat Google Gemini)
+  mengusulkan tugas, pengingat, jadwal, atau catatan sebagai kartu; tidak ada yang tersimpan
+  sebelum kamu menekan Simpan. Sesi Fokus (Pomodoro offline untuk tugas atau materi Belajar)
+  menghitung mundur di kapsul Lentera, istirahat mulai sendiri, dan setiap blok tercatat di Jejak.
 - **Belajar:** jalur belajar (TryHackMe, Hack The Box, CTF, lab sekolah, homelab), materi, timer
   sesi, dan sasaran mingguan yang tidak menghukum hari yang terlewat.
 - **File:** seret file dari Explorer; Hub menyimpan rujukan ke file asli dan tetap menemukannya
@@ -44,10 +49,11 @@ Tangkapan layar memakai data contoh.
 ## Privasi
 
 - Semua data tersimpan di `%LOCALAPPDATA%\Hub` dan tidak dikirim ke mana pun.
-- Pengecualiannya hanya Hub Studio: percakapan dan dokumen Studio dikirim ke Gemini API milik
-  Google, dan hanya saat kamu mengirim pesan atau menekan tombol susun. Pada tier gratis Google
-  dapat memakai data itu untuk mengembangkan produknya; Hub menyebutkannya di bawah kolom
-  percakapan.
+- Pengecualiannya hanya Hub Studio dan bar Lentera: percakapan dan dokumen Studio, serta kalimat
+  yang kamu kirim di bar Lentera (atau pesan grup yang sudah dibersihkan dari nama dan nomor,
+  tanggal dan jam, nama Proyek dan Ruang), dikirim ke Gemini API milik Google, dan hanya saat kamu
+  mengirim atau menekan tombol susun. Pada tier gratis Google dapat memakai data itu untuk
+  mengembangkan produknya; Hub menyebutkannya di bawah kolom percakapan dan di bawah bar Lentera.
 - Kunci Gemini disimpan di Windows Credential Manager, bukan di file biasa.
 - API lokal (untuk ULTRON dan Claude Code) hanya mendengar di `127.0.0.1`, selalu meminta token,
   dan bisa dimatikan per klien di Pengaturan.
@@ -120,6 +126,7 @@ sendiri bila ingin menghapus datanya juga.
 ### Pintasan
 
 - `Ctrl+Alt+H` dari mana saja: Catat Cepat.
+- `Ctrl+Alt+L` dari mana saja, atau `Ctrl+L` di Hub: bar Lentera di pojok kanan bawah layar.
 - `Ctrl+K` di Hub: pindah halaman, buat apa saja, dan cari.
 - Daftar tugas: panah memilih, Spasi selesai, Enter membuka, Alt+panah mengurutkan, Delete
   menghapus (bisa diurungkan).

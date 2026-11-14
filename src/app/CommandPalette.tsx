@@ -13,11 +13,13 @@ import {
   File,
   FolderKanban,
   Folders,
+  Lamp,
   ListPlus,
   Moon,
   NotebookPen,
   PenLine,
   Repeat,
+  Timer,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useDeferredValue, useEffect, useRef, useState } from "react";
@@ -25,6 +27,7 @@ import type { KeyboardEvent } from "react";
 
 import { CaptureForm } from "../components/CaptureForm";
 import { useToast } from "../components/Toast";
+import { useApi } from "../data/api";
 import type { CaptureKind } from "../data/generated/CaptureKind";
 import type { SearchHit } from "../data/generated/SearchHit";
 import type { SearchKind } from "../data/generated/SearchKind";
@@ -56,6 +59,7 @@ const HIT_ICONS: Record<SearchKind, LucideIcon> = {
 
 export function CommandPalette({ onClose, startWith = null }: { onClose: () => void; startWith?: CaptureKind | null }) {
   const navigate = useNavigate();
+  const api = useApi();
   const projects = useProjects();
   const toast = useToast();
   const [query, setQuery] = useState("");
@@ -126,6 +130,22 @@ export function CommandPalette({ onClose, startWith = null }: { onClose: () => v
       icon: Moon,
       keywords: "tutup hari review malam",
       run: () => leave(() => void navigate({ to: "/", search: { review: true } })),
+    },
+    {
+      key: "lentera",
+      group: id.palette.groupActions,
+      label: id.palette.lentera,
+      icon: Lamp,
+      keywords: "lentera tanya asisten bantuan ctrl l",
+      run: () => leave(() => void api.openLentera().catch(() => undefined)),
+    },
+    {
+      key: "focus",
+      group: id.palette.groupActions,
+      label: id.palette.focus,
+      icon: Timer,
+      keywords: "sesi fokus pomodoro timer belajar konsentrasi",
+      run: () => leave(() => void api.startFocus({}).catch(() => undefined)),
     },
   ];
   const pageEntries: Entry[] = matchPages("").map((page) => ({

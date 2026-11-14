@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-stop-lentera"
+description = "Enables the stop_lentera command without any pre-configured scope."
+commands.allow = ["stop_lentera"]
+
+[[permission]]
+identifier = "deny-stop-lentera"
+description = "Denies the stop_lentera command without any pre-configured scope."
+commands.deny = ["stop_lentera"]

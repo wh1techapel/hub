@@ -518,7 +518,12 @@
   color: var(--ink-3);
 }
 
-.learningItem button {
+/* Lanjutkan (Belajar's timer) and, since CP02, a Sesi Fokus on the item. */
+.learningButtons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
   grid-column: 2;
   grid-row: 1 / span 2;
 }

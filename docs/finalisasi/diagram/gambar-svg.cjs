@@ -32,17 +32,19 @@ function useCaseDiagram() {
     "Tutup Hari dan\nmemilih fokus",
     "Mengelola berkas",
     "Mencatat kegiatan\nbelajar",
+    "Sesi Fokus",
     "Melihat Jejak\ndan mencari",
+    "Bertanya di bar Lentera\ndan menyimpan usulan",
     "Merancang proyek\ndi Studio",
     "Menyetujui PRD\ndan checkpoint",
   ];
   const right = [
-    { text: "Membaca jadwal dan\ndaftar tugas", actor: 0 },
-    { text: "Membuat tugas, pengingat,\ncatatan; mencari berkas", actor: 0 },
-    { text: "Menyusun pertanyaan, tech\nstack, PRD, rencana", actor: 1 },
-    { text: "Membaca PRD dan checkpoint,\nmengirim laporan", actor: 2 },
+    { text: "Mengusulkan tugas, pengingat,\njadwal, catatan sebagai kartu", actor: 0 },
+    { text: "Membaca pesan grup\n(Dari Pesan)", actor: 0 },
+    { text: "Menyusun pertanyaan, tech\nstack, PRD, rencana", actor: 0 },
+    { text: "Membaca PRD dan checkpoint,\nmengirim laporan", actor: 1 },
   ];
-  const W = 1120, H = 800, top = 70, step = 76;
+  const W = 1120, H = 920, top = 70, step = 74;
   let body = `<rect x="230" y="20" width="660" height="${H - 40}" rx="6" fill="none" stroke="#333" stroke-width="2"/>${lines(560, 44, "Hub", 18, "bold")}`;
   const pY = top + (step * (left.length - 1)) / 2;
   body += actor(110, pY, "Pengguna");
@@ -51,11 +53,10 @@ function useCaseDiagram() {
     body += link(132, pY - 14, 260, y) + useCase(410, y, t);
   });
   const actors = [
-    { y: 205, label: "ULTRON" },
-    { y: 435, label: "Lentera\n(Google Gemini)" },
-    { y: 620, label: "Claude Code" },
+    { y: 330, label: "Lentera\n(Google Gemini)" },
+    { y: 700, label: "Claude Code" },
   ];
-  const ys = [150, 260, 435, 620];
+  const ys = [200, 330, 460, 700];
   right.forEach((r, i) => {
     body += link(1010 - 22, actors[r.actor].y - 14, 860, ys[i]) + useCase(715, ys[i], r.text, 150, 32);
   });

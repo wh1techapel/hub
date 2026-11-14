@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-ask-lentera"
+description = "Enables the ask_lentera command without any pre-configured scope."
+commands.allow = ["ask_lentera"]
+
+[[permission]]
+identifier = "deny-ask-lentera"
+description = "Denies the ask_lentera command without any pre-configured scope."
+commands.deny = ["ask_lentera"]

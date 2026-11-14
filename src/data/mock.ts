@@ -45,6 +45,8 @@ import type { Verb } from "./generated/Verb";
 import { isoDate, minutesOf, parseClock } from "../time/format";
 import type { Drag } from "./api";
 import type { SearchHit } from "./generated/SearchHit";
+import { focusMock } from "./mockFocus";
+import { lenteraMock } from "./mockLentera";
 import { libraryMock } from "./mockLibrary";
 import { studioMock } from "./mockStudio";
 
@@ -69,6 +71,10 @@ export const defaultSettings: Settings = {
   devDeploy: "",
   soundEnabled: true,
   soundVolume: 30,
+  focusMinutes: 25,
+  breakMinutes: 5,
+  longBreakMinutes: 15,
+  longBreakEvery: 4,
 };
 
 interface TaskRec {
@@ -408,7 +414,16 @@ function fail(field: string, reason: string): never {
 }
 
 export function createMockBackend(
-  options: { empty?: boolean; settings?: Partial<Settings>; geminiKey?: string | null; studioProjects?: StudioProject[]; claudeCli?: boolean; claudeRegistered?: boolean } = {},
+  options: {
+    empty?: boolean;
+    settings?: Partial<Settings>;
+    geminiKey?: string | null;
+    studioProjects?: StudioProject[];
+    claudeCli?: boolean;
+    claudeRegistered?: boolean;
+    /** Sesi Fokus: how long a minute of Pengaturan lasts (1 makes a 25-minute block 25 s). */
+    focusSecondsPerMinute?: number;
+  } = {},
 ): MockBackend {
   const store = options.empty ? emptyStore() : demoStore(new Date());
   store.settings = { ...store.settings, ...options.settings };
@@ -790,9 +805,37 @@ export function createMockBackend(
         return { tasks: finished.length, projects: new Set(finished.flatMap((t) => (t.projectId ? [t.projectId] : []))).size };
       },
       goalDays: () => store.settings.learningGoalDays,
+      stopFocus: () => focus.stop(),
     },
     !options.empty,
   );
+
+  // Sesi Fokus (Lentera CP02).
+  const focus = focusMock(
+    {
+      record,
+      done,
+      settings: () => store.settings,
+      taskTitle: (id) => live().find((t) => t.id === id)?.title ?? null,
+      itemTitle: (id) => library.itemTitle(id),
+      itemBlock: (itemId, startedAt, minutes) => library.focusBlock(itemId, startedAt, minutes),
+      itemStarts: (itemId) => library.focusStarts(itemId),
+      stopTimer: () => library.stopTimer(),
+      fail,
+      notFound: (what) => {
+        throw new HubError({ kind: "not_found", field: what, reason: null, message: `${what} not found` });
+      },
+    },
+    options.focusSecondsPerMinute,
+  );
+
+  // Lentera's brain (CP03): a pretend Gemini that proposes, Simpan through the handlers below.
+  const lentera = lenteraMock({
+    hasKey: () => geminiKey !== null,
+    today,
+    addDays,
+    call: (command, args) => handlers[command]?.(args),
+  });
 
   const apiStatus = () => ({
     enabled: store.settings.apiEnabled,
@@ -824,6 +867,10 @@ export function createMockBackend(
 
   const handlers: Partial<Record<Command, (args: Record<string, unknown>) => unknown>> = {
     ...library.handlers,
+    ...focus.handlers,
+    ...(lentera.handlers as Partial<Record<Command, (args: Record<string, unknown>) => unknown>>),
+    take_lentera_open: () => true,
+    focus_lentera: () => undefined,
     ...(studio.handlers as Partial<Record<Command, (args: Record<string, unknown>) => unknown>>),
     get_settings: () => store.settings,
     update_settings: ({ patch }) => {
@@ -842,7 +889,7 @@ export function createMockBackend(
       return store.settings;
     },
     get_info: () => ({ version: "1.0.1", dataDir: "C:\\Users\\kamu\\AppData\\Local\\Hub", schemaVersion: 2, lastBackup: null }),
-    get_shell: () => ({ hotkeyOk: true, hotkey: "Ctrl+Alt+H" }),
+    get_shell: () => ({ hotkeyOk: true, hotkey: "Ctrl+Alt+H", lenteraHotkeyOk: true, lenteraHotkey: "Ctrl+Alt+L" }),
     get_api_status: () => apiStatus(),
     claude_code_status: () => claudeStatus(),
     install_claude_code: () => {
@@ -921,6 +968,10 @@ export function createMockBackend(
     window_ready: () => undefined,
     set_caption: () => undefined,
     hide_capture: () => undefined,
+    open_lentera: () => undefined,
+    set_lentera_shape: () => undefined,
+    hide_lentera: () => undefined,
+    return_lentera_focus: () => undefined,
     take_start_path: () => null,
     get_today: (): TodayView => {
       const d = today();
@@ -1438,7 +1489,8 @@ export function createMockBackend(
     },
     stream: async <T>(command: Command, args: Record<string, unknown>, onEvent: (event: unknown) => void): Promise<T> => {
       calls.push(`${command} ${JSON.stringify(args)}`);
-      const handler = (studio.streams as Partial<Record<Command, (args: Record<string, unknown>, onEvent: (event: never) => void) => Promise<unknown>>>)[command];
+      const streams = { ...studio.streams, ...lentera.streams };
+      const handler = (streams as Partial<Record<Command, (args: Record<string, unknown>, onEvent: (event: never) => void) => Promise<unknown>>>)[command];
       if (!handler) throw new HubError({ kind: "internal", field: null, reason: null, message: `mock: ${command}` });
       return (await handler(args, (event) => onEvent(structuredClone(event)))) as T;
     },

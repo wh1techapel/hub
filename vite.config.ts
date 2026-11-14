@@ -8,12 +8,12 @@ export default defineConfig({
   base: "./",
   clearScreen: false,
   server: { port: 1430, strictPort: true, host: "127.0.0.1" },
-  // Two pages: the main window and the Catat Cepat window (Ctrl+Alt+H).
+  // Three pages: the main window, the Catat Cepat window (Ctrl+Alt+H), and Lentera (Ctrl+Alt+L).
   build: {
     target: "es2023",
     sourcemap: false,
     chunkSizeWarningLimit: 600,
-    rollupOptions: { input: { main: "index.html", capture: "capture.html" } },
+    rollupOptions: { input: { main: "index.html", capture: "capture.html", lentera: "lentera.html" } },
   },
   test: {
     environment: "jsdom",

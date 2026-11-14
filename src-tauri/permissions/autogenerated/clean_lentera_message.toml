@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-clean-lentera-message"
+description = "Enables the clean_lentera_message command without any pre-configured scope."
+commands.allow = ["clean_lentera_message"]
+
+[[permission]]
+identifier = "deny-clean-lentera-message"
+description = "Denies the clean_lentera_message command without any pre-configured scope."
+commands.deny = ["clean_lentera_message"]

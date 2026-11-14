@@ -2,6 +2,7 @@ import { act, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { createMockBackend } from "../../data/mock";
 import { renderApp } from "../../test/renderApp";
 
 afterEach(() => {
@@ -67,6 +68,35 @@ describe("Pengaturan", () => {
   it("says whether the capture hotkey is active", async () => {
     renderApp({ path: "/pengaturan/sistem" });
     expect(await screen.findByText("Tekan Ctrl+Alt+H di aplikasi apa pun.")).toBeInTheDocument();
+    expect(screen.getByText("Tekan Ctrl+Alt+L di aplikasi apa pun. Di dalam Hub juga Ctrl+L.")).toBeInTheDocument();
+  });
+
+  it("Sesi Fokus's lengths are the owner's, within what makes sense", async () => {
+    const user = userEvent.setup();
+    const { backend } = renderApp({ path: "/pengaturan/hari" });
+    const focus = await screen.findByRole("region", { name: "Sesi Fokus" });
+    const length = within(focus).getByLabelText("Lama fokus (menit)");
+    expect(length).toHaveValue(25);
+    await user.clear(length);
+    await user.type(length, "50");
+    await waitFor(() => expect(backend.calls).toContain('update_settings {"patch":{"focusMinutes":50}}'));
+    // Out of range is not sent at all.
+    const every = within(focus).getByLabelText("Istirahat panjang setiap (blok)");
+    await user.clear(every);
+    await user.type(every, "12");
+    expect(backend.calls.some((call) => call.includes("longBreakEvery"))).toBe(false);
+  });
+
+  it("says when another application holds Lentera's Ctrl+Alt+L", async () => {
+    const backend = createMockBackend();
+    const call = backend.call;
+    backend.call = <T,>(command: Parameters<typeof call>[0], args?: Record<string, unknown>) =>
+      command === "get_shell"
+        ? Promise.resolve({ hotkeyOk: true, hotkey: "Ctrl+Alt+H", lenteraHotkeyOk: false, lenteraHotkey: "Ctrl+Alt+L" } as T)
+        : call<T>(command, args);
+    renderApp({ path: "/pengaturan/sistem", backend });
+    expect(await screen.findByText("Ctrl+Alt+L sedang dipakai aplikasi lain, jadi belum aktif.")).toBeInTheDocument();
+    expect(screen.getByText("Tekan Ctrl+Alt+H di aplikasi apa pun.")).toBeInTheDocument();
   });
 
   it("ULTRON's access says where it runs, and can move, rotate, or stop", async () => {

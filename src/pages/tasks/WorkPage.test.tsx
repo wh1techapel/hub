@@ -63,6 +63,12 @@ describe("Proyek & Tugas", () => {
     expect(within(panel).getByRole("button", { name: "Jadikan fokus hari ini" })).toBeDisabled();
     expect(within(panel).getByText("Fokus hari ini sudah tiga.")).toBeInTheDocument();
 
+    // CP02: a Sesi Fokus for this task, in Lentera's capsule.
+    await user.click(within(panel).getByRole("button", { name: "Fokus 25 m" }));
+    await waitFor(() => expect(backend.calls.some((call) => call.startsWith("start_focus") && call.includes('"taskId"'))).toBe(true));
+    const session = await backend.call<{ title: string } | null>("get_focus");
+    expect(session?.title).toBe("Revisi slide presentasi KIK");
+
     await user.keyboard("{Escape}");
     await waitFor(() => expect(screen.queryByRole("complementary", { name: "Detail tugas" })).not.toBeInTheDocument());
   });

@@ -21,6 +21,7 @@ mod error;
 pub mod events;
 pub mod export;
 pub mod files;
+pub mod focus;
 mod hub;
 pub mod identity;
 pub mod ids;

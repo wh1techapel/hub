@@ -3,4 +3,4 @@
 /**
  * What it happened to.
  */
-export type Entity = "settings" | "area" | "project" | "milestone" | "task" | "focus" | "event" | "routine" | "reminder" | "file" | "collection" | "track" | "learning_item" | "learning_session" | "ctf_event" | "journal" | "studio_project" | "studio_message" | "studio_ledger" | "studio_stack" | "studio_prd" | "studio_roadmap" | "studio_checkpoint" | "studio_task" | "studio_report" | "studio_request" | "claude_session";
+export type Entity = "settings" | "area" | "project" | "milestone" | "task" | "focus" | "event" | "routine" | "reminder" | "file" | "collection" | "track" | "learning_item" | "learning_session" | "ctf_event" | "journal" | "studio_project" | "studio_message" | "studio_ledger" | "studio_stack" | "studio_prd" | "studio_roadmap" | "studio_checkpoint" | "studio_task" | "studio_report" | "studio_request" | "claude_session" | "focus_session";
